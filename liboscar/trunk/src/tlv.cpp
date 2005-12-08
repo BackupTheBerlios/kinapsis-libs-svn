@@ -19,31 +19,46 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
-
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "tlv.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
-
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
-
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+TLV::TLV() { 
+	m_type = 0;
+	m_length = 0;
 }
 
-#endif // _LIBOSCAR_H_
+TLV::TLV(const Word type, const Word length){
+	m_type = type;
+	m_length = length;
+}
+
+void TLV::setType (const Word type){
+	m_type = type;
+}
+
+void TLV::setLength (const Word length){
+	m_length = length;
+}
+
+Buffer& TLV::data(){
+	return m_data;
+}
+
+Buffer& TLV::pack(){
+	/* Cut the extra data */
+	if (m_data.len() > m_length){
+		m_data.setPosition(m_length);
+		m_data.remove(m_data.len() - m_length);
+	}
+
+	m_data.prepend(m_length);
+	m_data.prepend(m_type);
+
+	return m_data;
+}
+
+TLV::~TLV(){ }
+	
+
+}

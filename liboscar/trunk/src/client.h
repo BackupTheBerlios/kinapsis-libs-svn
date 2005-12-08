@@ -19,31 +19,55 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#ifndef _CLIENT_H_
+#define _CLIENT_H_
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include <uin.h>
+#include <connection.h>
+#include <connectionresult.h>
+#include <liboscar.h>
+#include <parser.h>
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+	class UIN;
+	class Connection;
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
+class Client {
 
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+	friend class Parser;
+
+public:
+	Client();
+	Client(const UIN& uin, const QString& password);
+
+	QString getPassword();
+	void setPassword(const QString& password);
+	UIN getUIN();
+	void setUIN(const UIN& uin);
+
+	ConnectionResult connect();
+	void disconnect();
+
+	virtual ~Client();
+
+private:
+	void initvalues();
+
+	QString m_bos;
+	int m_bosport;
+
+	UIN m_uin;
+	QString m_password;
+
+	bool m_inlogin;
+
+	Connection* m_conn;
+	Connection* m_logconn;
+	Parser* m_parser;
+
+};
+
 }
 
-#endif // _LIBOSCAR_H_
+#endif // _CLIENT_H_

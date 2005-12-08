@@ -19,31 +19,48 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#ifndef _CONNECTION_H_
+#define _CONNECTION_H_
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "liboscar.h"
+#include "connectionresult.h"
+#include "parser.h"
+#include <qstring.h>
+#include <qobject.h>
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+	class Parser;
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
+class Connection : public QObject{
+Q_OBJECT
 
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+public:
+	Connection(const QString server, int port, Parser* parser);
+	virtual ~Connection();
+
+	ConnectionStatus getStatus();
+	ConnectionStatus connect();
+	ConnectionError listen();
+	void disconnect();
+signals:
+	void dataReceived();
+
+private:
+	ConnectionStatus clear();
+	ConnectionError receive();
+
+	ConnectionStatus m_status;
+
+	QString m_server;
+	int m_port;
+
+	int m_socket;
+	bool m_exit;
+
+	Parser* m_parser;
+};
+
 }
 
-#endif // _LIBOSCAR_H_
+#endif // _CONNECTION_H_

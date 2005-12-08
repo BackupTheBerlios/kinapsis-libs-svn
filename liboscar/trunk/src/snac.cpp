@@ -19,31 +19,46 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
-
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "snac.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
-
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
-
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+SNAC::SNAC() { 
+	m_family = 0;
+	m_command = 0;
+	m_flags = 0;
+	m_reference = 0;
 }
 
-#endif // _LIBOSCAR_H_
+SNAC::SNAC(const Word family, const Word command, const Word flags, const DWord reference){
+
+	m_family = family;
+	m_command = command;
+	m_flags = flags;
+	m_reference = reference;
+}
+
+void SNAC::setFamily (const Word family){
+	m_family = family;
+}
+
+void SNAC::setCommand (const Word command){
+	m_command = command;
+}
+
+void SNAC::setFlags (const Word flags){
+	m_flags = flags;
+}
+
+void SNAC::setReference (const DWord reference){
+	m_reference = reference;
+}
+
+Buffer& SNAC::pack(){ return m_data; }
+
+void SNAC::parse(Buffer& b){ }
+
+SNAC::~SNAC(){ }
+	
+
+}

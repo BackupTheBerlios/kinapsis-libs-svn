@@ -19,31 +19,39 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#ifndef _FLAP_H_
+#define _FLAP_H_
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "buffer.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+	class Buffer;
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
+class FLAP {
 
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+public:
+	FLAP();
+	FLAP(const Byte channel, const Word sequence, const Word length);
+	virtual ~FLAP();
+
+	void setChannel(const Byte channel);
+	void setSequence(const Word sequence);
+	void setLength(const Word length);
+
+	Buffer& data();
+	/* TODO: rehacer para SNACs y TLVs */ /* Nada de Buffer m_data */
+	Buffer& pack();
+
+private:
+
+	Byte m_chan;
+	Word m_seq;
+	Word m_length;
+	Buffer m_data;
+};
+
+
 }
 
-#endif // _LIBOSCAR_H_
+#endif // _FLAP_H_

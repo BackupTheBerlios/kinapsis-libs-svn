@@ -19,31 +19,31 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
-
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "connectionresult.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
-
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
-
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+ConnectionResult::ConnectionResult(){
+	ConnectionResult(true, CONN_ERR_USER_REQUEST);
+}
+ConnectionResult::ConnectionResult(bool successful, ConnectionError error){
+	m_successful = successful;
+	m_error = error;
 }
 
-#endif // _LIBOSCAR_H_
+ConnectionResult::~ConnectionResult(){
+}
+
+bool ConnectionResult::successful(){
+	return m_successful;
+}
+
+ConnectionError ConnectionResult::errorReason(){
+	if (!m_successful)
+		return m_error;
+	else
+		return (ConnectionError)-1;
+}
+
+
+}

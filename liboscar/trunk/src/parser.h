@@ -19,31 +19,41 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#ifndef _PARSER_H_
+#define _PARSER_H_
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "buffer.h"
+#include <qobject.h>
+#include <qstring.h>
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+	class Buffer;
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
+class Parser : public QObject {
+Q_OBJECT
 
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+public:
+	Parser();
+
+	void add(QString data);
+	virtual ~Parser();
+
+public slots:
+	void parse();
+
+private:
+	Word getNextSeqNumber();
+	void parseCh1(Buffer& buf);
+	void parseCh2(Buffer& buf);
+	void parseCh4(Buffer& buf);
+	void parseCh5(Buffer& buf);
+
+	Buffer m_buf;
+	Word m_seq; /* FLAP's sequence number */
+
+};
+
 }
 
-#endif // _LIBOSCAR_H_
+#endif // _PARSER_H_

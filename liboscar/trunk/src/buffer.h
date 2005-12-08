@@ -19,31 +19,62 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#ifndef _BUFFER_H_
+#define _BUFFER_H_
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include <liboscar.h>
+#include <qvaluelist.h>
+#include <qobject.h>
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+class Buffer : public QObject {
+Q_OBJECT
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
+public:
+	Buffer();
 
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+	Buffer& operator<<(Byte);
+	Buffer& operator<<(Word);
+	Buffer& operator<<(DWord);
+	Buffer& operator<<(const QString&);
+	Buffer& operator<<(Buffer&);
+
+	Buffer& operator>>(Byte);
+	Buffer& operator>>(Word);
+	Buffer& operator>>(DWord);
+
+	void prepend(Byte);
+	void prepend(Word);
+	void prepend(DWord);
+
+	void remove(unsigned int num = 1);
+	void gotoBegin();
+	void gotoEnd();
+	void setPosition(unsigned int pos);
+
+	void setLength(unsigned int length);
+
+	void wipe();
+
+	unsigned int len();
+
+	virtual ~Buffer();
+
+signals:
+	void dataAvailable();
+
+private:
+	typedef QValueList<Byte>::iterator BIterator;
+
+	Byte getByte();
+	Word getWord();
+
+	QValueList<Byte> m_data;
+	BIterator m_it;
+
+};
+
 }
 
-#endif // _LIBOSCAR_H_
+#endif // _BUFFER_H_

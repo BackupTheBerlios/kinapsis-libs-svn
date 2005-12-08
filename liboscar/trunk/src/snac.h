@@ -19,31 +19,52 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#ifndef _SNAC_H_
+#define _SNAC_H_
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "buffer.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+	class Buffer;
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
+	// SNACs wired values
+	
+	const Word SNAC_FAM_SERVICE = 0x0001;
+	const Word SNAC_FAM_LOCATION = 0x0002;
+	const Word SNAC_FAM_CONTACT = 0x0003;
+	const Word SNAC_FAM_ICBM = 0x0004;
+	const Word SNAC_FAM_BOS = 0x0009;
+	const Word SNAC_FAM_INTERVAL = 0x000b;
+	const Word SNAC_FAM_ROSTER = 0x0013;
+	const Word SNAC_FAM_OLDICQ = 0x0015;
+	const Word SNAC_FAM_NEWUSER = 0x0017;
 
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+class SNAC {
+
+public:
+	SNAC();
+	SNAC(const Word family, const Word command, const Word flags, const DWord reference);
+	virtual ~SNAC();
+	
+	void setFamily (const Word family);
+	void setCommand (const Word command);
+	void setFlags (const Word flags);
+	void setReference (const DWord reference);
+
+	virtual Buffer& pack(); /* pack the SNAC for sending */
+	virtual void parse(Buffer& b); /* parse the Buffer content to the SNAC */
+
+private:
+	Word m_family;
+	Word m_command;
+	Word m_flags;
+	DWord m_reference;
+
+	Buffer m_data;
+};
+
+
 }
 
-#endif // _LIBOSCAR_H_
+#endif // _SNAC_H_

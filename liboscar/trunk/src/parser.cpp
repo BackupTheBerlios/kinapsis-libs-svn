@@ -19,31 +19,99 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#include "parser.h"
+#include <stdlib.h>
+#include <time.h>
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#define POSITIVE_MASK 0x7fff
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
-
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
-
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+Parser::Parser(){ 
+	srand(time(NULL));
+	m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
 }
 
-#endif // _LIBOSCAR_H_
+void Parser::add(QString data){
+	m_buf << data;
+}
+
+void Parser::parse(){
+	Byte b = 0, ch = 0;
+	Word w = 0;
+	Buffer buf;
+
+	/* We have more data in the buffer */
+	m_buf.gotoBegin();
+
+	if (m_buf.len() < 6) /* Yet haven't enough data */
+		return;
+
+	m_buf >> b;
+
+	if (b != 0x2a){
+		qDebug(QString("Invalif FLAP header. Discarding data"));
+		m_buf.wipe();
+		return; 
+	}
+	
+	m_buf >> ch;
+	m_buf >> w; /* Sequence number */
+	m_buf >> w; /* Data lenght */
+
+	if (m_buf.len() < (w + 6))
+		return;
+
+	/* Copy the FLAP to a local buffer */
+	buf << m_buf;
+	buf.setLength(w + 6);
+	buf.gotoBegin();
+	buf.remove(6); /* remove header */
+
+	/* remove the FLAP from the parser buffer */
+	m_buf.gotoBegin();
+	m_buf.remove(w + 6);
+
+	switch (ch){
+		case 0x01:
+			parseCh1(buf);
+			break;
+		case 0x02:
+			parseCh2(buf);
+			break;
+		case 0x04:
+			parseCh4(buf);
+			break;
+		case 0x05:
+			parseCh5(buf);
+			break;
+		default:
+			qDebug(QString("FLAP on unknown channel: %1").arg(ch));
+			break;
+	}
+
+}
+
+void Parser::parseCh1(Buffer& buf){
+}
+
+void Parser::parseCh2(Buffer& buf){
+}
+
+void Parser::parseCh4(Buffer& buf){
+}
+
+void Parser::parseCh5(Buffer& buf){
+}
+
+Word Parser::getNextSeqNumber(){
+	m_seq = ++m_seq & POSITIVE_MASK;
+	return m_seq;
+}
+
+Parser::~Parser() { }
+
+
+}
+
+#include "parser.moc"

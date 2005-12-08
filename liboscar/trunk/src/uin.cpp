@@ -19,31 +19,37 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
-
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "uin.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
-
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
-
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_NO_ERROR
-	};
+UIN::UIN(){
+	UIN("");
 }
 
-#endif // _LIBOSCAR_H_
+UIN::UIN(const unsigned int uin){
+	setUin(uin);
+}
+
+UIN::UIN(const QString &uin){
+	this->setUin(uin);
+}
+
+QString UIN::getUin(){
+	return m_uin;
+}
+
+void UIN::setUin(const QString uin){
+	m_uin = uin;
+}
+
+void UIN::setUin(const unsigned int uin){
+	QString s;
+	s = QString::number(uin);
+	this->setUin(s);
+}
+
+UIN::~UIN() { }
+
+
+}
