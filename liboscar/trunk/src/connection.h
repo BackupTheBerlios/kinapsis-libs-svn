@@ -25,12 +25,14 @@
 #include "liboscar.h"
 #include "connectionresult.h"
 #include "parser.h"
+#include "buffer.h"
 #include <qstring.h>
 #include <qobject.h>
 
 namespace liboscar {
 
 	class Parser;
+	class Buffer;
 
 class Connection : public QObject{
 Q_OBJECT
@@ -42,7 +44,9 @@ public:
 	ConnectionStatus getStatus();
 	ConnectionStatus connect();
 	ConnectionError listen();
+	ConnectionError send(Buffer& b);
 	void disconnect();
+
 signals:
 	void dataReceived();
 

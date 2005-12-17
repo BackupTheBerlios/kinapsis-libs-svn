@@ -22,7 +22,7 @@
 #ifndef _BUFFER_H_
 #define _BUFFER_H_
 
-#include <liboscar.h>
+#include "liboscar.h"
 #include <qvaluelist.h>
 #include <qobject.h>
 
@@ -40,22 +40,26 @@ public:
 	Buffer& operator<<(const QString&);
 	Buffer& operator<<(Buffer&);
 
-	Buffer& operator>>(Byte);
-	Buffer& operator>>(Word);
-	Buffer& operator>>(DWord);
+	Buffer& operator>>(Byte &);
+	Buffer& operator>>(Word &);
+	Buffer& operator>>(DWord &);
 
 	void prepend(Byte);
 	void prepend(Word);
 	void prepend(DWord);
 
 	void remove(unsigned int num = 1);
+	void removeFromBegin();
 	void gotoBegin();
 	void gotoEnd();
 	void setPosition(unsigned int pos);
+	void advance(unsigned int pos);
 
 	void setLength(unsigned int length);
 
 	void wipe();
+
+	void copy(Byte * bb);
 
 	unsigned int len();
 

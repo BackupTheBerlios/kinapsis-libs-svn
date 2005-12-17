@@ -28,9 +28,9 @@ TLV::TLV() {
 	m_length = 0;
 }
 
-TLV::TLV(const Word type, const Word length){
+TLV::TLV(const Word type){
 	m_type = type;
-	m_length = length;
+	m_length = 0;
 }
 
 void TLV::setType (const Word type){
@@ -46,13 +46,7 @@ Buffer& TLV::data(){
 }
 
 Buffer& TLV::pack(){
-	/* Cut the extra data */
-	if (m_data.len() > m_length){
-		m_data.setPosition(m_length);
-		m_data.remove(m_data.len() - m_length);
-	}
-
-	m_data.prepend(m_length);
+	m_data.prepend((Word) m_data.len());
 	m_data.prepend(m_type);
 
 	return m_data;

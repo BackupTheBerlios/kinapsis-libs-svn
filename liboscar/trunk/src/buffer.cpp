@@ -37,8 +37,8 @@ Buffer& Buffer::operator<<(Byte b){
 
 Buffer& Buffer::operator<<(Word w){
 	bool wasEmpty = (m_data.count() == 0);
-	m_data << (w & 0xFF);
 	m_data << ((w >> 8) & 0xFF);
+	m_data << (w & 0xFF);
 
 	if (wasEmpty) emit dataAvailable();
 
@@ -46,12 +46,12 @@ Buffer& Buffer::operator<<(Word w){
 }
 
 Buffer& Buffer::operator<<(DWord dw) {
-	int i=0;
 	bool wasEmpty = (m_data.count() == 0);
-	for (i=0; i < 4; i++){
-		m_data << (dw & 0xFF);
-		dw >>= 8;
-	}
+	m_data << ((dw >> 24) & 0xFF);
+	m_data << ((dw >> 16) & 0xFF);
+	m_data << ((dw >> 8) & 0xFF);
+	m_data << (dw & 0xFF);
+
 	if (wasEmpty) emit dataAvailable();
 	return *this;
 }
@@ -63,7 +63,7 @@ Buffer& Buffer::operator<<(const QString& s){
 
 	c = (char *) s.ascii();
 
-	for (i=0;c[i]; i++)
+	for (i=0;i < s.length(); i++)
 		m_data << (Byte) c[i];
 
 	if (wasEmpty) emit dataAvailable();
@@ -73,7 +73,14 @@ Buffer& Buffer::operator<<(const QString& s){
 
 Buffer& Buffer::operator<<(Buffer &other){
 
-	m_data = other.m_data;
+	unsigned int i = 0;
+	Byte b;
+
+	other.gotoBegin();
+	for (i=0; i < other.len(); i++){
+		other >> b;
+		m_data << b;
+	}
 	return *this;
 }
 
@@ -86,7 +93,7 @@ Byte Buffer::getByte(){
 	return b;
 }
 
-Buffer& Buffer::operator>>(Byte b){
+Buffer& Buffer::operator>>(Byte &b){
 	b = getByte();
 	return *this;
 }
@@ -98,14 +105,14 @@ Word Buffer::getWord(){
 	b1 = getByte();
 	b2 = getByte();
 	
-	w = b2;
+	w = b1;
 	w <<= 8;
-	w |= (0xFFFF & b1);
+	w |= (0xFFFF & b2);
 
 	return w;
 }
 
-Buffer& Buffer::operator>>(Word w){
+Buffer& Buffer::operator>>(Word &w){
 
 	if (m_data.count() < 2)
 		w = (Word) -1;
@@ -115,7 +122,7 @@ Buffer& Buffer::operator>>(Word w){
 	return *this;
 }
 
-Buffer& Buffer::operator>>(DWord dw){
+Buffer& Buffer::operator>>(DWord &dw){
 	Word w1; /* low word */
 	Word w2; /* high word */
 
@@ -125,9 +132,9 @@ Buffer& Buffer::operator>>(DWord dw){
 		w1 = getWord();
 		w2 = getWord();
 
-		dw = w2;
+		dw = w1;
 		dw <<= 16;
-		dw |= (0xFFFFFFFF & w1);
+		dw |= (0xFFFFFFFF & w2);
 	}
 
 	return *this;
@@ -143,11 +150,10 @@ void Buffer::prepend(Word w){
 }
 
 void Buffer::prepend(DWord dw){
-	int i=0;
-	for (i=0; i < 4; i++){
-		m_data.push_front(dw & 0xFF);
-		dw >>= 8;
-	}
+	m_data.push_front(dw & 0xFF);
+	m_data.push_front((dw >> 8) & 0xFF);
+	m_data.push_front((dw >> 16) & 0xFF);
+	m_data.push_front((dw >> 24) & 0xFF);
 }
 
 void Buffer::remove(unsigned int num){
@@ -159,9 +165,23 @@ void Buffer::remove(unsigned int num){
 		m_it = m_data.remove(m_it);
 }
 
+void Buffer::removeFromBegin(){
+	m_it = m_data.erase(m_data.begin(), m_it);
+}
+
 void Buffer::wipe(){
 	/* Removes all the data */
-	m_data.erase(m_data.begin(), m_data.fromLast());
+	m_data.erase(m_data.begin(), m_data.end());
+}
+
+void Buffer::copy(Byte *bb){
+	BIterator it = m_data.begin();
+	unsigned int i;
+
+	for (i = 0; i < m_data.count(); i++){
+		bb[i] = *it;
+		it++;
+	}
 }
 
 void Buffer::gotoBegin(){
@@ -172,6 +192,10 @@ void Buffer::gotoEnd(){
 }
 void Buffer::setPosition(unsigned int pos){
 	m_it = m_data.at(pos);
+}
+
+void Buffer::advance(unsigned int pos){
+	m_it += pos;
 }
 
 void Buffer::setLength(unsigned int length){

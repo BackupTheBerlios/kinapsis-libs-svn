@@ -20,20 +20,26 @@
 
 
 #include "parser.h"
+#include "flap.h"
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
 
 #define POSITIVE_MASK 0x7fff
 
 namespace liboscar {
 
-Parser::Parser(){ 
+Parser::Parser(Client *c){ 
 	srand(time(NULL));
 	m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
+	m_client = c;
 }
 
-void Parser::add(QString data){
-	m_buf << data;
+void Parser::add(Byte *data, int len){
+	int i;
+
+	for (i=0; i < len; i++)
+		m_buf << data[i];
 }
 
 void Parser::parse(){
@@ -50,7 +56,7 @@ void Parser::parse(){
 	m_buf >> b;
 
 	if (b != 0x2a){
-		qDebug(QString("Invalif FLAP header. Discarding data"));
+		qDebug(QString("Invalid FLAP header. Discarding data"));
 		m_buf.wipe();
 		return; 
 	}
@@ -65,8 +71,9 @@ void Parser::parse(){
 	/* Copy the FLAP to a local buffer */
 	buf << m_buf;
 	buf.setLength(w + 6);
+	buf.setPosition(6);
+	buf.removeFromBegin();
 	buf.gotoBegin();
-	buf.remove(6); /* remove header */
 
 	/* remove the FLAP from the parser buffer */
 	m_buf.gotoBegin();
@@ -93,15 +100,199 @@ void Parser::parse(){
 }
 
 void Parser::parseCh1(Buffer& buf){
+	FLAP f(0x01, getNextSeqNumber(), 0); // Unknown length
+	DWord dw = 0;
+	TLV *tlv;
+
+	buf >> dw;
+
+	if (dw != 0x00000001){
+		qDebug("Unknown header on channel 1");
+		return ;
+	}
+
+	f.data() << (DWord) 0x00000001; // Hello header
+
+	if (m_client->state() == CLI_CONNECTED){ // Send cookie
+		tlv = new TLV(TLV_TYPE_COOKIE);
+		m_cookie.gotoBegin();
+		tlv->data() << m_cookie;
+		f.addTLV(tlv);
+	}
+
+	if ((m_client->state() == CLI_AUTHING) || (m_client->state() == CLI_CONNECTED)){
+
+		// UIN
+		tlv = new TLV(TLV_TYPE_UIN);
+		tlv->data() << m_client->getUIN().getUin();
+		f.addTLV(tlv);
+
+		// Password
+		unsigned int i = 0;
+
+		tlv = new TLV(TLV_TYPE_PASSWORD);
+		for (i=0; i < m_client->m_password.length(); i ++)
+			tlv->data() << (Byte) (m_client->m_password.ascii()[i] ^ PasswordTable[i%16]);
+		f.addTLV(tlv);
+		
+		// Version
+		tlv = new TLV(TLV_TYPE_VERSION);
+		tlv->data() << TLV_VERSION_ICQ2003B;
+		f.addTLV(tlv); 
+
+		// ClientId
+		tlv = new TLV(TLV_TYPE_CLIENTID);
+		tlv->data() << (Word) 0x010a;
+		f.addTLV(tlv); 
+
+		// Versionmajor
+		tlv = new TLV(TLV_TYPE_VERMAJOR);
+		tlv->data() << TLV_VERMAJOR;
+		f.addTLV(tlv); 
+
+		// Versionminor
+		tlv = new TLV(TLV_TYPE_VERMINOR);
+		tlv->data() << TLV_VERMINOR_ICQ2003B;
+		f.addTLV(tlv); 
+
+		// Lesser
+		tlv = new TLV(TLV_TYPE_LESSER);
+		tlv->data() << TLV_LESSER;
+		f.addTLV(tlv); 
+
+		// Build
+		tlv = new TLV(TLV_TYPE_BUILD);
+		tlv->data() << TLV_BUILD_ICQ2003B;
+		f.addTLV(tlv); 
+
+		// Distrib
+		tlv = new TLV(TLV_TYPE_DISTRIBUTION);
+		tlv->data() << TLV_DISTRIBUTION;
+		f.addTLV(tlv); 
+
+		// Language
+		tlv = new TLV(TLV_TYPE_LANGUAGE);
+		tlv->data() << (Word) 0x656e; // en
+		f.addTLV(tlv); 
+
+		// Country
+		tlv = new TLV(TLV_TYPE_COUNTRY);
+		tlv->data() << (Word) 0x7573; // us
+		f.addTLV(tlv); 
+
+	}
+
+	m_client->send(f.pack());
 }
 
 void Parser::parseCh2(Buffer& buf){
 }
 
 void Parser::parseCh4(Buffer& buf){
+
+	Word id, l, err;
+	Byte b;
+	unsigned int i;
+	QString reason;
+	QString server;
+	QString port;
+
+	DisconnectReason dreason;
+
+	while (buf.len()){
+		buf >> id;
+		buf >> l;
+		switch (id){
+			case 0x0001:
+				// Ignore UIN
+				buf.advance(l);
+				buf.removeFromBegin();
+				break;
+			case 0x0004:
+				for (i=0; i < l; i++){
+					buf >> b;
+					reason.append(b);
+				}
+				buf.removeFromBegin();
+				break;
+			case 0x0005:
+				buf >> b;
+				while (b != 0x3a){
+					server.append(b);
+					buf >> b;
+				}
+				for (i=0; i < 4; i++){
+					buf >> b;
+					port.append(b);
+				}
+				buf.removeFromBegin();
+				break;
+			case 0x0006:
+				for (i=0; i < l; i++){
+					buf >> b;
+					m_cookie << b;
+				}
+				buf.removeFromBegin();
+				break;
+			case 0x0008:
+				buf >> err;
+				buf.removeFromBegin();
+				switch (err){
+					case 0x0000:
+						dreason = NO_ERROR;
+						break;
+					case 0x0001:
+						dreason = MULTIPLE_LOGINS;
+						break;
+					case 0x0004:
+					case 0x0005:
+						dreason = BAD_PASSWORD;
+						break;
+					case 0x0007:
+					case 0x0008:
+						dreason = NON_EXISTANT_UIN;
+						break;
+					case 0x0015:
+					case 0x0016:
+						dreason = TOO_MANY_CLIENTS;
+						break;
+					case 0x0018:
+						dreason = RATE_EXCEEDED;
+						break;
+					case 0x001B:
+						dreason = OLD_VERSION;
+						break;
+					case 0x001D:
+						dreason = RECONNECTING_TOO_FAST;
+						break;
+					case 0x001E:
+						dreason = CANT_REGISTER;
+						break;
+				}
+				break;
+			default:
+				qDebug("Unknown TLV on channel 4");
+				buf.wipe();
+				break;
+		}
+	}
+
+	if (server.isEmpty()){ // Got an unexpected disconnection
+		emit serverDisconnected(reason, dreason);
+	}
+	else // We got the BOS && cookie info :-)
+		emit receivedBOS(server, port);
 }
 
 void Parser::parseCh5(Buffer& buf){
+	if (buf.len() != 0)
+		qDebug("Unknown extra data on channel 5");
+	sendKeepAlive();
+}
+
+void Parser::sendKeepAlive(){
+	FLAP f(0x05, getNextSeqNumber(), 0);
+	m_client->send(f.pack());
 }
 
 Word Parser::getNextSeqNumber(){

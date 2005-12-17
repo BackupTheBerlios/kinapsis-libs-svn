@@ -23,10 +23,13 @@
 #define _SNAC_H_
 
 #include "buffer.h"
+#include "tlv.h"
+#include <qptrlist.h>
 
 namespace liboscar {
 
 	class Buffer;
+	class TLV;
 
 	// SNACs wired values
 	
@@ -43,25 +46,39 @@ namespace liboscar {
 class SNAC {
 
 public:
-	SNAC();
-	SNAC(const Word family, const Word command, const Word flags, const DWord reference);
+	SNAC(Word family = 0, Word command = 0, bool raw = true);
 	virtual ~SNAC();
 	
-	void setFamily (const Word family);
-	void setCommand (const Word command);
+	Word getFamily();
+	Word getCommand();
+
 	void setFlags (const Word flags);
 	void setReference (const DWord reference);
+	void setRaw (const bool raw);
 
-	virtual Buffer& pack(); /* pack the SNAC for sending */
-	virtual void parse(Buffer& b); /* parse the Buffer content to the SNAC */
+	void addTLV(TLV *tlv);
+	bool delTLV(TLV *tlv);
+	QPtrList<TLV> getTLVs();
+
+	Buffer& data();
+	Buffer& pack(); /* pack the SNAC for sending */
+	virtual void parse(Buffer& b) = 0; /* parse the Buffer content to the SNAC */
+
+protected:
+
+	Buffer m_data;
+	QPtrList<TLV> m_tlvs;
 
 private:
+	void initValues();
+
 	Word m_family;
 	Word m_command;
 	Word m_flags;
 	DWord m_reference;
 
-	Buffer m_data;
+	bool m_raw;
+
 };
 
 

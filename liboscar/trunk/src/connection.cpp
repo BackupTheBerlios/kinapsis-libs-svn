@@ -25,6 +25,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <errno.h>
+
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 #define BUFLEN 1024
 
@@ -35,6 +40,7 @@ Connection::Connection(const QString server, int port, Parser* parser){
 	m_port = port;
 	m_exit = false;
 	m_parser = parser;
+	m_socket = -1;
 	QObject::connect(this, SIGNAL(dataReceived()), m_parser, SLOT(parse()));
 	clear();
 }
@@ -54,8 +60,9 @@ ConnectionStatus Connection::clear(){
 
 ConnectionStatus Connection::connect(){
 
-	if (m_socket)
+	if (m_socket != -1)
 		return m_status;
+
 	m_status = CONN_CONNECTING;
 
 	struct hostent *host;
@@ -99,7 +106,7 @@ ConnectionError Connection::receive(){
 	FD_SET(m_socket, &fset);
 
 	while (!FD_ISSET(m_socket, &fset) && !m_exit){
-		t.tv_sec = 1;
+		t.tv_sec = 1; /* FIXME: provisional */
 		t.tv_usec = 0;
 		if (select(m_socket + 1, &fset, NULL, NULL, &t) == -1)
 			return CONN_INPUT_ERROR;
@@ -108,23 +115,55 @@ ConnectionError Connection::receive(){
 	if (m_exit)
 		return CONN_NO_ERROR;
 
-	/* TODO: buffer and parser stuff */
 	int ret_val;
-	char buf[BUFLEN];
+	Byte buf[BUFLEN];
 
 	ret_val = recv(m_socket, buf, BUFLEN, 0);
 	
 	switch (ret_val){
 		case -1:
+			perror("recv");
 			return CONN_INPUT_ERROR;
 		case 0:
 			return CONN_ERR_USER_REQUEST;
 		default:
-			QString sbuf = buf;
-			m_parser->add(sbuf);
+			m_parser->add(buf, ret_val);
 	}
+//#ifdef DEBUG
+	unsigned int i;
+	fprintf (stderr, "RECEIVING: ");
+	for (i=0; i < ret_val; i++)
+		fprintf(stderr, "%02x ", buf[i]);
+	fprintf(stderr, "\n");
+//#endif
 
 	return CONN_NO_ERROR;
+}
+
+ConnectionError Connection::send(Buffer &b){
+	/* Blocks until the data is sent */
+	Byte bbuff[b.len()];
+	unsigned int size = b.len();
+	unsigned int sent_data = 0;
+	int ret;
+
+	b.copy(bbuff);
+	b.wipe(); /* delete the buffer */
+
+//#ifdef DEBUG
+	unsigned int i;
+	fprintf (stderr, "SENDING: ");
+	for (i=0; i < size; i++)
+		fprintf(stderr, "%02x ", bbuff[i]);
+	fprintf(stderr, "\n");
+//#endif
+	while (sent_data < size){
+		if ((ret = ::send(m_socket, bbuff + sent_data, size - sent_data, 0)) < 0)
+			return CONN_OUTPUT_ERROR;
+		sent_data += ret;
+	}
+	return CONN_NO_ERROR;
+
 }
 
 void Connection::disconnect(){
@@ -132,8 +171,7 @@ void Connection::disconnect(){
 	clear();
 }
 
-Connection::~Connection() {
-}
+Connection::~Connection() { }
 
 
 }

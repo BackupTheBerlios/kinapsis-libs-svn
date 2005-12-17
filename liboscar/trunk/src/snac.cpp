@@ -23,27 +23,24 @@
 
 namespace liboscar {
 
-SNAC::SNAC() { 
-	m_family = 0;
-	m_command = 0;
+SNAC::SNAC(Word family, Word command, bool raw) { 
+	m_family = family;
+	m_command = command;
 	m_flags = 0;
 	m_reference = 0;
+	m_raw = raw;
 }
 
-SNAC::SNAC(const Word family, const Word command, const Word flags, const DWord reference){
-
-	m_family = family;
-	m_command = command;
-	m_flags = flags;
-	m_reference = reference;
+void SNAC::initValues(){
+	m_tlvs.setAutoDelete(true);
 }
 
-void SNAC::setFamily (const Word family){
-	m_family = family;
+Word SNAC::getFamily (){
+	return m_family;
 }
 
-void SNAC::setCommand (const Word command){
-	m_command = command;
+Word SNAC::getCommand (){
+	return m_command;
 }
 
 void SNAC::setFlags (const Word flags){
@@ -54,9 +51,44 @@ void SNAC::setReference (const DWord reference){
 	m_reference = reference;
 }
 
-Buffer& SNAC::pack(){ return m_data; }
+void SNAC::setRaw (const bool raw){
+	m_raw = raw;
+}
 
-void SNAC::parse(Buffer& b){ }
+void SNAC::addTLV(TLV *tlv){
+	m_tlvs.append(tlv);
+}
+
+bool SNAC::delTLV(TLV *tlv){
+	return m_tlvs.remove(tlv);
+}
+
+QPtrList<TLV> SNAC::getTLVs(){
+	return m_tlvs;
+}
+
+Buffer& SNAC::data(){ 
+	return m_data;
+}
+
+Buffer& SNAC::pack(){ 
+
+	if (!m_raw){
+		// Discard the raw writes and pack TLVs
+		TLV *t;
+		m_data.wipe();
+	
+		for (t = m_tlvs.first(); t; t = m_tlvs.next())
+			m_data << t->pack();
+	}
+	
+	m_data.prepend(m_reference);
+	m_data.prepend(m_flags);
+	m_data.prepend(m_command);
+	m_data.prepend(m_family);
+
+	return m_data;
+}
 
 SNAC::~SNAC(){ }
 	

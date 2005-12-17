@@ -27,12 +27,19 @@ FLAP::FLAP() {
 	m_chan = 0;
 	m_length = 0;
 	m_seq = 0;
+	initValues();
 }
 
 FLAP::FLAP(const Byte channel, const Word sequence, const Word length){
 	m_chan = channel;
 	m_length = length;
 	m_seq = sequence;
+	initValues();
+}
+
+void FLAP::initValues(){
+	m_snac = 0;
+	m_tlvs.setAutoDelete(true);
 }
 
 void FLAP::setChannel (const Byte channel){
@@ -47,26 +54,77 @@ void FLAP::setLength (const Word length){
 	m_length = length;
 }
 
+void FLAP::addTLV(TLV *tlv){
+	if (m_snac){
+		delete m_snac;
+		m_snac = 0;
+	}
+	m_tlvs.append(tlv);
+}
+
+bool FLAP::delTLV(TLV *tlv){
+	return m_tlvs.remove(tlv);
+}
+
+QPtrList<TLV> FLAP::getTLVs(){
+	return m_tlvs;
+}
+
+void FLAP::addSNAC(SNAC *snac){
+	if (m_snac){
+		delete m_snac;
+		m_snac = snac;
+	}
+	else if (m_tlvs.isEmpty() == false){
+		m_tlvs.clear();
+		m_snac = snac;
+	}
+}
+
+bool FLAP::delSNAC(){
+	if (m_snac){
+		delete m_snac;
+		m_snac = 0;
+		return true;
+	}
+	return false;
+}
+
+SNAC* FLAP::getSNAC(){
+	return m_snac; /*XXX: dangerous */
+}
+
+
 Buffer& FLAP::data(){
 	return m_data;
 }
 
 Buffer& FLAP::pack(){
 
-	/* Cut the extra data */
-	if (m_data.len() > m_length){
-		m_data.setPosition(m_length);
-		m_data.remove(m_data.len() - m_length);
+//	m_data.wipe();
+	if (m_snac)
+		m_data << m_snac->pack();
+	else {
+		TLV *t;
+
+		for (t = m_tlvs.first(); t; t = m_tlvs.next())
+			m_data << t->pack();
+		
 	}
 
-	m_data.prepend(m_length);
+	m_data.prepend((Word)m_data.len()); //FIXME: think the length issue 
 	m_data.prepend(m_seq);
 	m_data.prepend(m_chan);
+	m_data.prepend((Byte) 0x2a); // FLAP magic
 
 	return m_data;
 }
 
-FLAP::~FLAP(){ }
+FLAP::~FLAP(){ 
+	// Don't delete the TLVs (autodelete)
+	if (m_snac)
+		delete m_snac;
+}
 	
 
 }

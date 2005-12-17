@@ -23,10 +23,15 @@
 #define _FLAP_H_
 
 #include "buffer.h"
+#include "tlv.h"
+#include "snac.h"
+#include <qptrlist.h>
 
 namespace liboscar {
 
 	class Buffer;
+	class TLV;
+	class SNAC;
 
 class FLAP {
 
@@ -39,16 +44,28 @@ public:
 	void setSequence(const Word sequence);
 	void setLength(const Word length);
 
+	void addTLV(TLV *tlv);
+	bool delTLV(TLV *tlv);
+	QPtrList<TLV> getTLVs();
+
+	void addSNAC(SNAC *snac);
+	bool delSNAC();
+	SNAC* getSNAC();
+
 	Buffer& data();
-	/* TODO: rehacer para SNACs y TLVs */ /* Nada de Buffer m_data */
 	Buffer& pack();
 
 private:
+
+	void initValues();
 
 	Byte m_chan;
 	Word m_seq;
 	Word m_length;
 	Buffer m_data;
+
+	QPtrList<TLV> m_tlvs;
+	SNAC* m_snac;
 };
 
 

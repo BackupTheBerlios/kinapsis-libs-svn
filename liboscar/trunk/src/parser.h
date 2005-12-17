@@ -23,21 +23,27 @@
 #define _PARSER_H_
 
 #include "buffer.h"
+#include "client.h"
 #include <qobject.h>
 #include <qstring.h>
 
 namespace liboscar {
 
 	class Buffer;
+	class Client;
 
 class Parser : public QObject {
 Q_OBJECT
 
 public:
-	Parser();
+	Parser(Client *c);
 
-	void add(QString data);
+	void add(Byte *data, int len);
 	virtual ~Parser();
+
+signals:
+	void receivedBOS(QString server, QString port);
+	void serverDisconnected(QString reason, DisconnectReason error);
 
 public slots:
 	void parse();
@@ -48,9 +54,13 @@ private:
 	void parseCh2(Buffer& buf);
 	void parseCh4(Buffer& buf);
 	void parseCh5(Buffer& buf);
+	void sendKeepAlive();
 
 	Buffer m_buf;
 	Word m_seq; /* FLAP's sequence number */
+	Client *m_client;
+
+	Buffer m_cookie;
 
 };
 

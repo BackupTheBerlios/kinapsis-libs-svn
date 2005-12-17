@@ -36,9 +36,13 @@ Client::Client(const UIN& uin, const QString& password){
 void Client::initvalues(){
 	m_bos = "";
 	m_bosport = -1;
+	delete m_conn;
+	delete m_logconn;
 	m_conn = m_logconn = 0;
+	delete m_parser;
 	m_parser = 0;
-	m_inlogin = false;
+	m_state = CLI_NO_STATE;
+	m_middledisconnect = false;
 }
 
 QString Client::getPassword(){
@@ -61,11 +65,25 @@ void Client::setUIN(const UIN& uin){
 	m_uin = uin;
 }
 
-void Client::disconnect(){
+ClientState Client::state(){
+	return m_state;
+}
 
-	if (m_inlogin && m_logconn)
+void Client::send(Buffer& b){
+	if (m_logconn)
+		m_logconn->send(b);
+	else if (m_conn)
+		m_conn->send(b);
+}
+
+void Client::disconnect(ConnectionError err){
+
+	if (err != CONN_NO_ERROR) // Got an error
+		m_middledisconnect = true;
+
+	if (m_state == CLI_AUTHING && m_logconn)
 		m_logconn->disconnect();
-	else if (!m_inlogin && m_conn)
+	else if ((m_state == CLI_CONNECTING) || (m_state == CLI_CONNECTED) && m_conn)
 		m_conn->disconnect();
 
 }
@@ -75,54 +93,119 @@ ConnectionResult Client::connect(){
 	ConnectionStatus s;
 	ConnectionError e;
 
-	if (!m_parser)
-		m_parser = new Parser();
+	if (!m_parser){
+		m_parser = new Parser(this);
+		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
+		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
+				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
+	}
 
 	if (!m_logconn)
 		m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, m_parser);
 
-	m_inlogin = true;
+		
+	m_state = CLI_AUTHING;
 
 	s = m_logconn->connect();
 	if (s != CONN_CONNECTED){
+		initvalues();
 		ConnectionResult res(false, CONN_ERR_LOGIN_CONN_FAILED);
 		return res;
 	}
 	e = m_logconn->listen();
 
+	qDebug("Desconectando del Autorizer");
+
+	// TODO: think about disconnect reason
+	if (m_middledisconnect){
+		initvalues();
+		ConnectionResult res(false, CONN_ERR_LOGIN_CONN_FAILED);
+		return res;
+	}
+		
 	if (e != CONN_NO_ERROR){
+		initvalues();
 		ConnectionResult res(false, e);
 		return res;
 	}
 
 	delete m_logconn;
 	m_logconn = 0;
-	m_inlogin = false;
+
+	m_state = CLI_CONNECTING;
 
 	/* login finished; connect to BOS */
 	if (!m_conn)
 		m_conn = new Connection(m_bos, m_bosport, m_parser);
 
+	qDebug("Conectando al BOS");
 	s = m_conn->connect();
 	if (s != CONN_CONNECTED){
+		initvalues();
 		ConnectionResult res(false, CONN_ERR_CONN_FAILED);
 		return res;
 	}
 
+	m_state = CLI_CONNECTED;
+
 	e = m_conn->listen();
 	if (e != CONN_NO_ERROR){
+		initvalues();
 		ConnectionResult res(false, e);
 		return res;
 	}
 
-	delete m_conn;
-	m_conn = 0;
+	initvalues();
 
 	ConnectionResult res(true, CONN_NO_ERROR);
 	return res;
 }
 
-Client::~Client() { }
+void Client::getBOSInfo(QString server, QString port){
+	m_bos = server;
+	m_bosport = port.toUInt();
+	disconnect();
+}
+
+void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
+	// TODO: error reports
+	qDebug("Unexpected disconnect from server");
+
+	switch (error) {
+		case MULTIPLE_LOGINS:
+			qDebug("Multiple logins");
+			break;
+		case BAD_PASSWORD:
+			qDebug("Bad password");
+			break;
+		case NON_EXISTANT_UIN:
+			qDebug("Non existant UIN");
+			break;
+		case TOO_MANY_CLIENTS:
+			qDebug("Too many clients for the same IP");
+			break;
+		case RATE_EXCEEDED:
+			qDebug("Rate exceeded");
+			break;
+		case OLD_VERSION:
+			qDebug("Old ICQ Client version");
+			break;
+		case RECONNECTING_TOO_FAST:
+			qDebug("Reconnecting too fast");
+			break;
+		case CANT_REGISTER:
+			qDebug("Can't register try again later");
+			break;
+	}
+
+	disconnect(CONN_ERR_UNEXPECTED);
+}
+
+Client::~Client() { 
+	initvalues();
+}
 
 
 }
+
+#include "client.moc"

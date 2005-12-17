@@ -51,15 +51,23 @@ namespace liboscar {
 	const Word TLV_TYPE_LESSER = 0x0019;
 	const Word TLV_TYPE_BUILD = 0x001a;
 
+	const Word TLV_VERMAJOR = 0x0002;
 
-	const Byte TLV_VERMINOR_ICQ2001B = 0x0f;
-	const Byte TLV_VERMINOR_ICQ2002A = 0x25;
+	const Word TLV_VERMINOR_ICQ2001B = 0x000f;
+	const Word TLV_VERMINOR_ICQ2002A = 0x0025;
+	const Word TLV_VERMINOR_ICQ2003B = 0x0038;
+
+	const Word TLV_LESSER = 0x0001;
 
 	const Word TLV_BUILD_ICQ2001B = 0x0e36;
 	const Word TLV_BUILD_ICQ2002A = 0x0e90;
+	const Word TLV_BUILD_ICQ2003B = 0x0f4c;
+
+	const DWord TLV_DISTRIBUTION = 0x00000055;
 
 	const QString TLV_VERSION_ICQ2001B = "ICQ Inc. - Product of ICQ (TM).2001b.5.15.1.3638.85";
 	const QString TLV_VERSION_ICQ2002A = "ICQ Inc. - Product of ICQ (TM).2002a.5.37.1.3728.85";
+	const QString TLV_VERSION_ICQ2003B = "ICQ Inc. - Product of ICQ (TM).2003b.5.56.1.3916.85";
 
 	const Byte PasswordTable[] = { 0xf3, 0x26, 0x81, 0xc4, 0x39, 0x86, 0xdb, 0x92,
 					0x71, 0xa3, 0xb9, 0xe6, 0x53, 0x7a, 0x95, 0x7c};
@@ -68,7 +76,7 @@ class TLV {
 
 public:
 	TLV();
-	TLV(const Word type, const Word length);
+	TLV(const Word type);
 	virtual ~TLV();
 	
 	void setType (const Word type);

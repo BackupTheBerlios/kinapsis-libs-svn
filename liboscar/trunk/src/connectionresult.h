@@ -22,7 +22,7 @@
 #ifndef _CONNECTIONRESULT_H_
 #define _CONNECTIONRESULT_H_
 
-#include <liboscar.h>
+#include "liboscar.h"
 
 namespace liboscar {
 

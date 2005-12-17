@@ -22,18 +22,20 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 
-#include <uin.h>
-#include <connection.h>
-#include <connectionresult.h>
-#include <liboscar.h>
-#include <parser.h>
+#include "uin.h"
+#include "connection.h"
+#include "connectionresult.h"
+#include "liboscar.h"
+#include "parser.h"
+#include <qobject.h>
 
 namespace liboscar {
 
 	class UIN;
 	class Connection;
 
-class Client {
+class Client : public QObject {
+Q_OBJECT
 
 	friend class Parser;
 
@@ -45,13 +47,20 @@ public:
 	void setPassword(const QString& password);
 	UIN getUIN();
 	void setUIN(const UIN& uin);
+	ClientState state();
 
 	ConnectionResult connect();
-	void disconnect();
+	void disconnect(ConnectionError err=CONN_NO_ERROR);
 
 	virtual ~Client();
 
+public slots:
+
+	void getBOSInfo(QString server, QString port);
+	void unexpectedDisconnect(QString reason, DisconnectReason error);
+
 private:
+	void send(Buffer &b);
 	void initvalues();
 
 	QString m_bos;
@@ -60,7 +69,8 @@ private:
 	UIN m_uin;
 	QString m_password;
 
-	bool m_inlogin;
+	ClientState m_state;
+	bool m_middledisconnect;
 
 	Connection* m_conn;
 	Connection* m_logconn;
