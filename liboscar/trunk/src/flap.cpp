@@ -71,14 +71,11 @@ QPtrList<TLV> FLAP::getTLVs(){
 }
 
 void FLAP::addSNAC(SNAC *snac){
-	if (m_snac){
+	if (m_snac)
 		delete m_snac;
-		m_snac = snac;
-	}
-	else if (m_tlvs.isEmpty() == false){
+	else if (m_tlvs.isEmpty() == false)
 		m_tlvs.clear();
-		m_snac = snac;
-	}
+	m_snac = snac;
 }
 
 bool FLAP::delSNAC(){
