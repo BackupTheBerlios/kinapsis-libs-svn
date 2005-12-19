@@ -28,6 +28,7 @@
 #include "buffer.h"
 #include <qstring.h>
 #include <qobject.h>
+#include <netdb.h>
 
 namespace liboscar {
 
@@ -45,6 +46,10 @@ public:
 	ConnectionStatus connect();
 	ConnectionError listen();
 	ConnectionError send(Buffer& b);
+
+	DWord getLocalIP();
+	Word getPort();
+
 	void disconnect();
 
 signals:
@@ -63,6 +68,8 @@ private:
 	bool m_exit;
 
 	Parser* m_parser;
+
+	struct sockaddr_in m_local;
 };
 
 }

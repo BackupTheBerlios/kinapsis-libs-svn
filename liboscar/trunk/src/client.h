@@ -59,6 +59,11 @@ public slots:
 	void getBOSInfo(QString server, QString port);
 	void unexpectedDisconnect(QString reason, DisconnectReason error);
 
+protected:
+	DWord getLocalIP();
+	Word getPort();
+	FirewallConfiguration getFirewall();
+
 private:
 	void send(Buffer &b);
 	void initvalues();
@@ -71,6 +76,8 @@ private:
 
 	ClientState m_state;
 	bool m_middledisconnect;
+
+	FirewallConfiguration m_firewall;
 
 	Connection* m_conn;
 	Connection* m_logconn;

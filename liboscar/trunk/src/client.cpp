@@ -65,6 +65,23 @@ void Client::setUIN(const UIN& uin){
 	m_uin = uin;
 }
 
+DWord Client::getLocalIP() {
+	if (m_conn)
+		return m_conn->getLocalIP();
+	return 0;
+}
+
+Word Client::getPort() {
+	if (m_conn)
+		return m_conn->getPort();
+	return 0;
+}
+
+FirewallConfiguration Client::getFirewall() {
+	// TODO: hacer que esto rule
+	return NORMAL;
+}
+
 ClientState Client::state(){
 	return m_state;
 }

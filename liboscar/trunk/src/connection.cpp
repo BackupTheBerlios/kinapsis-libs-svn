@@ -24,7 +24,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h>
 #include <errno.h>
 
 #ifdef DEBUG
@@ -79,11 +78,22 @@ ConnectionStatus Connection::connect(){
 	sockaddr.sin_port = ntohs(m_port);
 	sockaddr.sin_family = AF_INET;
 
+	m_local.sin_family = AF_INET;
+	m_local.sin_addr.s_addr = INADDR_ANY;
+
 	if (!::connect(m_socket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)))
 		return CONN_CONNECTED;
 
 	return clear();
 
+}
+
+DWord Connection::getLocalIP(){
+	return ntohl(m_local.sin_addr.s_addr);
+}
+
+Word Connection::getPort(){
+	return ntohs(m_local.sin_port);
 }
 
 ConnectionError Connection::listen(){
