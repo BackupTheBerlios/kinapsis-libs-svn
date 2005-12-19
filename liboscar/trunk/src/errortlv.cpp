@@ -19,64 +19,97 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
-
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "errortlv.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
-
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
-
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_OUTPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_ERR_UNEXPECTED,
-		CONN_NO_ERROR
-	};
-
-	enum ClientState {
-		CLI_NO_STATE,
-		CLI_AUTHING,
-		CLI_CONNECTING,
-		CLI_CONNECTED,
-		CLI_REQUESTING_UIN
-	};
-
-	enum DisconnectReason {
-		NO_ERROR,
-		MULTIPLE_LOGINS,
-		BAD_PASSWORD,
-		NON_EXISTANT_UIN,
-		TOO_MANY_CLIENTS,
-		RATE_EXCEEDED,
-		OLD_VERSION,
-		RECONNECTING_TOO_FAST,
-		CANT_REGISTER
-	};
-
-	enum PresenceStatus {
-		STATUS_OFFLINE,
-		STATUS_INVISIBLE,
-		STATUS_DND,
-		STATUS_OCUPPIED,
-		STATUS_NA,
-		STATUS_AWAY,
-		STATUS_FFC,
-		STATUS_ONLINE
-	};
+ErrorTLV::ErrorTLV() : TLV(TLV_TYPE_ERROR) {
+	m_error = NO_ERROR;
 }
 
-#endif // _LIBOSCAR_H_
+void ErrorTLV::setError (DisconnectReason error) {
+	m_error = error;
+}
+
+DisconnectReason ErrorTLV::getError() {
+	return m_error;
+}
+
+void ErrorTLV::specPack() {
+
+	switch (m_error) {
+		case MULTIPLE_LOGINS:
+			m_data << (Word) 0x0001;
+			break;
+		case BAD_PASSWORD:
+			m_data << (Word) 0x0004;
+			break;
+		case NON_EXISTANT_UIN:
+			m_data << (Word) 0x0007;
+			break;
+		case TOO_MANY_CLIENTS:
+			m_data << (Word) 0x0015;
+			break;
+		case RATE_EXCEEDED:
+			m_data << (Word) 0x0018;
+			break;
+		case OLD_VERSION:
+			m_data << (Word) 0x001b;
+			break;
+		case RECONNECTING_TOO_FAST:
+			m_data << (Word) 0x001d;
+			break;
+		case CANT_REGISTER:
+			m_data << (Word) 0x001e;
+			break;
+		default:
+		case NO_ERROR:
+			m_data << (Word) 0x0000;
+			break;
+	}
+}
+
+void ErrorTLV::parse (Buffer& b) {
+	Word err;
+
+	b >> err;
+
+	switch (err) {
+		case 0x0001:
+			m_error = MULTIPLE_LOGINS;
+			break;
+		case 0x0004:
+		case 0x0005:
+			m_error = BAD_PASSWORD;
+			break;
+		case 0x0007:
+		case 0x0008:
+			m_error = NON_EXISTANT_UIN;
+			break;
+		case 0x0015:
+		case 0x0016:
+			m_error = TOO_MANY_CLIENTS;
+			break;
+		case 0x0018:
+			m_error = RATE_EXCEEDED;
+			break;
+		case 0x001b:
+			m_error = OLD_VERSION;
+			break;
+		case 0x001d:
+			m_error = RECONNECTING_TOO_FAST;
+			break;
+		case 0x001e:
+			m_error = CANT_REGISTER;
+			break;
+		default:
+		case 0x0000:
+			m_error = NO_ERROR;
+			break;
+	}
+}
+
+ErrorTLV::~ErrorTLV(){ }
+	
+
+}

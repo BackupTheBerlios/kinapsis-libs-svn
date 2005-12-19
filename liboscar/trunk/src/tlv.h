@@ -40,6 +40,8 @@ namespace liboscar {
 
 	const Word TLV_TYPE_ERROR = 0x0008;
 
+	const Word TLV_TYPE_C2C = 0x000c;
+
 	const Word TLV_TYPE_COUNTRY = 0x000e;
 	const Word TLV_TYPE_LANGUAGE = 0x000f;
 
@@ -69,14 +71,10 @@ namespace liboscar {
 	const QString TLV_VERSION_ICQ2002A = "ICQ Inc. - Product of ICQ (TM).2002a.5.37.1.3728.85";
 	const QString TLV_VERSION_ICQ2003B = "ICQ Inc. - Product of ICQ (TM).2003b.5.56.1.3916.85";
 
-	const Byte PasswordTable[] = { 0xf3, 0x26, 0x81, 0xc4, 0x39, 0x86, 0xdb, 0x92,
-					0x71, 0xa3, 0xb9, 0xe6, 0x53, 0x7a, 0x95, 0x7c};
-
 class TLV {
 
 public:
-	TLV();
-	TLV(const Word type);
+	TLV(const Word type = 0);
 	virtual ~TLV();
 	
 	void setType (const Word type);
@@ -84,11 +82,26 @@ public:
 	Buffer& data();
 	Buffer& pack(); /* pack the TLV for sending */
 
+	virtual void specPack() = 0;
+	virtual void parse(Buffer& b) = 0;
+
+protected:
+	Buffer m_data;
+
 private:
 	Word m_type;
 	Word m_length;
-	Buffer m_data;
 
+};
+
+class UnformattedTLV : public TLV {
+
+public:
+	UnformattedTLV(const Word type);
+	virtual ~UnformattedTLV();
+	
+	void specPack() { return ; };
+	void parse(Buffer& b) { return ; };
 };
 
 

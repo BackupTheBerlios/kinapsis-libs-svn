@@ -74,9 +74,7 @@ Buffer& SNAC::data(){
 Buffer& SNAC::pack(){ 
 
 	if (!m_raw){
-		// Discard the raw writes and pack TLVs
 		TLV *t;
-		m_data.wipe();
 	
 		for (t = m_tlvs.first(); t; t = m_tlvs.next())
 			m_data << t->pack();

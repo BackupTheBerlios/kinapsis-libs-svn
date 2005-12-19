@@ -19,64 +19,37 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
-
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "passwordtlv.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+	const Byte PasswordTable[] = { 0xf3, 0x26, 0x81, 0xc4, 0x39, 0x86, 0xdb, 0x92,
+					0x71, 0xa3, 0xb9, 0xe6, 0x53, 0x7a, 0x95, 0x7c};
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
-
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_OUTPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_ERR_UNEXPECTED,
-		CONN_NO_ERROR
-	};
-
-	enum ClientState {
-		CLI_NO_STATE,
-		CLI_AUTHING,
-		CLI_CONNECTING,
-		CLI_CONNECTED,
-		CLI_REQUESTING_UIN
-	};
-
-	enum DisconnectReason {
-		NO_ERROR,
-		MULTIPLE_LOGINS,
-		BAD_PASSWORD,
-		NON_EXISTANT_UIN,
-		TOO_MANY_CLIENTS,
-		RATE_EXCEEDED,
-		OLD_VERSION,
-		RECONNECTING_TOO_FAST,
-		CANT_REGISTER
-	};
-
-	enum PresenceStatus {
-		STATUS_OFFLINE,
-		STATUS_INVISIBLE,
-		STATUS_DND,
-		STATUS_OCUPPIED,
-		STATUS_NA,
-		STATUS_AWAY,
-		STATUS_FFC,
-		STATUS_ONLINE
-	};
+PasswordTLV::PasswordTLV() : TLV (TLV_TYPE_PASSWORD){
+	m_pass = "";
 }
 
-#endif // _LIBOSCAR_H_
+PasswordTLV::~PasswordTLV() { }
+	
+void PasswordTLV::setPassword(QString password){
+	m_pass = password;
+}
+
+QString PasswordTLV::getPassword(){
+	return m_pass;
+}
+
+void PasswordTLV::specPack(){
+	unsigned int i = 0;
+
+	for (i=0; i < m_pass.length(); i ++)
+		m_data << (Byte) (m_pass.ascii()[i] ^ PasswordTable[i%16]);
+}
+
+void PasswordTLV::parse(Buffer& b){
+	return ;
+}
+
+
+}

@@ -21,6 +21,8 @@
 
 #include "parser.h"
 #include "flap.h"
+#include "errortlv.h"
+#include "passwordtlv.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -102,7 +104,8 @@ void Parser::parse(){
 void Parser::parseCh1(Buffer& buf){
 	FLAP f(0x01, getNextSeqNumber(), 0); // Unknown length
 	DWord dw = 0;
-	TLV *tlv;
+	UnformattedTLV *tlv;
+	PasswordTLV* pt;
 
 	buf >> dw;
 
@@ -114,7 +117,7 @@ void Parser::parseCh1(Buffer& buf){
 	f.data() << (DWord) 0x00000001; // Hello header
 
 	if (m_client->state() == CLI_CONNECTED){ // Send cookie
-		tlv = new TLV(TLV_TYPE_COOKIE);
+		tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
 		m_cookie.gotoBegin();
 		tlv->data() << m_cookie;
 		f.addTLV(tlv);
@@ -123,60 +126,57 @@ void Parser::parseCh1(Buffer& buf){
 	if ((m_client->state() == CLI_AUTHING) || (m_client->state() == CLI_CONNECTED)){
 
 		// UIN
-		tlv = new TLV(TLV_TYPE_UIN);
+		tlv = new UnformattedTLV(TLV_TYPE_UIN);
 		tlv->data() << m_client->getUIN().getUin();
 		f.addTLV(tlv);
 
 		// Password
-		unsigned int i = 0;
-
-		tlv = new TLV(TLV_TYPE_PASSWORD);
-		for (i=0; i < m_client->m_password.length(); i ++)
-			tlv->data() << (Byte) (m_client->m_password.ascii()[i] ^ PasswordTable[i%16]);
-		f.addTLV(tlv);
+		pt = new PasswordTLV();
+		pt->setPassword(m_client->m_password);
+		f.addTLV(pt);
 		
 		// Version
-		tlv = new TLV(TLV_TYPE_VERSION);
+		tlv = new UnformattedTLV(TLV_TYPE_VERSION);
 		tlv->data() << TLV_VERSION_ICQ2003B;
 		f.addTLV(tlv); 
 
 		// ClientId
-		tlv = new TLV(TLV_TYPE_CLIENTID);
+		tlv = new UnformattedTLV(TLV_TYPE_CLIENTID);
 		tlv->data() << (Word) 0x010a;
 		f.addTLV(tlv); 
 
 		// Versionmajor
-		tlv = new TLV(TLV_TYPE_VERMAJOR);
+		tlv = new UnformattedTLV(TLV_TYPE_VERMAJOR);
 		tlv->data() << TLV_VERMAJOR;
 		f.addTLV(tlv); 
 
 		// Versionminor
-		tlv = new TLV(TLV_TYPE_VERMINOR);
+		tlv = new UnformattedTLV(TLV_TYPE_VERMINOR);
 		tlv->data() << TLV_VERMINOR_ICQ2003B;
 		f.addTLV(tlv); 
 
 		// Lesser
-		tlv = new TLV(TLV_TYPE_LESSER);
+		tlv = new UnformattedTLV(TLV_TYPE_LESSER);
 		tlv->data() << TLV_LESSER;
 		f.addTLV(tlv); 
 
 		// Build
-		tlv = new TLV(TLV_TYPE_BUILD);
+		tlv = new UnformattedTLV(TLV_TYPE_BUILD);
 		tlv->data() << TLV_BUILD_ICQ2003B;
 		f.addTLV(tlv); 
 
 		// Distrib
-		tlv = new TLV(TLV_TYPE_DISTRIBUTION);
+		tlv = new UnformattedTLV(TLV_TYPE_DISTRIBUTION);
 		tlv->data() << TLV_DISTRIBUTION;
 		f.addTLV(tlv); 
 
 		// Language
-		tlv = new TLV(TLV_TYPE_LANGUAGE);
+		tlv = new UnformattedTLV(TLV_TYPE_LANGUAGE);
 		tlv->data() << (Word) 0x656e; // en
 		f.addTLV(tlv); 
 
 		// Country
-		tlv = new TLV(TLV_TYPE_COUNTRY);
+		tlv = new UnformattedTLV(TLV_TYPE_COUNTRY);
 		tlv->data() << (Word) 0x7573; // us
 		f.addTLV(tlv); 
 
@@ -197,7 +197,7 @@ void Parser::parseCh4(Buffer& buf){
 	QString server;
 	QString port;
 
-	DisconnectReason dreason;
+	ErrorTLV errt;
 
 	while (buf.len()){
 		buf >> id;
@@ -235,40 +235,8 @@ void Parser::parseCh4(Buffer& buf){
 				buf.removeFromBegin();
 				break;
 			case 0x0008:
-				buf >> err;
+				errt.parse(buf);
 				buf.removeFromBegin();
-				switch (err){
-					case 0x0000:
-						dreason = NO_ERROR;
-						break;
-					case 0x0001:
-						dreason = MULTIPLE_LOGINS;
-						break;
-					case 0x0004:
-					case 0x0005:
-						dreason = BAD_PASSWORD;
-						break;
-					case 0x0007:
-					case 0x0008:
-						dreason = NON_EXISTANT_UIN;
-						break;
-					case 0x0015:
-					case 0x0016:
-						dreason = TOO_MANY_CLIENTS;
-						break;
-					case 0x0018:
-						dreason = RATE_EXCEEDED;
-						break;
-					case 0x001B:
-						dreason = OLD_VERSION;
-						break;
-					case 0x001D:
-						dreason = RECONNECTING_TOO_FAST;
-						break;
-					case 0x001E:
-						dreason = CANT_REGISTER;
-						break;
-				}
 				break;
 			default:
 				qDebug("Unknown TLV on channel 4");
@@ -278,7 +246,7 @@ void Parser::parseCh4(Buffer& buf){
 	}
 
 	if (server.isEmpty()){ // Got an unexpected disconnection
-		emit serverDisconnected(reason, dreason);
+		emit serverDisconnected(reason, errt.getError());
 	}
 	else // We got the BOS && cookie info :-)
 		emit receivedBOS(server, port);

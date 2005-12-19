@@ -23,11 +23,6 @@
 
 namespace liboscar {
 
-TLV::TLV() { 
-	m_type = 0;
-	m_length = 0;
-}
-
 TLV::TLV(const Word type){
 	m_type = type;
 	m_length = 0;
@@ -46,6 +41,8 @@ Buffer& TLV::data(){
 }
 
 Buffer& TLV::pack(){
+
+	this->specPack();
 	m_data.prepend((Word) m_data.len());
 	m_data.prepend(m_type);
 
@@ -53,6 +50,12 @@ Buffer& TLV::pack(){
 }
 
 TLV::~TLV(){ }
+	
+
+UnformattedTLV::UnformattedTLV(Word type) 
+	: TLV (type) { }
+
+UnformattedTLV::~UnformattedTLV(){ }
 	
 
 }

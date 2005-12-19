@@ -19,64 +19,31 @@
  ***************************************************************************/
 
 
-#ifndef _LIBOSCAR_H_
-#define _LIBOSCAR_H_
+#ifndef _PASSWORDTLV_H_
+#define _PASSWORDTLV_H_
 
-#define ICQ_LOGIN_SERVER "login.icq.com"
-#define ICQ_LOGIN_PORT 5190
+#include "tlv.h"
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
+	class TLV;
 
-	enum ConnectionStatus {
-		CONN_DISCONNECTED,
-		CONN_CONNECTED,
-		CONN_CONNECTING
-	};
+class PasswordTLV : public TLV{
 
-	enum ConnectionError {
-		CONN_ERR_LOGIN_CONN_FAILED,
-		CONN_ERR_CONN_FAILED,
-		CONN_INPUT_ERROR,
-		CONN_OUTPUT_ERROR,
-		CONN_ERR_USER_REQUEST,
-		CONN_ERR_UNEXPECTED,
-		CONN_NO_ERROR
-	};
+public:
+	PasswordTLV();
+	virtual ~PasswordTLV();
+	
+	void setPassword(QString password);
+	QString getPassword();
 
-	enum ClientState {
-		CLI_NO_STATE,
-		CLI_AUTHING,
-		CLI_CONNECTING,
-		CLI_CONNECTED,
-		CLI_REQUESTING_UIN
-	};
+	void specPack();
+	void parse(Buffer& b);
 
-	enum DisconnectReason {
-		NO_ERROR,
-		MULTIPLE_LOGINS,
-		BAD_PASSWORD,
-		NON_EXISTANT_UIN,
-		TOO_MANY_CLIENTS,
-		RATE_EXCEEDED,
-		OLD_VERSION,
-		RECONNECTING_TOO_FAST,
-		CANT_REGISTER
-	};
+private:
+	QString m_pass;
+};
 
-	enum PresenceStatus {
-		STATUS_OFFLINE,
-		STATUS_INVISIBLE,
-		STATUS_DND,
-		STATUS_OCUPPIED,
-		STATUS_NA,
-		STATUS_AWAY,
-		STATUS_FFC,
-		STATUS_ONLINE
-	};
 }
 
-#endif // _LIBOSCAR_H_
+#endif // _ERRORTLV_H_
