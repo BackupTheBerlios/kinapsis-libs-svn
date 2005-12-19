@@ -19,61 +19,34 @@
  ***************************************************************************/
 
 
-#ifndef _CONNECTION_H_
-#define _CONNECTION_H_
+#ifndef _SERVERTLV_H_
+#define _SERVERTLV_H_
 
-#include "liboscar.h"
-#include "connectionresult.h"
-#include "parser.h"
-#include "buffer.h"
-#include <qstring.h>
-#include <qobject.h>
-#include <netdb.h>
+#include "tlv.h"
 
 namespace liboscar {
 
-	class Parser;
-	class Buffer;
+	class TLV;
 
-class Connection : public QObject{
-Q_OBJECT
+class ServerTLV : public TLV{
 
 public:
-	Connection(const QString server, int port, Parser* parser);
-	virtual ~Connection();
+	ServerTLV();
+	virtual ~ServerTLV();
+	
+	void setServer (QString server);
+	void setPort (QString port);
+	QString getServer();
+	QString getPort();
 
-	ConnectionStatus getStatus();
-	ConnectionStatus connect();
-	ConnectionError listen();
-	ConnectionError send(Buffer& b);
-
-	DWord getLocalIP();
-	Word getPort();
-
-	void disconnect();
-
-signals:
-	void dataReceived();
+	void specPack();
+	void parse(Buffer& b);
 
 private:
-	ConnectionStatus clear();
-	ConnectionError receive();
-
-	ConnectionStatus m_status;
-
 	QString m_server;
-	int m_port;
-
-	int m_socket;
-	int m_socketLocal;
-
-	bool m_exit;
-
-	Parser* m_parser;
-
-	struct sockaddr_in m_local;
+	QString m_port;
 };
 
 }
 
-#endif // _CONNECTION_H_
+#endif // _SERVERTLV_H_

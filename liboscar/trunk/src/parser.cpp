@@ -23,6 +23,7 @@
 #include "flap.h"
 #include "errortlv.h"
 #include "passwordtlv.h"
+#include "servertlv.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -194,10 +195,9 @@ void Parser::parseCh4(Buffer& buf){
 	Byte b;
 	unsigned int i;
 	QString reason;
-	QString server;
-	QString port;
 
 	ErrorTLV errt;
+	ServerTLV servt;
 
 	while (buf.len()){
 		buf >> id;
@@ -216,15 +216,7 @@ void Parser::parseCh4(Buffer& buf){
 				buf.removeFromBegin();
 				break;
 			case 0x0005:
-				buf >> b;
-				while (b != 0x3a){
-					server.append(b);
-					buf >> b;
-				}
-				for (i=0; i < 4; i++){
-					buf >> b;
-					port.append(b);
-				}
+				servt.parse(buf);
 				buf.removeFromBegin();
 				break;
 			case 0x0006:
@@ -245,11 +237,11 @@ void Parser::parseCh4(Buffer& buf){
 		}
 	}
 
-	if (server.isEmpty()){ // Got an unexpected disconnection
+	if (servt.getServer().isEmpty()){ // Got an unexpected disconnection
 		emit serverDisconnected(reason, errt.getError());
 	}
 	else // We got the BOS && cookie info :-)
-		emit receivedBOS(server, port);
+		emit receivedBOS(servt.getServer(), servt.getPort());
 }
 
 void Parser::parseCh5(Buffer& buf){

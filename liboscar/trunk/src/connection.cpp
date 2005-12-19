@@ -40,6 +40,7 @@ Connection::Connection(const QString server, int port, Parser* parser){
 	m_exit = false;
 	m_parser = parser;
 	m_socket = -1;
+	m_socketLocal = -1;
 	QObject::connect(this, SIGNAL(dataReceived()), m_parser, SLOT(parse()));
 	clear();
 }
@@ -75,11 +76,17 @@ ConnectionStatus Connection::connect(){
 	if (m_socket < 0)
 		return clear();
 
+	m_socketLocal = socket(AF_INET, SOCK_STREAM, 0);
+	if (m_socketLocal < 0)
+		return clear();
+
 	sockaddr.sin_port = ntohs(m_port);
 	sockaddr.sin_family = AF_INET;
 
 	m_local.sin_family = AF_INET;
 	m_local.sin_addr.s_addr = INADDR_ANY;
+
+	bind(m_socketLocal, (struct sockaddr *) &m_local, sizeof (struct sockaddr));
 
 	if (!::connect(m_socket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)))
 		return CONN_CONNECTED;

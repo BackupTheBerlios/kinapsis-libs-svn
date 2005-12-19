@@ -19,61 +19,54 @@
  ***************************************************************************/
 
 
-#ifndef _CONNECTION_H_
-#define _CONNECTION_H_
-
-#include "liboscar.h"
-#include "connectionresult.h"
-#include "parser.h"
-#include "buffer.h"
-#include <qstring.h>
-#include <qobject.h>
-#include <netdb.h>
+#include "servertlv.h"
 
 namespace liboscar {
 
-	class Parser;
-	class Buffer;
-
-class Connection : public QObject{
-Q_OBJECT
-
-public:
-	Connection(const QString server, int port, Parser* parser);
-	virtual ~Connection();
-
-	ConnectionStatus getStatus();
-	ConnectionStatus connect();
-	ConnectionError listen();
-	ConnectionError send(Buffer& b);
-
-	DWord getLocalIP();
-	Word getPort();
-
-	void disconnect();
-
-signals:
-	void dataReceived();
-
-private:
-	ConnectionStatus clear();
-	ConnectionError receive();
-
-	ConnectionStatus m_status;
-
-	QString m_server;
-	int m_port;
-
-	int m_socket;
-	int m_socketLocal;
-
-	bool m_exit;
-
-	Parser* m_parser;
-
-	struct sockaddr_in m_local;
-};
-
+ServerTLV::ServerTLV() : TLV(TLV_TYPE_SERVER) {
+	m_server = "";
+	m_port = "";
 }
 
-#endif // _CONNECTION_H_
+ServerTLV::~ServerTLV() { }
+
+void ServerTLV::setServer (QString server){
+	m_server = server;
+}
+
+void ServerTLV::setPort (QString port){
+	m_port = port;
+}
+
+QString ServerTLV::getServer(){
+	return m_server;
+}
+
+QString ServerTLV::getPort(){
+	return m_port;
+}
+
+void ServerTLV::specPack(){
+	m_data << m_server;
+	m_data << (Byte) 0x3a;
+	m_data << m_port;
+}
+
+void ServerTLV::parse(Buffer& b){
+	
+	Byte by;
+	unsigned int i=0;
+
+	b >> by;
+	while (by != 0x3a){
+		m_server.append(by);
+		b >> by;
+	}
+	for (i=0; i < 4; i++) {
+		b >> by;
+		m_port.append(by);
+	}
+}
+
+
+}
