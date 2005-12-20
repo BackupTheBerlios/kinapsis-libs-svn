@@ -141,14 +141,21 @@ void SrvServiceErrSNAC::parse(Buffer& b) {
 }
 
 	// SrvFamilies SNAC
-SrvFamiliesSNAC::SrvFamiliesSNAC()
-	: SNAC_Service(SERVICE_SRV_FAMILIES, true) { }
+SrvFamiliesSNAC::SrvFamiliesSNAC(Families *fam)
+	: SNAC_Service(SERVICE_SRV_FAMILIES, true) { 
+	m_fam = fam;
+}
 
 SrvFamiliesSNAC::~SrvFamiliesSNAC() { }
 
 void SrvFamiliesSNAC::parse(Buffer &b) {
 
-	b.wipe(); // FIXME: ignoring families
+	Word f;
+	while (b.len()) {
+		b >> f;
+		b.removeFromBegin();
+		m_fam->addFamily(f);
+	}
 }
 
 	// SrvRedirectSNAC
@@ -278,13 +285,25 @@ void SrvMOTDSNAC::parse(Buffer &b){
 
 	// SrvFamilies2SNAC
 
-SrvFamilies2SNAC::SrvFamilies2SNAC()
-	: SNAC_Service(SERVICE_SRV_FAMILIES2, true) { }
+SrvFamilies2SNAC::SrvFamilies2SNAC(Families* fam)
+	: SNAC_Service(SERVICE_SRV_FAMILIES2, true) { 
+	m_fam = fam;
+}
 
 SrvFamilies2SNAC::~SrvFamilies2SNAC() { }
 
 void SrvFamilies2SNAC::parse(Buffer &b){
-	b.wipe (); // TODO: families stuff
+	Word fam, v;
+	Family f;
+
+	while (b.len()){
+		b >> fam;
+		b >> v;
+		b.removeFromBegin();
+		f.id = fam;
+		f.version = v;
+		m_fam->updateVersion(f);
+	}
 }
 
 	// 

@@ -19,56 +19,44 @@
  ***************************************************************************/
 
 
-#ifndef _PARSER_H_
-#define _PARSER_H_
+#ifndef _FAMILIES_H_
+#define _FAMILIES_H_
 
-#include "buffer.h"
-#include "client.h"
-#include "families.h"
-#include <qobject.h>
-#include <qstring.h>
+#include "liboscar.h"
+#include <qmap.h>
 
 namespace liboscar {
 
-	class Buffer;
-	class Client;
+	typedef struct {
+		Word id;
+		Word version;
+	} Family;
 
-class Parser : public QObject {
-Q_OBJECT
+class Families {
 
 public:
-	Parser(Client *c);
+	Families();
+	virtual ~Families();
 
-	void add(Byte *data, int len);
-	virtual ~Parser();
+	void addFamily(Word f);
+	void addFamily(Family f);
 
-signals:
-	void receivedBOS(QString server, QString port);
-	void serverDisconnected(QString reason, DisconnectReason error);
+	void delFamily(Word f);
 
-public slots:
-	void parse();
+	void updateVersion (Family family);
+
+	Word getVersion(Word family);
+	Family getFamily(Word family);
 
 private:
-	Word getNextSeqNumber();
-	void parseCh1(Buffer& buf);
-	void parseCh2(Buffer& buf);
-	void parseCh4(Buffer& buf);
-	void parseCh5(Buffer& buf);
 
-	void parseCh2Service(Buffer& buf);
+	typedef QMap<Word, Word>::iterator FIterator;
 
-	void sendKeepAlive();
-
-	Buffer m_buf;
-	Word m_seq; /* FLAP's sequence number */
-	Client *m_client;
-	Families m_fam;
-
-	Buffer m_cookie;
+	QMap<Word, Word> m_data;
+	FIterator m_it;
 
 };
 
 }
 
-#endif // _PARSER_H_
+#endif // _FAMILIES_H_

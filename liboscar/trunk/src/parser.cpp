@@ -24,6 +24,7 @@
 #include "errortlv.h"
 #include "passwordtlv.h"
 #include "servertlv.h"
+#include "snac_service.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -187,6 +188,34 @@ void Parser::parseCh1(Buffer& buf){
 }
 
 void Parser::parseCh2(Buffer& buf){
+	Word family;
+
+	buf >> family;
+
+	switch (family) {
+		case SNAC_FAM_SERVICE:
+			parseCh2Service(buf);
+			break;
+		case SNAC_FAM_LOCATION:
+			break;
+		case SNAC_FAM_CONTACT:
+			break;
+		case SNAC_FAM_ICBM:
+			break;
+		case SNAC_FAM_BOS:
+			break;
+		case SNAC_FAM_INTERVAL:
+			break;
+		case SNAC_FAM_ROSTER:
+			break;
+		case SNAC_FAM_OLDICQ:
+			break;
+		case SNAC_FAM_NEWUSER:
+			break;
+		default:
+			qDebug(QString("SNAC from an unknown family %1").arg(family));
+			break;
+	}
 }
 
 void Parser::parseCh4(Buffer& buf){
@@ -248,6 +277,86 @@ void Parser::parseCh5(Buffer& buf){
 	if (buf.len() != 0)
 		qDebug("Unknown extra data on channel 5");
 	sendKeepAlive();
+}
+
+void Parser::parseCh2Service(Buffer& buf) {
+	Word command, flags;
+	DWord reference;
+
+	SrvServiceErrSNAC sse;
+	SrvFamiliesSNAC sf(&m_fam);
+	SrvRedirectSNAC srd;
+	SrvRatesSNAC sra;
+	SrvRateExceededSNAC sre;
+	SrvServerPauseSNAC ssp;
+	SrvReplyInfoSNAC sri;
+	SrvMigrationReqSNAC smr;
+	SrvMOTDSNAC smotd;
+	SrvFamilies2SNAC sf2(&m_fam);
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	// TODO: complete commands
+	switch (command) {
+		case SERVICE_SRV_SERVICE_ERR:
+			sse.parse(buf);
+			qDebug(QString("Error on channel 2 family 1: %1").arg(sse.getError()));
+			break;
+		case SERVICE_SRV_FAMILIES:
+			sf.parse(buf); // Got families supported by server
+			break;
+		case SERVICE_SRV_REDIRECT:
+			srd.parse(buf);
+			break;
+		case SERVICE_SRV_RATES:
+			sra.parse(buf);
+			break;
+		case SERVICE_SRV_RATEEXCEEDED:
+			sre.parse(buf);
+			break;
+		case SERVICE_SRV_SERVERPAUSE:
+			ssp.parse(buf);
+			break;
+		case SERVICE_SRV_REPLYINFO:
+			sri.parse(buf);
+			break;
+		case SERVICE_SRV_MIGRATIONREQ:
+			smr.parse(buf);
+			break;
+		case SERVICE_SRV_MOTD:
+			smotd.parse(buf);
+			break;
+		case SERVICE_SRV_FAMILIES2:
+			sf2.parse(buf); // Update families versions
+			break;
+	}
+	// React to commands
+	if (command == SERVICE_SRV_FAMILIES) {
+		// Got family list: request versions numbers
+		FLAP f(0x02, getNextSeqNumber(), 0);
+		CliFamiliesSNAC *clis = new CliFamiliesSNAC; // TODO: make this get Families info
+		f.addSNAC(clis);
+		m_client->send(f.pack());
+	}
+	else if (command == SERVICE_SRV_MOTD){
+		// Request rates
+		FLAP f(0x02, getNextSeqNumber(), 0);
+		CliRatesRequestSNAC *clir = new CliRatesRequestSNAC;
+		f.addSNAC(clir);
+		m_client->send(f.pack());
+	}
+	else if (command == SERVICE_SRV_RATES){
+		// Ack rates
+		FLAP f(0x02, getNextSeqNumber(), 0);
+		CliAckRatesSNAC *clia = new CliAckRatesSNAC;
+		f.addSNAC(clia);
+		m_client->send(f.pack());
+	}
+
 }
 
 void Parser::sendKeepAlive(){

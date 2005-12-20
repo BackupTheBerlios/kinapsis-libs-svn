@@ -19,56 +19,50 @@
  ***************************************************************************/
 
 
-#ifndef _PARSER_H_
-#define _PARSER_H_
-
-#include "buffer.h"
-#include "client.h"
 #include "families.h"
-#include <qobject.h>
-#include <qstring.h>
 
 namespace liboscar {
 
-	class Buffer;
-	class Client;
+Families::Families() { }
+Families::~Families() { }
 
-class Parser : public QObject {
-Q_OBJECT
-
-public:
-	Parser(Client *c);
-
-	void add(Byte *data, int len);
-	virtual ~Parser();
-
-signals:
-	void receivedBOS(QString server, QString port);
-	void serverDisconnected(QString reason, DisconnectReason error);
-
-public slots:
-	void parse();
-
-private:
-	Word getNextSeqNumber();
-	void parseCh1(Buffer& buf);
-	void parseCh2(Buffer& buf);
-	void parseCh4(Buffer& buf);
-	void parseCh5(Buffer& buf);
-
-	void parseCh2Service(Buffer& buf);
-
-	void sendKeepAlive();
-
-	Buffer m_buf;
-	Word m_seq; /* FLAP's sequence number */
-	Client *m_client;
-	Families m_fam;
-
-	Buffer m_cookie;
-
-};
-
+void Families::addFamily(Word f) {
+	Family fa;
+	fa.id = f;
+	fa.version = 0;
+	addFamily (fa);
 }
 
-#endif // _PARSER_H_
+void Families::addFamily(Family f) {
+	m_data.insert(f.id, f.version);
+}
+
+void Families::delFamily(Word f){
+	m_data.erase(f);
+}
+
+void Families::updateVersion (Family family){
+	m_data.replace(family.id, family.version);
+}
+
+Word Families::getVersion(Word family){
+	FIterator it;
+
+	it = m_data.find(family);
+	return *it;
+}
+
+Family Families::getFamily(Word family){
+	FIterator it;
+	Family f;
+
+	it = m_data.find (family);
+	f.id = family;
+	f.version = *it;
+
+	return f;
+}
+
+
+
+}

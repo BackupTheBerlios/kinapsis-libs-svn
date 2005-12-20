@@ -23,6 +23,7 @@
 #define _SNAC_SERVICE_H_
 
 #include "snac.h"
+#include "families.h"
 
 namespace liboscar {
 
@@ -75,10 +76,12 @@ private:
 class SrvFamiliesSNAC : public SNAC_Service {
 
 public:
-	SrvFamiliesSNAC();
+	SrvFamiliesSNAC(Families* fam);
 	virtual ~SrvFamiliesSNAC();
 
 	void parse(Buffer &b);
+private:
+	Families* m_fam;
 };
 
 class SrvRedirectSNAC : public SNAC_Service {
@@ -147,10 +150,12 @@ public:
 class SrvFamilies2SNAC : public SNAC_Service {
 
 public:
-	SrvFamilies2SNAC();
+	SrvFamilies2SNAC(Families *fam);
 	virtual ~SrvFamilies2SNAC();
 
 	void parse(Buffer &b);
+private:
+	Families *m_fam;
 };
 
 
