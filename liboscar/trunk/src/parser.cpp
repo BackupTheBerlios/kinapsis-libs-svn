@@ -51,56 +51,59 @@ void Parser::parse(){
 	Word w = 0;
 	Buffer buf;
 
-	/* We have more data in the buffer */
-	m_buf.gotoBegin();
-
-	if (m_buf.len() < 6) /* Yet haven't enough data */
-		return;
-
-	m_buf >> b;
-
-	if (b != 0x2a){
-		qDebug(QString("Invalid FLAP header. Discarding data"));
-		m_buf.wipe();
-		return; 
-	}
+	while (m_buf.len()){
+		/* We have more data in the buffer */
+		m_buf.gotoBegin();
 	
-	m_buf >> ch;
-	m_buf >> w; /* Sequence number */
-	m_buf >> w; /* Data lenght */
-
-	if (m_buf.len() < (w + 6))
-		return;
-
-	/* Copy the FLAP to a local buffer */
-	buf << m_buf;
-	buf.setLength(w + 6);
-	buf.setPosition(6);
-	buf.removeFromBegin();
-	buf.gotoBegin();
-
-	/* remove the FLAP from the parser buffer */
-	m_buf.gotoBegin();
-	m_buf.remove(w + 6);
-
-	switch (ch){
-		case 0x01:
-			parseCh1(buf);
-			break;
-		case 0x02:
-			parseCh2(buf);
-			break;
-		case 0x04:
-			parseCh4(buf);
-			break;
-		case 0x05:
-			parseCh5(buf);
-			break;
-		default:
-			qDebug(QString("FLAP on unknown channel: %1").arg(ch));
-			break;
+		if (m_buf.len() < 6) /* Yet haven't enough data */
+			return;
+	
+		m_buf >> b;
+	
+		if (b != 0x2a){
+			qDebug(QString("Invalid FLAP header. Discarding data"));
+			m_buf.wipe();
+			return; 
+		}
+		
+		m_buf >> ch;
+		m_buf >> w; /* Sequence number */
+		m_buf >> w; /* Data lenght */
+	
+		if (m_buf.len() < (w + 6))
+			return;
+	
+		/* Copy the FLAP to a local buffer */
+		buf.wipe();
+		buf << m_buf;
+	
+		buf.setLength(w+6);
+		buf.setPosition(6);
+		buf.removeFromBegin();
+		buf.gotoBegin();
+	
+		/* remove the FLAP from the parser buffer */
+		m_buf.gotoBegin();
+		m_buf.remove(w + 6);
+	
+		switch (ch){
+			case 0x01:
+				parseCh1(buf);
+				break;
+			case 0x02:
+				parseCh2(buf);
+				break;
+			case 0x04:
+				parseCh4(buf);
+				break;
+			case 0x05:
+				parseCh5(buf);
+				break;
+			default:
+				qDebug(QString("FLAP on unknown channel: %1").arg(ch));
+				break;
+		}
 	}
-
 }
 
 void Parser::parseCh1(Buffer& buf){
@@ -300,7 +303,6 @@ void Parser::parseCh2Service(Buffer& buf) {
 
 	buf.removeFromBegin();
 
-	// TODO: complete commands
 	switch (command) {
 		case SERVICE_SRV_SERVICE_ERR:
 			sse.parse(buf);

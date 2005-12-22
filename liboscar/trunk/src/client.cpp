@@ -150,10 +150,11 @@ ConnectionResult Client::connect(){
 	m_logconn = 0;
 
 	m_state = CLI_CONNECTING;
-
 	/* login finished; connect to BOS */
 	if (!m_conn)
 		m_conn = new Connection(m_bos, m_bosport, m_parser);
+	else
+		delete m_conn;
 
 	qDebug("Conectando al BOS");
 	s = m_conn->connect();
