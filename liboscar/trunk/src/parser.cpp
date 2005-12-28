@@ -37,6 +37,7 @@ Parser::Parser(Client *c){
 	srand(time(NULL));
 	m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
 	m_client = c;
+	m_cap.setDefault();
 }
 
 void Parser::add(Byte *data, int len){
@@ -328,6 +329,7 @@ void Parser::parseCh2Service(Buffer& buf) {
 			break;
 		case SERVICE_SRV_MIGRATIONREQ:
 			smr.parse(buf);
+			emit receivedBOS(smr.getServer(), smr.getPort());
 			break;
 		case SERVICE_SRV_MOTD:
 			smotd.parse(buf);

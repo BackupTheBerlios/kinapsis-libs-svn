@@ -25,6 +25,7 @@
 #include "buffer.h"
 #include "client.h"
 #include "families.h"
+#include "capabilities.h"
 #include <qobject.h>
 #include <qstring.h>
 
@@ -64,6 +65,7 @@ private:
 	Word m_seq; /* FLAP's sequence number */
 	Client *m_client;
 	Families m_fam;
+	Capabilities m_cap;
 
 	Buffer m_cookie;
 

@@ -68,6 +68,9 @@ private:
 	void send(Buffer &b);
 	void initvalues();
 
+	ConnectionError connAuth();
+	ConnectionError connBOS();
+
 	QString m_bos;
 	int m_bosport;
 
@@ -76,6 +79,7 @@ private:
 
 	ClientState m_state;
 	bool m_middledisconnect;
+	bool m_exit;
 
 	FirewallConfiguration m_firewall;
 

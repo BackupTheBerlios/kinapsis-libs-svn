@@ -23,6 +23,7 @@
 #define _SNAC_SERVICE_H_
 
 #include "snac.h"
+#include "servertlv.h"
 #include "families.h"
 
 namespace liboscar {
@@ -135,7 +136,14 @@ public:
 	SrvMigrationReqSNAC();
 	virtual ~SrvMigrationReqSNAC();
 
+	QString getServer();
+	QString getPort();
+	Buffer& getCookie();
+
 	void parse(Buffer &b);
+private:
+	Buffer m_cookie;
+	ServerTLV m_servt;
 };
 
 class SrvMOTDSNAC : public SNAC_Service {

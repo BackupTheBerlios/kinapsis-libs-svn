@@ -19,76 +19,33 @@
  ***************************************************************************/
 
 
+#ifndef _CAPABILITIESTLV_H_
+#define _CAPABILITIESTLV_H_
+
 #include "tlv.h"
+#include "capabilities.h"
 
 namespace liboscar {
 
-TLV::TLV(const Word type){
-	m_type = type;
-	m_length = 0;
-}
+	class TLV;
+	class Capabilities;
 
-void TLV::setType (const Word type){
-	m_type = type;
-}
+class CapabilitiesTLV : public TLV{
 
-void TLV::setLength (const Word length){
-	m_length = length;
-}
-
-Buffer& TLV::data(){
-	return m_data;
-}
-
-Buffer& TLV::pack(){
-
-	this->specPack();
-	m_data.prepend((Word) m_data.len());
-	m_data.prepend(m_type);
-
-	return m_data;
-}
-
-TLV::~TLV(){ }
+public:
+	CapabilitiesTLV(Word len);
+	virtual ~CapabilitiesTLV();
 	
+	void setCapabilities(Capabilities cap);
+	Capabilities getCapabilities();
 
-UnformattedTLV::UnformattedTLV(Word type) 
-	: TLV (type) { }
+	void specPack();
+	void parse(Buffer& b);
 
-UnformattedTLV::~UnformattedTLV(){ }
-
-void UnformattedTLV::parse(Buffer &b){
-
-	unsigned int i;
-	Byte by;
-
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	b >> m_type;
-	b >> m_length;
-
-	for (i=0; i < m_length; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-}
-	
-void UnformattedTLV::parseData(Buffer &b, Word len){
-
-	unsigned int i;
-	Byte by;
-
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	for (i=0; i < len; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-}
-	
+private:
+	Capabilities m_cap;
+};
 
 }
+
+#endif // _CAPABILITIESTLV_H_

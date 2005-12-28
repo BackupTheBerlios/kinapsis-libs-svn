@@ -31,6 +31,8 @@ namespace liboscar {
 
 	// TLV wired values
 	
+	const Word TLV_TYPE_GENERIC = 0x0000;
+
 	const Word TLV_TYPE_UIN = 0x0001;
 	const Word TLV_TYPE_PASSWORD = 0x0002;
 	const Word TLV_TYPE_VERSION = 0x0003;
@@ -88,11 +90,8 @@ public:
 
 protected:
 	Buffer m_data;
-
-private:
 	Word m_type;
 	Word m_length;
-
 };
 
 class UnformattedTLV : public TLV {
@@ -102,7 +101,8 @@ public:
 	virtual ~UnformattedTLV();
 	
 	void specPack() { return ; };
-	void parse(Buffer& b) { return ; };
+	void parse(Buffer& b);
+	void parseData(Buffer& b, Word len);
 };
 
 

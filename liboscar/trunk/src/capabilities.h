@@ -19,76 +19,69 @@
  ***************************************************************************/
 
 
-#include "tlv.h"
+#ifndef _CAPABILITIES_H_
+#define _CAPABILITIES_H_
+
+#include "liboscar.h"
+#include <qvaluelist.h>
 
 namespace liboscar {
 
-TLV::TLV(const Word type){
-	m_type = type;
-	m_length = 0;
-}
+	typedef enum CapName {
+		// TODO: add more wired capbilities
+		CAP_AIM_SERVERRELAY,
+		CAP_UTF8,
+		CAP_RTFMSGS,
+		CAP_AIM_ISICQ,
+		CAP_UNKNOWN
+	};
 
-void TLV::setType (const Word type){
-	m_type = type;
-}
+	typedef struct {
+		CapName name;
+		Byte data[16];
+	} Capability;
 
-void TLV::setLength (const Word length){
-	m_length = length;
-}
+	typedef QValueList<Capability>::iterator CapIterator;
 
-Buffer& TLV::data(){
-	return m_data;
-}
-
-Buffer& TLV::pack(){
-
-	this->specPack();
-	m_data.prepend((Word) m_data.len());
-	m_data.prepend(m_type);
-
-	return m_data;
-}
-
-TLV::~TLV(){ }
+	// Wired Capabilities
 	
+	const Capability wiredCaps[]  = {
+		{CAP_AIM_SERVERRELAY,
+			{0x09, 0x46, 0x13, 0x49, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22,
+				0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+		{CAP_UTF8,
+			{0x09, 0x46, 0x13, 0x4e, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22,
+				0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+		{CAP_RTFMSGS,
+			{0x97, 0xB1, 0x27, 0x51, 0x24, 0x3C, 0x43, 0x34, 0xAD, 0x22,
+				0xD6, 0xAB, 0xF7, 0x3F, 0x14, 0x92}},
+		{CAP_AIM_ISICQ,
+			{0x09, 0x46, 0x13, 0x44, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22,
+				0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+	};
 
-UnformattedTLV::UnformattedTLV(Word type) 
-	: TLV (type) { }
+class Capabilities {
 
-UnformattedTLV::~UnformattedTLV(){ }
+public:
+	Capabilities();
+	virtual ~Capabilities();
 
-void UnformattedTLV::parse(Buffer &b){
+	void addCapability(Capability cap);
+	void addCapability(CapName cap);
 
-	unsigned int i;
-	Byte by;
+	void setDefault();
 
-	m_data.wipe();
-	m_data.gotoBegin();
+	unsigned int len();
+	CapIterator begin();
+	CapIterator next();
 
-	b >> m_type;
-	b >> m_length;
 
-	for (i=0; i < m_length; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-}
-	
-void UnformattedTLV::parseData(Buffer &b, Word len){
+private:
+	CapIterator m_it;
+	QValueList<Capability> m_data;
 
-	unsigned int i;
-	Byte by;
-
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	for (i=0; i < len; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-}
-	
+};
 
 }
+
+#endif // _CAPABILITIES_H_

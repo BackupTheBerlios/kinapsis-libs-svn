@@ -19,76 +19,43 @@
  ***************************************************************************/
 
 
-#include "tlv.h"
+#include "capabilities.h"
 
 namespace liboscar {
 
-TLV::TLV(const Word type){
-	m_type = type;
-	m_length = 0;
+Capabilities::Capabilities() { }
+Capabilities::~Capabilities() { }
+
+void Capabilities::addCapability(Capability cap) {
+	m_data.append(cap);
 }
 
-void TLV::setType (const Word type){
-	m_type = type;
+void Capabilities::addCapability(CapName cap) {
+	m_data.append(wiredCaps[cap]);
 }
 
-void TLV::setLength (const Word length){
-	m_length = length;
+void Capabilities::setDefault() {
+	// Default ICQ2003 capabilities
+	addCapability(CAP_AIM_SERVERRELAY);
+	addCapability(CAP_UTF8);
+	addCapability(CAP_RTFMSGS);
+	addCapability(CAP_AIM_ISICQ);
 }
 
-Buffer& TLV::data(){
-	return m_data;
+unsigned int Capabilities::len() {
+	return m_data.count();
 }
 
-Buffer& TLV::pack(){
-
-	this->specPack();
-	m_data.prepend((Word) m_data.len());
-	m_data.prepend(m_type);
-
-	return m_data;
+CapIterator Capabilities::begin() {
+	m_it = m_data.begin();
+	return m_it;
 }
 
-TLV::~TLV(){ }
-	
-
-UnformattedTLV::UnformattedTLV(Word type) 
-	: TLV (type) { }
-
-UnformattedTLV::~UnformattedTLV(){ }
-
-void UnformattedTLV::parse(Buffer &b){
-
-	unsigned int i;
-	Byte by;
-
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	b >> m_type;
-	b >> m_length;
-
-	for (i=0; i < m_length; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
+CapIterator Capabilities::next() {
+	m_it++;
+	return m_it;
 }
-	
-void UnformattedTLV::parseData(Buffer &b, Word len){
 
-	unsigned int i;
-	Byte by;
 
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	for (i=0; i < len; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-}
-	
 
 }

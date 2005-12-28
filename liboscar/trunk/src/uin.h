@@ -23,6 +23,7 @@
 #define _UIN_H_
 
 #include <qstring.h>
+#include "buffer.h"
 
 namespace liboscar {
 
@@ -37,6 +38,8 @@ public:
 	QString getUin();
 	void setUin(const QString uin);
 	void setUin(const unsigned int uin);
+
+	void parse(Buffer &b);
 
 private:
 	QString m_uin;

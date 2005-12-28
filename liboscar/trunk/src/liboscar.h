@@ -44,7 +44,8 @@ namespace liboscar {
 		CONN_OUTPUT_ERROR,
 		CONN_ERR_USER_REQUEST,
 		CONN_ERR_UNEXPECTED,
-		CONN_NO_ERROR
+		CONN_NO_ERROR,
+		CONN_RECONNECT
 	};
 
 	enum ClientState {
@@ -109,6 +110,13 @@ namespace liboscar {
 		FIREWALL,
 		SOCKS_PROXY,
 		NORMAL
+	};
+
+	enum InfoRequestType {
+		GENERAL_INFO,
+		SHORT_USER_INFO,
+		AWAY_MESSAGE,
+		CAPABILITIES
 	};
 }
 

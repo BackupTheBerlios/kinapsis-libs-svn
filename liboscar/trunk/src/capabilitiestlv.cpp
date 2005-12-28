@@ -19,76 +19,57 @@
  ***************************************************************************/
 
 
-#include "tlv.h"
+#include "capabilitiestlv.h"
 
 namespace liboscar {
 
-TLV::TLV(const Word type){
-	m_type = type;
-	m_length = 0;
+
+CapabilitiesTLV::CapabilitiesTLV(Word len) {
+	m_length = len;
 }
 
-void TLV::setType (const Word type){
-	m_type = type;
-}
-
-void TLV::setLength (const Word length){
-	m_length = length;
-}
-
-Buffer& TLV::data(){
-	return m_data;
-}
-
-Buffer& TLV::pack(){
-
-	this->specPack();
-	m_data.prepend((Word) m_data.len());
-	m_data.prepend(m_type);
-
-	return m_data;
-}
-
-TLV::~TLV(){ }
+CapabilitiesTLV::~CapabilitiesTLV() { }
 	
+void CapabilitiesTLV::setCapabilities(Capabilities cap) {
+	m_cap = cap;
+}
 
-UnformattedTLV::UnformattedTLV(Word type) 
-	: TLV (type) { }
+Capabilities CapabilitiesTLV::getCapabilities() {
+	return m_cap;
+}
 
-UnformattedTLV::~UnformattedTLV(){ }
+void CapabilitiesTLV::specPack() {
+	unsigned int i, j;
+	CapIterator it;
+	Capability cdat;
 
-void UnformattedTLV::parse(Buffer &b){
+	it = m_cap.begin();
 
-	unsigned int i;
+	for ( i=0; i < m_cap.len(); i++) {
+		cdat = *it;
+		for (j=0; j < 16; j++)
+			m_data << cdat.data[j];
+		it = m_cap.next();
+	}
+}
+
+void CapabilitiesTLV::parse(Buffer& b) {
+
+	unsigned int num = m_length / 16; // Number of capabilities
+	unsigned int i, j;
+	Capability c;
 	Byte by;
 
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	b >> m_type;
-	b >> m_length;
-
-	for (i=0; i < m_length; i++){
-		b >> by;
-		m_data << (Byte) by;
+	for (i = 0; i < num; i++){
+		c.name = CAP_UNKNOWN;
+		for (j=0; j < 16; j++){
+			b >> by;
+			c.data[j] = by;
+		}
+		m_cap.addCapability(c);
 	}
 	b.removeFromBegin();
 }
-	
-void UnformattedTLV::parseData(Buffer &b, Word len){
 
-	unsigned int i;
-	Byte by;
-
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	for (i=0; i < len; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-}
-	
 
 }

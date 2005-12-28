@@ -21,7 +21,6 @@
 
 #include "snac_service.h"
 #include "statustlv.h"
-#include "servertlv.h"
 #include "errortlv.h"
 #include "directconnectiontlv.h"
 
@@ -250,26 +249,33 @@ SrvMigrationReqSNAC::SrvMigrationReqSNAC()
 
 SrvMigrationReqSNAC::~SrvMigrationReqSNAC() { }
 
+QString SrvMigrationReqSNAC::getServer() {
+	return m_servt.getServer();
+}
+
+QString SrvMigrationReqSNAC::getPort() {
+	return m_servt.getPort();
+}
+
+Buffer& SrvMigrationReqSNAC::getCookie() {
+	return m_cookie;
+}
+
 void SrvMigrationReqSNAC::parse(Buffer &b){
-	ServerTLV servt;
 	Word len;
 	Byte by;
 	unsigned int i=0;
-	Buffer cookie;
 
 	b.advance(2);
-	servt.parse(b);
+	m_servt.parse(b);
 	b.advance(2);
 
 	b >> len;
-	cookie.gotoBegin();
+	m_cookie.gotoBegin();
 	for (i=0; i < len; i++) {
 		b >> by;
-		cookie << by; 
+		m_cookie << by; 
 	}
-
-	// TODO:report migration and reconnect
-	// handle cookie
 }
 
 	// SrvMOTDSNAC

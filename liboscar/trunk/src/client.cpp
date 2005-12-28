@@ -43,6 +43,7 @@ void Client::initvalues(){
 	m_parser = 0;
 	m_state = CLI_NO_STATE;
 	m_middledisconnect = false;
+	m_exit = false;
 }
 
 QString Client::getPassword(){
@@ -95,7 +96,13 @@ void Client::send(Buffer& b){
 
 void Client::disconnect(ConnectionError err){
 
-	if (err != CONN_NO_ERROR) // Got an error
+	if ((err == CONN_RECONNECT) ||(err == CONN_NO_ERROR && m_state == CLI_AUTHING))
+		m_exit = false;
+	else
+		m_exit = true;
+
+
+	if ((err != CONN_NO_ERROR) && m_logconn) // Got an error
 		m_middledisconnect = true;
 
 	if (m_state == CLI_AUTHING && m_logconn)
@@ -105,17 +112,10 @@ void Client::disconnect(ConnectionError err){
 
 }
 
-ConnectionResult Client::connect(){
-	/* FIXME: comprobar estado en que se queda despues de error */
+ConnectionError Client::connAuth() {
+
 	ConnectionStatus s;
 	ConnectionError e;
-
-	if (!m_parser){
-		m_parser = new Parser(this);
-		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
-		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
-				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
-	}
 
 	if (!m_logconn)
 		m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, m_parser);
@@ -126,12 +126,54 @@ ConnectionResult Client::connect(){
 	s = m_logconn->connect();
 	if (s != CONN_CONNECTED){
 		initvalues();
-		ConnectionResult res(false, CONN_ERR_LOGIN_CONN_FAILED);
-		return res;
+		return CONN_ERR_LOGIN_CONN_FAILED;
 	}
 	e = m_logconn->listen();
 
-	qDebug("Desconectando del Autorizer");
+	qDebug("Disconnecting from Authorizer");
+
+	return e;
+}
+
+ConnectionError Client::connBOS() {
+
+	ConnectionStatus s;
+	ConnectionError e;
+
+	if (m_conn)
+		delete m_conn;
+
+	m_conn = new Connection(m_bos, m_bosport, m_parser);
+
+	qDebug("Connecting to BOS");
+	s = m_conn->connect();
+	if (s != CONN_CONNECTED){
+		initvalues();
+		return CONN_ERR_CONN_FAILED;
+	}
+
+	m_state = CLI_CONNECTED;
+
+	e = m_conn->listen();
+
+	qDebug("Disconnecting from BOS");
+
+	return e;
+
+}
+
+ConnectionResult Client::connect(){
+	/* FIXME: comprobar estado en que se queda despues de error */
+	ConnectionError e;
+
+	if (!m_parser){
+		m_parser = new Parser(this);
+		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
+		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
+				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
+	}
+
+	e = connAuth();
 
 	// TODO: think about disconnect reason
 	if (m_middledisconnect){
@@ -139,7 +181,6 @@ ConnectionResult Client::connect(){
 		ConnectionResult res(false, CONN_ERR_LOGIN_CONN_FAILED);
 		return res;
 	}
-		
 	if (e != CONN_NO_ERROR){
 		initvalues();
 		ConnectionResult res(false, e);
@@ -150,23 +191,11 @@ ConnectionResult Client::connect(){
 	m_logconn = 0;
 
 	m_state = CLI_CONNECTING;
+
 	/* login finished; connect to BOS */
-	if (!m_conn)
-		m_conn = new Connection(m_bos, m_bosport, m_parser);
-	else
-		delete m_conn;
+	while (!m_exit) // We can get reconnected several times
+		e = connBOS();
 
-	qDebug("Conectando al BOS");
-	s = m_conn->connect();
-	if (s != CONN_CONNECTED){
-		initvalues();
-		ConnectionResult res(false, CONN_ERR_CONN_FAILED);
-		return res;
-	}
-
-	m_state = CLI_CONNECTED;
-
-	e = m_conn->listen();
 	if (e != CONN_NO_ERROR){
 		initvalues();
 		ConnectionResult res(false, e);
@@ -182,7 +211,10 @@ ConnectionResult Client::connect(){
 void Client::getBOSInfo(QString server, QString port){
 	m_bos = server;
 	m_bosport = port.toUInt();
-	disconnect();
+	if (m_state == CLI_AUTHING)
+		disconnect();
+	else
+		disconnect(CONN_RECONNECT); // Got a serverpause and a migrationreq
 }
 
 void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
@@ -215,7 +247,6 @@ void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
 			qDebug("Can't register try again later");
 			break;
 	}
-
 	disconnect(CONN_ERR_UNEXPECTED);
 }
 
