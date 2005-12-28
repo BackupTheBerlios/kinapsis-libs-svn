@@ -25,6 +25,7 @@
 #include "passwordtlv.h"
 #include "servertlv.h"
 #include "snac_service.h"
+#include "snac_location.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -201,6 +202,7 @@ void Parser::parseCh2(Buffer& buf){
 			parseCh2Service(buf);
 			break;
 		case SNAC_FAM_LOCATION:
+			parseCh2Location(buf);
 			break;
 		case SNAC_FAM_CONTACT:
 			break;
@@ -337,6 +339,9 @@ void Parser::parseCh2Service(Buffer& buf) {
 		case SERVICE_SRV_FAMILIES2:
 			sf2.parse(buf); // Update families versions
 			break;
+		default:
+			qDebug("Unknown command on SNAC Service family");
+			break;
 	}
 	// React to commands
 	if (command == SERVICE_SRV_FAMILIES) {
@@ -361,6 +366,40 @@ void Parser::parseCh2Service(Buffer& buf) {
 		m_client->send(f.pack());
 	}
 
+}
+
+void Parser::parseCh2Location(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvLocationErrSNAC sle;
+	SrvUserInfoSNAC suis;
+	SrvReplyLocationSNAC srls;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case LOCATION_SRV_LOCATION_ERR:
+			sle.parse(buf);
+			qDebug(QString("Error on channel 2 family 2: %1").arg(sle.getError()));
+			break;
+		case LOCATION_SRV_REPLYLOCATION:
+			srls.parse(buf);
+			m_cap.setMaxCap(srls.getMaxCap());
+			break;
+		case LOCATION_SRV_USERINFO:
+			suis.parse(buf);
+			// TODO: handle user info :-)
+			break;
+		default:
+			qDebug("Unknown command on SNAC Location family");
+			break;
+	}
 }
 
 void Parser::sendKeepAlive(){

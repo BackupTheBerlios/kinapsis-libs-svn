@@ -70,6 +70,7 @@ public:
 	void addCapability(CapName cap);
 
 	void setDefault();
+	void setMaxCap(Word max);
 
 	unsigned int len();
 	CapIterator begin();
@@ -79,6 +80,8 @@ public:
 private:
 	CapIterator m_it;
 	QValueList<Capability> m_data;
+
+	Word m_maxcap;
 
 };
 

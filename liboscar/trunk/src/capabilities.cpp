@@ -42,6 +42,9 @@ void Capabilities::setDefault() {
 	addCapability(CAP_AIM_ISICQ);
 }
 
+void Capabilities::setMaxCap(Word max) {
+	m_maxcap = max;
+}
 unsigned int Capabilities::len() {
 	return m_data.count();
 }
