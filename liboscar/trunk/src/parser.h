@@ -59,6 +59,7 @@ private:
 
 	void parseCh2Service(Buffer& buf);
 	void parseCh2Location(Buffer& buf);
+	void parseCh2Contact(Buffer& buf);
 
 	void sendKeepAlive();
 

@@ -26,6 +26,7 @@
 #include "servertlv.h"
 #include "snac_service.h"
 #include "snac_location.h"
+#include "snac_contact.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -205,6 +206,7 @@ void Parser::parseCh2(Buffer& buf){
 			parseCh2Location(buf);
 			break;
 		case SNAC_FAM_CONTACT:
+			parseCh2Contact(buf);
 			break;
 		case SNAC_FAM_ICBM:
 			break;
@@ -398,6 +400,50 @@ void Parser::parseCh2Location(Buffer& buf) {
 			break;
 		default:
 			qDebug("Unknown command on SNAC Location family");
+			break;
+	}
+}
+
+void Parser::parseCh2Contact(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvContactErrSNAC cse;
+	SrvReplyBuddySNAC rbs;
+	SrvRefusedSNAC srs;
+	SrvUserOnlineSNAC uos;
+	SrvUserOfflineSNAC uofs;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case CONTACT_SRV_CONTACT_ERR:
+			cse.parse(buf);
+			qDebug(QString("Error on channel 2 family 3: %1").arg(cse.getError()));
+			break;
+		case CONTACT_SRV_REPLYBUDDY:
+			rbs.parse(buf);
+			// XXX Ignoring limitations
+			break;
+		case CONTACT_SRV_REFUSED:
+			// TODO: report refused event
+			srs.parse(buf);
+			break;
+		case CONTACT_SRV_USERONLINE:
+			// TODO: report status event
+			uos.parse(buf);
+			break;
+		case CONTACT_SRV_USEROFFLINE:
+			// TODO: report offline event
+			uofs.parse(buf);
+			break;
+		default:
+			qDebug("Unknown command on SNAC Contact family");
 			break;
 	}
 }

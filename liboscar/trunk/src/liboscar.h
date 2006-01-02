@@ -118,6 +118,12 @@ namespace liboscar {
 		AWAY_MESSAGE,
 		CAPABILITIES
 	};
+
+	enum ContactError {
+		EMPTY_UIN_LIST,
+		UIN_NOT_IN_LIST,
+		CONTACT_LIST_FULL
+	};
 }
 
 #endif // _LIBOSCAR_H_

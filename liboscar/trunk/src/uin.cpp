@@ -49,6 +49,11 @@ void UIN::setUin(const unsigned int uin){
 	this->setUin(s);
 }
 
+void UIN::appendUin(Buffer &b){
+	b << m_uin.length();
+	b << m_uin;
+}
+
 void UIN::parse(Buffer &b){
 	Byte len, by;
 	unsigned int i;
