@@ -127,6 +127,8 @@ void DirectConnectionTLV::parse(Buffer& b){
 	while (count--)
 		b >> dw; // get timestamps
 	b >> w;
+
+	b.removeFromBegin();
 }
 
 

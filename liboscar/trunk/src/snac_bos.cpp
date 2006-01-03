@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,71 +19,69 @@
  ***************************************************************************/
 
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
-
-#include "liboscar.h"
-#include <qvaluelist.h>
-#include <qobject.h>
+#include "snac_bos.h"
+#include "uin.h"
+#include "tlv.h"
 
 namespace liboscar {
 
-class Buffer : public QObject {
-Q_OBJECT
+	// SNAC_BOS main class
+SNAC_BOS::SNAC_BOS(Word command, bool raw) 
+	: SNAC(SNAC_FAM_BOS, command, raw) { }
 
-public:
-	Buffer();
+SNAC_BOS::~SNAC_BOS(){ }
+	
+	// SvrReplyBOS SNAC
+SrvReplyBOSSNAC::SrvReplyBOSSNAC()
+	: SNAC_BOS(BOS_SRV_REPLYBOS, true) { }
 
-	Buffer& operator<<(Byte);
-	Buffer& operator<<(Word);
-	Buffer& operator<<(DWord);
-	Buffer& operator<<(const QString&);
-	Buffer& operator<<(Buffer&);
+SrvReplyBOSSNAC::~SrvReplyBOSSNAC() { }
 
-	Buffer& operator>>(Byte &);
-	Buffer& operator>>(Word &);
-	Buffer& operator>>(DWord &);
+void SrvReplyBOSSNAC::parse(Buffer &b) {
+	UnformattedTLV tlv(TLV_TYPE_GENERIC);
 
-	void prepend(Byte);
-	void prepend(Word);
-	void prepend(DWord);
-
-	void remove(unsigned int num = 1);
-	void removeFromBegin();
-	void gotoBegin();
-	void gotoEnd();
-	void setPosition(unsigned int pos);
-	void advance(unsigned int pos);
-
-	void setLength(unsigned int length);
-
-	void setLittleEndian();
-	void setBigEndian();
-
-	void wipe();
-
-	void copy(Byte * bb);
-
-	unsigned int len();
-
-	virtual ~Buffer();
-
-signals:
-	void dataAvailable();
-
-private:
-	typedef QValueList<Byte>::iterator BIterator;
-
-	bool m_lendian;
-
-	Byte getByte();
-	Word getWord();
-
-	QValueList<Byte> m_data;
-	BIterator m_it;
-
-};
-
+	tlv.parse(b); // Unknown
+	tlv.parse(b);
 }
 
-#endif // _BUFFER_H_
+	// 
+	// Client's SNACs
+	//
+	
+	// CliAddVisible SNAC
+CliAddVisibleSNAC::CliAddVisibleSNAC(UIN uin)
+	: SNAC_BOS(BOS_CLI_ADDVISIBLE, true) {
+
+	uin.appendUin(m_data);
+}
+
+CliAddVisibleSNAC::~CliAddVisibleSNAC() { }
+
+	// CliRemVisible SNAC
+CliRemVisibleSNAC::CliRemVisibleSNAC(UIN uin)
+	: SNAC_BOS(BOS_CLI_REMVISIBLE, true) {
+
+	uin.appendUin(m_data);
+}
+
+CliRemVisibleSNAC::~CliRemVisibleSNAC() { }
+
+	// CliAddInvisible SNAC
+CliAddInvisibleSNAC::CliAddInvisibleSNAC(UIN uin)
+	: SNAC_BOS(BOS_CLI_ADDINVISIBLE, true) {
+
+	uin.appendUin(m_data);
+}
+
+CliAddInvisibleSNAC::~CliAddInvisibleSNAC() { }
+
+	// CliRemInvisible SNAC
+CliRemInvisibleSNAC::CliRemInvisibleSNAC(UIN uin)
+	: SNAC_BOS(BOS_CLI_REMINVISIBLE, true) {
+
+	uin.appendUin(m_data);
+}
+
+CliRemInvisibleSNAC::~CliRemInvisibleSNAC() { }
+
+}

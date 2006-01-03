@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,71 +19,74 @@
  ***************************************************************************/
 
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#ifndef _SNAC_BOS_H_
+#define _SNAC_BOS_H_
 
-#include "liboscar.h"
-#include <qvaluelist.h>
-#include <qobject.h>
+#include "snac.h"
 
 namespace liboscar {
 
-class Buffer : public QObject {
-Q_OBJECT
+	const Word BOS_CLI_REQBOS = 0x0002; 
+	const Word BOS_SRV_REPLYBOS = 0x0003; 
+	const Word BOS_CLI_ADDVISIBLE = 0x0005; 
+	const Word BOS_CLI_REMVISIBLE = 0x0006; 
+	const Word BOS_CLI_ADDINVISIBLE = 0x0007; 
+	const Word BOS_CLI_REMINVISIBLE = 0x0008; 
+
+	class UIN;
+class SNAC_BOS : public SNAC {
 
 public:
-	Buffer();
+	SNAC_BOS(Word command = 0, bool raw = true);
+	virtual ~SNAC_BOS();
 
-	Buffer& operator<<(Byte);
-	Buffer& operator<<(Word);
-	Buffer& operator<<(DWord);
-	Buffer& operator<<(const QString&);
-	Buffer& operator<<(Buffer&);
+	virtual void parse(Buffer& b) = 0;
+};
 
-	Buffer& operator>>(Byte &);
-	Buffer& operator>>(Word &);
-	Buffer& operator>>(DWord &);
+class SrvReplyBOSSNAC : public SNAC_BOS {
 
-	void prepend(Byte);
-	void prepend(Word);
-	void prepend(DWord);
+public:
+	SrvReplyBOSSNAC();
+	virtual ~SrvReplyBOSSNAC();
 
-	void remove(unsigned int num = 1);
-	void removeFromBegin();
-	void gotoBegin();
-	void gotoEnd();
-	void setPosition(unsigned int pos);
-	void advance(unsigned int pos);
+	void parse(Buffer &b);
+};
 
-	void setLength(unsigned int length);
+class CliAddVisibleSNAC : public SNAC_BOS {
 
-	void setLittleEndian();
-	void setBigEndian();
+public:
+	CliAddVisibleSNAC(UIN uin);
+	virtual ~CliAddVisibleSNAC();
 
-	void wipe();
+	void parse(Buffer &b) {return ; };
+};
 
-	void copy(Byte * bb);
+class CliRemVisibleSNAC : public SNAC_BOS {
 
-	unsigned int len();
+public:
+	CliRemVisibleSNAC(UIN uin);
+	virtual ~CliRemVisibleSNAC();
 
-	virtual ~Buffer();
+	void parse(Buffer &b) {return ; };
+};
 
-signals:
-	void dataAvailable();
+class CliAddInvisibleSNAC : public SNAC_BOS {
 
-private:
-	typedef QValueList<Byte>::iterator BIterator;
+public:
+	CliAddInvisibleSNAC(UIN uin);
+	virtual ~CliAddInvisibleSNAC();
 
-	bool m_lendian;
+	void parse(Buffer &b) {return ; };
+};
 
-	Byte getByte();
-	Word getWord();
+class CliRemInvisibleSNAC : public SNAC_BOS {
 
-	QValueList<Byte> m_data;
-	BIterator m_it;
+public:
+	CliRemInvisibleSNAC(UIN uin);
+	virtual ~CliRemInvisibleSNAC();
 
+	void parse(Buffer &b) {return ; };
 };
 
 }
-
-#endif // _BUFFER_H_
+#endif // _SNAC_BOS_H_

@@ -25,6 +25,7 @@
 #include "snac.h"
 #include "servertlv.h"
 #include "families.h"
+#include "userinfo.h"
 
 namespace liboscar {
 
@@ -128,6 +129,8 @@ public:
 	virtual ~SrvReplyInfoSNAC();
 
 	void parse(Buffer &b);
+private:
+	UserInfo m_info;
 };
 
 class SrvMigrationReqSNAC : public SNAC_Service {

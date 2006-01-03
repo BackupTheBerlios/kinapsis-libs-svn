@@ -24,6 +24,7 @@
 namespace liboscar {
 
 Buffer::Buffer(){
+	m_lendian = false;
 }
 
 Buffer& Buffer::operator<<(Byte b){
@@ -37,8 +38,14 @@ Buffer& Buffer::operator<<(Byte b){
 
 Buffer& Buffer::operator<<(Word w){
 	bool wasEmpty = (m_data.count() == 0);
-	m_data << ((w >> 8) & 0xFF);
-	m_data << (w & 0xFF);
+	if (m_lendian){
+		m_data << (w & 0xFF);
+		m_data << ((w >> 8) & 0xFF);
+	}
+	else {
+		m_data << ((w >> 8) & 0xFF);
+		m_data << (w & 0xFF);
+	}
 
 	if (wasEmpty) emit dataAvailable();
 
@@ -47,10 +54,18 @@ Buffer& Buffer::operator<<(Word w){
 
 Buffer& Buffer::operator<<(DWord dw) {
 	bool wasEmpty = (m_data.count() == 0);
-	m_data << ((dw >> 24) & 0xFF);
-	m_data << ((dw >> 16) & 0xFF);
-	m_data << ((dw >> 8) & 0xFF);
-	m_data << (dw & 0xFF);
+	if (m_lendian){
+		m_data << (dw & 0xFF);
+		m_data << ((dw >> 8) & 0xFF);
+		m_data << ((dw >> 16) & 0xFF);
+		m_data << ((dw >> 24) & 0xFF);
+	}
+	else{
+		m_data << ((dw >> 24) & 0xFF);
+		m_data << ((dw >> 16) & 0xFF);
+		m_data << ((dw >> 8) & 0xFF);
+		m_data << (dw & 0xFF);
+	}
 
 	if (wasEmpty) emit dataAvailable();
 	return *this;
@@ -102,8 +117,14 @@ Word Buffer::getWord(){
 	Byte b1,b2;
 	Word w;
 
-	b1 = getByte();
-	b2 = getByte();
+	if (m_lendian){
+		b2 = getByte();
+		b1 = getByte();
+	}
+	else{
+		b1 = getByte();
+		b2 = getByte();
+	}
 	
 	w = b1;
 	w <<= 8;
@@ -129,8 +150,14 @@ Buffer& Buffer::operator>>(DWord &dw){
 	if (m_data.count() < 4)
 		dw = (DWord) -1;
 	else {
-		w1 = getWord();
-		w2 = getWord();
+		if  (m_lendian){
+			w2 = getWord();
+			w1 = getWord();
+		}
+		else {
+			w1 = getWord();
+			w2 = getWord();
+		}
 
 		dw = w1;
 		dw <<= 16;
@@ -145,15 +172,29 @@ void Buffer::prepend(Byte b){
 }
 
 void Buffer::prepend(Word w){
-	m_data.push_front(w & 0xFF);
-	m_data.push_front((w >> 8) & 0xFF);
+	if (m_lendian){
+		m_data.push_front((w >> 8) & 0xFF);
+		m_data.push_front(w & 0xFF);
+	}
+	else {
+		m_data.push_front(w & 0xFF);
+		m_data.push_front((w >> 8) & 0xFF);
+	}
 }
 
 void Buffer::prepend(DWord dw){
-	m_data.push_front(dw & 0xFF);
-	m_data.push_front((dw >> 8) & 0xFF);
-	m_data.push_front((dw >> 16) & 0xFF);
-	m_data.push_front((dw >> 24) & 0xFF);
+	if (m_lendian) {
+		m_data.push_front((dw >> 24) & 0xFF);
+		m_data.push_front((dw >> 16) & 0xFF);
+		m_data.push_front((dw >> 8) & 0xFF);
+		m_data.push_front(dw & 0xFF);
+	}
+	else {
+		m_data.push_front(dw & 0xFF);
+		m_data.push_front((dw >> 8) & 0xFF);
+		m_data.push_front((dw >> 16) & 0xFF);
+		m_data.push_front((dw >> 24) & 0xFF);
+	}
 }
 
 void Buffer::remove(unsigned int num){
@@ -182,6 +223,14 @@ void Buffer::copy(Byte *bb){
 		bb[i] = *it;
 		it++;
 	}
+}
+
+void Buffer::setLittleEndian(){
+	m_lendian = true;
+}
+
+void Buffer::setBigEndian(){
+	m_lendian = false;
 }
 
 void Buffer::gotoBegin(){

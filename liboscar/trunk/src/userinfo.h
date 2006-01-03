@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,71 +19,53 @@
  ***************************************************************************/
 
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#ifndef _USERINFO_H_
+#define _USERINFO_H_
 
-#include "liboscar.h"
-#include <qvaluelist.h>
-#include <qobject.h>
+#include "uin.h"
+#include "buffer.h"
+#include "capabilities.h"
+#include "directconnectiontlv.h"
 
 namespace liboscar {
 
-class Buffer : public QObject {
-Q_OBJECT
+	class UIN;
+	class Buffer;
+	class Capabilities;
+	class DirectConnectionTLV;
+
+class UserInfo {
 
 public:
-	Buffer();
+	UserInfo();
+	virtual ~UserInfo();
+	
+	// TODO: gets
+	
+	UIN getUin();
 
-	Buffer& operator<<(Byte);
-	Buffer& operator<<(Word);
-	Buffer& operator<<(DWord);
-	Buffer& operator<<(const QString&);
-	Buffer& operator<<(Buffer&);
-
-	Buffer& operator>>(Byte &);
-	Buffer& operator>>(Word &);
-	Buffer& operator>>(DWord &);
-
-	void prepend(Byte);
-	void prepend(Word);
-	void prepend(DWord);
-
-	void remove(unsigned int num = 1);
-	void removeFromBegin();
-	void gotoBegin();
-	void gotoEnd();
-	void setPosition(unsigned int pos);
-	void advance(unsigned int pos);
-
-	void setLength(unsigned int length);
-
-	void setLittleEndian();
-	void setBigEndian();
-
-	void wipe();
-
-	void copy(Byte * bb);
-
-	unsigned int len();
-
-	virtual ~Buffer();
-
-signals:
-	void dataAvailable();
+	void parse(Buffer& b);
 
 private:
-	typedef QValueList<Byte>::iterator BIterator;
+	UIN m_uin;
+	Word m_warn;
+	DirectConnectionTLV *m_dc;
+	UserClass m_class;
 
-	bool m_lendian;
+	DWord m_createtime;
+	DWord m_signontime;
+	DWord m_idletime;
+	DWord m_creationtime;
+	DWord m_onlinetime;
 
-	Byte getByte();
-	Word getWord();
+	DWord m_extip;
 
-	QValueList<Byte> m_data;
-	BIterator m_it;
+	PresenceStatus m_status;
 
+	Capabilities m_cap;
 };
+
 
 }
 
-#endif // _BUFFER_H_
+#endif // _USERINFO_H_

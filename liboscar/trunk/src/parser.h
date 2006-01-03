@@ -60,6 +60,9 @@ private:
 	void parseCh2Service(Buffer& buf);
 	void parseCh2Location(Buffer& buf);
 	void parseCh2Contact(Buffer& buf);
+	void parseCh2ICBM(Buffer& buf);
+	void parseCh2BOS(Buffer& buf);
+	void parseCh2Interval(Buffer& buf);
 
 	void sendKeepAlive();
 

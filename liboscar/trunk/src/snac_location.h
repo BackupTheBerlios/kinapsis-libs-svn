@@ -24,6 +24,7 @@
 
 #include "snac.h"
 #include "uin.h"
+#include "userinfo.h"
 #include "capabilities.h"
 
 namespace liboscar {
@@ -82,10 +83,8 @@ public:
 
 	void parse(Buffer &b);
 private:
-	UIN m_uin;
-	PresenceStatus m_status;
+	UserInfo m_info;
 	QString m_away;
-	Capabilities m_cap;
 };
 
 class CliReqLocationSNAC : public SNAC_Location {

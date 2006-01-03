@@ -27,6 +27,9 @@
 #include "snac_service.h"
 #include "snac_location.h"
 #include "snac_contact.h"
+#include "snac_icbm.h"
+#include "snac_bos.h"
+#include "snac_interval.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -209,10 +212,13 @@ void Parser::parseCh2(Buffer& buf){
 			parseCh2Contact(buf);
 			break;
 		case SNAC_FAM_ICBM:
+			parseCh2ICBM(buf);
 			break;
 		case SNAC_FAM_BOS:
+			parseCh2BOS(buf);
 			break;
 		case SNAC_FAM_INTERVAL:
+			parseCh2Interval(buf);
 			break;
 		case SNAC_FAM_ROSTER:
 			break;
@@ -444,6 +450,96 @@ void Parser::parseCh2Contact(Buffer& buf) {
 			break;
 		default:
 			qDebug("Unknown command on SNAC Contact family");
+			break;
+	}
+}
+
+void Parser::parseCh2ICBM(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvICBMErrSNAC ise;
+	SrvReplyICBMSNAC irs;
+	SrvRecvMsg irm;
+	SrvMissedICBMSNAC imi;
+	SrvAckMsgSNAC iam;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case ICBM_SRV_ICBM_ERR:
+			ise.parse(buf);
+			qDebug(QString("Error on channel 2 family 4: %1").arg(ise.getError()));
+			break;
+		case ICBM_SRV_REPLYICBM:
+			irs.parse(buf);
+			// TODO: report
+			break;
+		case ICBM_SRV_RECVMSG:
+			irm.parse(buf);
+			// TODO: report
+			break;
+		case ICBM_SRV_MISSEDICBM:
+			imi.parse(buf);
+			// TODO: report
+			break;
+		case ICBM_SRV_SRVACKMSG:
+			iam.parse(buf);
+			break;
+		default:
+			qDebug("Unknown command on SNAC ICBM family");
+			break;
+	}
+}
+
+void Parser::parseCh2BOS(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvReplyBOSSNAC brb;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case BOS_SRV_REPLYBOS:
+			brb.parse(buf);
+			break;
+		default:
+			qDebug("Unknown command on SNAC BOS family");
+			break;
+	}
+}
+
+void Parser::parseCh2Interval(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvSetIntervalSNAC isi;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case INTERVAL_SRV_SETINTERVAL:
+			isi.parse(buf);
+			// TODO: reply the SNAC
+			break;
+		default:
+			qDebug("Unknown command on SNAC Interval family");
 			break;
 	}
 }

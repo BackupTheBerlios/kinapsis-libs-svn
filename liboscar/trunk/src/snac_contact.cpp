@@ -114,7 +114,8 @@ SrvUserOnlineSNAC::SrvUserOnlineSNAC()
 SrvUserOnlineSNAC::~SrvUserOnlineSNAC() {}
 
 void SrvUserOnlineSNAC::parse(Buffer &b) {
-	// TODO: all
+	// FIXME: some TLVs maybe are not getting properly parsed
+	m_info.parse(b);
 }
 
 	// SrvUserOffline SNAC

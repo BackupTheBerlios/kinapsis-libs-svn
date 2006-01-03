@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,71 +19,37 @@
  ***************************************************************************/
 
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#ifndef _SNAC_INTERVAL_H_
+#define _SNAC_INTERVAL_H_
 
-#include "liboscar.h"
-#include <qvaluelist.h>
-#include <qobject.h>
+#include "snac.h"
 
 namespace liboscar {
 
-class Buffer : public QObject {
-Q_OBJECT
+	const Word INTERVAL_SRV_SETINTERVAL = 0x0002; 
+
+class SNAC_Interval : public SNAC {
 
 public:
-	Buffer();
+	SNAC_Interval(Word command = 0, bool raw = true);
+	virtual ~SNAC_Interval();
 
-	Buffer& operator<<(Byte);
-	Buffer& operator<<(Word);
-	Buffer& operator<<(DWord);
-	Buffer& operator<<(const QString&);
-	Buffer& operator<<(Buffer&);
-
-	Buffer& operator>>(Byte &);
-	Buffer& operator>>(Word &);
-	Buffer& operator>>(DWord &);
-
-	void prepend(Byte);
-	void prepend(Word);
-	void prepend(DWord);
-
-	void remove(unsigned int num = 1);
-	void removeFromBegin();
-	void gotoBegin();
-	void gotoEnd();
-	void setPosition(unsigned int pos);
-	void advance(unsigned int pos);
-
-	void setLength(unsigned int length);
-
-	void setLittleEndian();
-	void setBigEndian();
-
-	void wipe();
-
-	void copy(Byte * bb);
-
-	unsigned int len();
-
-	virtual ~Buffer();
-
-signals:
-	void dataAvailable();
-
-private:
-	typedef QValueList<Byte>::iterator BIterator;
-
-	bool m_lendian;
-
-	Byte getByte();
-	Word getWord();
-
-	QValueList<Byte> m_data;
-	BIterator m_it;
-
+	virtual void parse(Buffer& b) = 0;
 };
 
-}
+class SrvSetIntervalSNAC : public SNAC_Interval {
 
-#endif // _BUFFER_H_
+public:
+	SrvSetIntervalSNAC();
+	virtual ~SrvSetIntervalSNAC();
+
+	Word getInterval();
+
+	void parse(Buffer &b);
+private:
+	Word m_interval;
+};
+
+
+}
+#endif // _SNAC_INTERVAL_H_

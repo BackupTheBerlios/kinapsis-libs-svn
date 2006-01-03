@@ -20,9 +20,8 @@
 
 
 #include "snac_service.h"
-#include "statustlv.h"
 #include "errortlv.h"
-#include "directconnectiontlv.h"
+#include "statustlv.h"
 
 namespace liboscar {
 
@@ -207,39 +206,7 @@ SrvReplyInfoSNAC::SrvReplyInfoSNAC()
 SrvReplyInfoSNAC::~SrvReplyInfoSNAC() { }
 
 void SrvReplyInfoSNAC::parse(Buffer &b){
-	Word count, type, len;
-	Byte by;
-	StatusTLV st;
-	DirectConnectionTLV dct;
-
-	b >> by; //UIN's len
-	b.advance(by); //Skip the UIN
-	b.advance(2);
-	b >> count;
-	while (count--) {
-		b >> type;
-		b >> len;
-		switch (type){
-			case 0x0001:
-			case 0x0002:
-			case 0x0003:
-			case 0x0005:
-			case 0x000f:
-			case 0x001e:
-				b.advance(len); // We just don't care xD
-				break;
-			case 0x0006:
-				st.parse(b);
-				break;
-			case 0x000c:
-				dct.parse(b); // TODO: Relevant stuff here
-				break;
-			default:
-				qDebug("Unknown TLV in ReplyInfo SNAC");
-				b.advance(len);
-				break;
-		}
-	}
+	m_info.parse(b);
 }
 
 	// SrvMigrationReqSNAC

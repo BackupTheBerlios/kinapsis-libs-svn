@@ -20,9 +20,8 @@
 
 
 #include "snac_location.h"
-#include "errortlv.h"
 #include "tlv.h"
-#include "statustlv.h"
+#include "errortlv.h"
 #include "capabilitiestlv.h"
 
 namespace liboscar {
@@ -170,65 +169,9 @@ SrvUserInfoSNAC::SrvUserInfoSNAC()
 SrvUserInfoSNAC::~SrvUserInfoSNAC() { }
 
 void SrvUserInfoSNAC::parse(Buffer &b) {
+	m_info.parse(b);
 
-	Word cnt = 0;
-	Word type = 0;
-	Word len = 0;
-
-	UnformattedTLV utlv(TLV_TYPE_GENERIC);
-	StatusTLV stlv;
-	CapabilitiesTLV* ctlv;
-
-	m_uin.parse(b); // Got uin
-	b.advance(2); // Warn level TODO??
-
-	b >> cnt; // Number of TLVs
-
-	while (cnt) {
-		b >> type;
-		b >> len;
-		switch (type) {
-			case 0x0001:
-				// TODO: handle this info?
-				utlv.parseData(b, len);
-				break;
-			case 0x0003:
-				// TODO: handle this info?
-				utlv.parseData(b, len);
-				break;
-			case 0x0004:
-				ctlv = new CapabilitiesTLV(len);
-				ctlv->parse(b);
-				m_cap = ctlv->getCapabilities();
-				delete ctlv;
-				break;
-			case 0x0005:
-				// TODO: handle this info?
-				utlv.parseData(b, len);
-				break;
-			case 0x0006:
-				stlv.parse(b);
-				m_status = stlv.getStatus();
-				break;
-			case 0x000a:
-				// TODO: handle this info?
-				utlv.parseData(b, len);
-				break;
-			case 0x000c:
-				// TODO: handle this info? DC info
-				utlv.parseData(b, len);
-				break;
-			case 0x000f:
-				// TODO: handle this info?
-				utlv.parseData(b, len);
-				break;
-			default:
-				qDebug("Unknown TLV in SrvUserInfo SNAC");
-				break;
-		}
-		cnt--;
-	}
-
+	// TODO: parse TLVs 1,2,3,4,5
 	return ;
 }
 
