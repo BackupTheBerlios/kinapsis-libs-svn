@@ -100,6 +100,8 @@ public:
 	UnformattedTLV(const Word type);
 	virtual ~UnformattedTLV();
 	
+	Word getType();
+
 	void specPack() { return ; };
 	void parse(Buffer& b);
 	void parseData(Buffer& b, Word len);

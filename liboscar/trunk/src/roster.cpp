@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,72 +19,39 @@
  ***************************************************************************/
 
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
-
-#include "liboscar.h"
-#include <qvaluelist.h>
-#include <qobject.h>
+#include "roster.h"
 
 namespace liboscar {
 
-class Buffer : public QObject {
-Q_OBJECT
-
-public:
-	Buffer();
-
-	Buffer& operator<<(Byte);
-	Buffer& operator<<(Word);
-	Buffer& operator<<(DWord);
-	Buffer& operator<<(const QString&);
-	Buffer& operator<<(Buffer&);
-
-	Buffer& operator>>(Byte &);
-	Buffer& operator>>(Word &);
-	Buffer& operator>>(DWord &);
-	void readString(QString &);
-
-	void prepend(Byte);
-	void prepend(Word);
-	void prepend(DWord);
-
-	void remove(unsigned int num = 1);
-	void removeFromBegin();
-	void gotoBegin();
-	void gotoEnd();
-	void setPosition(unsigned int pos);
-	void advance(unsigned int pos);
-
-	void setLength(unsigned int length);
-
-	void setLittleEndian();
-	void setBigEndian();
-
-	void wipe();
-
-	void copy(Byte * bb);
-
-	unsigned int len();
-
-	virtual ~Buffer();
-
-signals:
-	void dataAvailable();
-
-private:
-	typedef QValueList<Byte>::iterator BIterator;
-
-	bool m_lendian;
-
-	Byte getByte();
-	Word getWord();
-
-	QValueList<Byte> m_data;
-	BIterator m_it;
-
-};
-
+Roster::Roster() { 
+	m_data.setAutoDelete(true);
+	m_timestamp = 0x00000000;
 }
 
-#endif // _BUFFER_H_
+Roster::~Roster() { }
+
+void Roster::addContact(Contact* contact) {
+	m_data.append(contact);
+}
+
+bool Roster::delContact(Contact* contact) {
+	return m_data.remove(contact);
+}
+
+void Roster::setTimestamp(DWord timestamp) {
+	m_timestamp = timestamp;
+}
+
+DWord Roster::getTimestamp() {
+	return m_timestamp;
+}
+
+unsigned int Roster::len() {
+	return m_data.count();
+}
+
+QPtrList<Contact>& Roster::getContacts() {
+	return m_data;
+}
+
+}

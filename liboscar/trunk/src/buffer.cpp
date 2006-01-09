@@ -143,6 +143,17 @@ Buffer& Buffer::operator>>(Word &w){
 	return *this;
 }
 
+void Buffer::readString(QString &s){
+	Word len;
+
+	len = getWord();
+
+	if (m_data.count() >= len){
+		while (len--)
+			s.append(getByte());
+	}
+}
+
 Buffer& Buffer::operator>>(DWord &dw){
 	Word w1; /* low word */
 	Word w2; /* high word */

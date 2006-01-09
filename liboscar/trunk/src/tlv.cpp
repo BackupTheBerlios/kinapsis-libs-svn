@@ -90,5 +90,8 @@ void UnformattedTLV::parseData(Buffer &b, Word len){
 	b.removeFromBegin();
 }
 	
+Word UnformattedTLV::getType(){
+	return m_type;
+}
 
 }

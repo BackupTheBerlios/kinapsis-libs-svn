@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,72 +19,40 @@
  ***************************************************************************/
 
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#ifndef _ROSTER_H_
+#define _ROSTER_H_
 
 #include "liboscar.h"
-#include <qvaluelist.h>
-#include <qobject.h>
+#include "contact.h"
+#include <qptrlist.h>
 
 namespace liboscar {
 
-class Buffer : public QObject {
-Q_OBJECT
+	typedef QPtrList<Contact>::iterator ContactIterator;
+
+class Roster {
 
 public:
-	Buffer();
+	Roster();
+	virtual ~Roster();
 
-	Buffer& operator<<(Byte);
-	Buffer& operator<<(Word);
-	Buffer& operator<<(DWord);
-	Buffer& operator<<(const QString&);
-	Buffer& operator<<(Buffer&);
+	void addContact(Contact* contact);
+	bool delContact(Contact* contact);
 
-	Buffer& operator>>(Byte &);
-	Buffer& operator>>(Word &);
-	Buffer& operator>>(DWord &);
-	void readString(QString &);
+	void setTimestamp(DWord timestamp);
 
-	void prepend(Byte);
-	void prepend(Word);
-	void prepend(DWord);
-
-	void remove(unsigned int num = 1);
-	void removeFromBegin();
-	void gotoBegin();
-	void gotoEnd();
-	void setPosition(unsigned int pos);
-	void advance(unsigned int pos);
-
-	void setLength(unsigned int length);
-
-	void setLittleEndian();
-	void setBigEndian();
-
-	void wipe();
-
-	void copy(Byte * bb);
+	DWord getTimestamp();
 
 	unsigned int len();
-
-	virtual ~Buffer();
-
-signals:
-	void dataAvailable();
+	QPtrList<Contact>& getContacts();
 
 private:
-	typedef QValueList<Byte>::iterator BIterator;
+	QPtrList<Contact> m_data;
 
-	bool m_lendian;
-
-	Byte getByte();
-	Word getWord();
-
-	QValueList<Byte> m_data;
-	BIterator m_it;
+	DWord m_timestamp;
 
 };
 
 }
 
-#endif // _BUFFER_H_
+#endif // _ROSTER_H_
