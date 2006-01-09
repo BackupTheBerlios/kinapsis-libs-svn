@@ -38,6 +38,7 @@ namespace liboscar {
 	const Word TLV_TYPE_VERSION = 0x0003;
 	const Word TLV_TYPE_DESCRIPTION = 0x0004;
 	const Word TLV_TYPE_SERVER = 0x0005;
+	const Word TLV_TYPE_CAPABILITIES = 0x0005;
 	const Word TLV_TYPE_COOKIE = 0x0006;
 	const Word TLV_TYPE_STATUS = 0x0006;
 

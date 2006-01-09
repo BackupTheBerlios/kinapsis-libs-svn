@@ -24,7 +24,8 @@
 namespace liboscar {
 
 
-CapabilitiesTLV::CapabilitiesTLV(Word len) {
+CapabilitiesTLV::CapabilitiesTLV(Word len)
+	:TLV(TLV_TYPE_CAPABILITIES){
 	m_length = len;
 }
 

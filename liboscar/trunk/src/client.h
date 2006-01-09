@@ -27,6 +27,7 @@
 #include "connectionresult.h"
 #include "liboscar.h"
 #include "parser.h"
+#include "roster.h"
 #include <qobject.h>
 
 namespace liboscar {
@@ -63,6 +64,7 @@ protected:
 	DWord getLocalIP();
 	Word getPort();
 	FirewallConfiguration getFirewall();
+	Roster& getRoster();
 
 private:
 	void send(Buffer &b);
@@ -87,6 +89,7 @@ private:
 	Connection* m_logconn;
 	Parser* m_parser;
 
+	Roster m_roster;
 };
 
 }

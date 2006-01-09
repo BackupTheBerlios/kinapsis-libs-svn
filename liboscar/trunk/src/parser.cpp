@@ -30,6 +30,7 @@
 #include "snac_icbm.h"
 #include "snac_bos.h"
 #include "snac_interval.h"
+#include "snac_roster.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -43,6 +44,7 @@ Parser::Parser(Client *c){
 	m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
 	m_client = c;
 	m_cap.setDefault();
+	m_inlogin = true;
 }
 
 void Parser::add(Byte *data, int len){
@@ -221,6 +223,7 @@ void Parser::parseCh2(Buffer& buf){
 			parseCh2Interval(buf);
 			break;
 		case SNAC_FAM_ROSTER:
+			parseCh2Roster(buf);
 			break;
 		case SNAC_FAM_OLDICQ:
 			break;
@@ -368,10 +371,19 @@ void Parser::parseCh2Service(Buffer& buf) {
 	}
 	else if (command == SERVICE_SRV_RATES){
 		// Ack rates
-		FLAP f(0x02, getNextSeqNumber(), 0);
+		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
 		CliAckRatesSNAC *clia = new CliAckRatesSNAC;
-		f.addSNAC(clia);
-		m_client->send(f.pack());
+		f->addSNAC(clia);
+		m_client->send(f->pack());
+		delete f;
+		if (m_inlogin){
+			// Continue login sequence
+			f = new FLAP(0x02, getNextSeqNumber(), 0);
+			CliReqLocationSNAC *creqloc = new CliReqLocationSNAC;
+			f->addSNAC(creqloc);
+			m_client->send(f->pack());
+			delete f;
+		}
 	}
 
 }
@@ -407,6 +419,19 @@ void Parser::parseCh2Location(Buffer& buf) {
 		default:
 			qDebug("Unknown command on SNAC Location family");
 			break;
+	}
+	// React to commands
+	if (command == LOCATION_SRV_REPLYLOCATION && m_inlogin) {
+		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliSetUserInfoSNAC *cuinfo = new CliSetUserInfoSNAC(m_cap);
+		f->addSNAC(cuinfo);
+		m_client->send(f->pack());
+		delete f;
+		f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliReqBuddySNAC *creqb = new CliReqBuddySNAC;
+		f->addSNAC(creqb);
+		m_client->send(f->pack());
+		delete f;
 	}
 }
 
@@ -452,6 +477,14 @@ void Parser::parseCh2Contact(Buffer& buf) {
 			qDebug("Unknown command on SNAC Contact family");
 			break;
 	}
+	// React to commands
+	if (command == CONTACT_SRV_REPLYBUDDY && m_inlogin) {
+		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliReqICBMSNAC *creqi = new CliReqICBMSNAC;
+		f->addSNAC(creqi);
+		m_client->send(f->pack());
+		delete f;
+	}
 }
 
 void Parser::parseCh2ICBM(Buffer& buf) {
@@ -495,6 +528,19 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 			qDebug("Unknown command on SNAC ICBM family");
 			break;
 	}
+	// React to commands
+	if (command == ICBM_SRV_REPLYICBM && m_inlogin) {
+		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliSetICBMSNAC *cseti = new CliSetICBMSNAC;
+		f->addSNAC(cseti);
+		m_client->send(f->pack());
+		delete f;
+		f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliReqBOSSNAC *creqbos = new CliReqBOSSNAC;
+		f->addSNAC(creqbos);
+		m_client->send(f->pack());
+		delete f;
+	}
 }
 
 void Parser::parseCh2BOS(Buffer& buf) {
@@ -517,6 +563,14 @@ void Parser::parseCh2BOS(Buffer& buf) {
 		default:
 			qDebug("Unknown command on SNAC BOS family");
 			break;
+	}
+	// React to commands
+	if (command == BOS_SRV_REPLYBOS && m_inlogin) {
+		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliReqListsSNAC *creql = new CliReqListsSNAC;
+		f->addSNAC(creql);
+		m_client->send(f->pack());
+		delete f;
 	}
 }
 
@@ -541,6 +595,85 @@ void Parser::parseCh2Interval(Buffer& buf) {
 		default:
 			qDebug("Unknown command on SNAC Interval family");
 			break;
+	}
+}
+
+void Parser::parseCh2Roster(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvReplyListsSNAC srl;
+	SrvReplyRosterSNAC srr;
+	SrvUpdateAckSNAC sua;
+	SrvReplyRosterOkSNAC srro;
+	SrvAuthReqSNAC sar;
+	SrvAuthReplySNAC sare;
+	SrvAddedYouSNAC say;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		// TODO: handle things && report
+		case ROSTER_SRV_REPLYLISTS:
+			srl.parse(buf);
+			break;
+		case ROSTER_SRV_REPLYROSTER:
+			srr.parse(buf);
+			break;
+		case ROSTER_SRV_UPDATEACK:
+			sua.parse(buf);
+			break;
+		case ROSTER_SRV_REPLYROSTEROK:
+			srro.parse(buf);
+			break;
+		case ROSTER_SRV_AUTHREQ:
+			sar.parse(buf);
+			break;
+		case ROSTER_SRV_AUTHREPLY:
+			sare.parse(buf);
+			break;
+		case ROSTER_SRV_ADDEDYOU:
+			say.parse(buf);
+			break;
+		default:
+			qDebug("Unknown command on SNAC Roster family");
+			break;
+	}
+	// React to commands
+	if (command == ROSTER_SRV_REPLYLISTS && m_inlogin) {
+		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliCheckRosterSNAC *ccr = new CliCheckRosterSNAC(m_client->getRoster());
+		f->addSNAC(ccr);
+		m_client->send(f->pack());
+		delete f;
+	}
+	else if (command == ROSTER_SRV_REPLYROSTER || command == ROSTER_SRV_REPLYROSTEROK){
+		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
+		CliRosterAckSNAC *cra = new CliRosterAckSNAC;
+		f->addSNAC(cra);
+		m_client->send(f->pack());
+		delete f;
+		if (m_inlogin) {
+			f = new FLAP(0x02, getNextSeqNumber(), 0);
+			// FIXME: wired values
+			CliSetStatusSNAC *css = new CliSetStatusSNAC(STATUS_ONLINE, 0, 0, NORMAL);
+			f->addSNAC(css);
+			m_client->send(f->pack());
+			delete f;
+			f = new FLAP(0x02, getNextSeqNumber(), 0);
+			CliReadySNAC *crs = new CliReadySNAC;
+			f->addSNAC(crs);
+			m_client->send(f->pack());
+			delete f;
+
+			//Finished login sequence (TODO: offline messages)
+			m_inlogin = false;
+		}
 	}
 }
 

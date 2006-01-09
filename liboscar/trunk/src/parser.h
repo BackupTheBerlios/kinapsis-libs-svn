@@ -63,6 +63,7 @@ private:
 	void parseCh2ICBM(Buffer& buf);
 	void parseCh2BOS(Buffer& buf);
 	void parseCh2Interval(Buffer& buf);
+	void parseCh2Roster(Buffer& buf);
 
 	void sendKeepAlive();
 
@@ -74,6 +75,7 @@ private:
 
 	Buffer m_cookie;
 
+	bool m_inlogin;
 };
 
 }

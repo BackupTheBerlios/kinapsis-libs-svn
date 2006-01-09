@@ -250,6 +250,10 @@ void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
 	disconnect(CONN_ERR_UNEXPECTED);
 }
 
+Roster& Client::getRoster(){
+	return m_roster;
+}
+
 Client::~Client() { 
 	initvalues();
 }

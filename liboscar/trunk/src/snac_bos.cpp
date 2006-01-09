@@ -48,6 +48,12 @@ void SrvReplyBOSSNAC::parse(Buffer &b) {
 	// Client's SNACs
 	//
 	
+	// CliReqBOS SNAC
+CliReqBOSSNAC::CliReqBOSSNAC()
+	: SNAC_BOS(BOS_CLI_REQBOS, true) { }
+
+CliReqBOSSNAC::~CliReqBOSSNAC() { }
+
 	// CliAddVisible SNAC
 CliAddVisibleSNAC::CliAddVisibleSNAC(UIN uin)
 	: SNAC_BOS(BOS_CLI_ADDVISIBLE, true) {

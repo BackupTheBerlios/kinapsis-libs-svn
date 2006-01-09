@@ -52,6 +52,15 @@ public:
 	void parse(Buffer &b);
 };
 
+class CliReqBOSSNAC : public SNAC_BOS {
+
+public:
+	CliReqBOSSNAC();
+	virtual ~CliReqBOSSNAC();
+
+	void parse(Buffer &b) {return ; };
+};
+
 class CliAddVisibleSNAC : public SNAC_BOS {
 
 public:
