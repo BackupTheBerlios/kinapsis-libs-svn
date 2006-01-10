@@ -673,6 +673,7 @@ void Parser::parseCh2Roster(Buffer& buf) {
 
 			//Finished login sequence (TODO: offline messages)
 			m_inlogin = false;
+			emit loginSequenceFinished();
 		}
 	}
 }

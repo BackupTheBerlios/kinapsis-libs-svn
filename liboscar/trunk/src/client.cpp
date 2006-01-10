@@ -110,6 +110,7 @@ void Client::disconnect(ConnectionError err){
 	else if ((m_state == CLI_CONNECTING) || (m_state == CLI_CONNECTED) && m_conn)
 		m_conn->disconnect();
 
+	emit notifyDisconnect();
 }
 
 ConnectionError Client::connAuth() {
@@ -171,6 +172,7 @@ ConnectionResult Client::connect(){
 		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
 				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
+		QObject::connect(m_parser, SIGNAL(loginSequenceFinished), this, SLOT(finishedConnection));
 	}
 
 	e = connAuth();
@@ -218,7 +220,6 @@ void Client::getBOSInfo(QString server, QString port){
 }
 
 void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
-	// TODO: error reports
 	qDebug("Unexpected disconnect from server");
 
 	switch (error) {
@@ -250,8 +251,39 @@ void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
 	disconnect(CONN_ERR_UNEXPECTED);
 }
 
+void Client::finishedConnection(){
+	emit notifyConnect();
+}
+
+void Client::rosterArrived(Roster r){
+	QPtrList<Contact> c = r.getContacts();
+	Contact *tmp;
+
+	for (tmp = c.first(); tmp; tmp = c.next())
+		emit notifyNewContact(tmp);
+}
+
 Roster& Client::getRoster(){
 	return m_roster;
+}
+
+// LISTENERS' STUFF
+
+void Client::addConnectionListener(ConnectionListener *cl) {
+	QObject::connect(this, SIGNAL(notifyConnect), cl, SLOT(onConnect));
+	QObject::connect(this, SIGNAL(notifyDisconnect), cl, SLOT(onDisconnect));
+}
+
+void Client::delConnectionListener(ConnectionListener *cl) {
+	QObject::disconnect(this, 0, cl, 0);
+}
+
+void Client::addRosterListener(RosterListener *rl) {
+	QObject::connect(this, SIGNAL(notifyNewContact), rl, SLOT(onNewContact));
+}
+
+void Client::delRosterListener(RosterListener *rl) {
+	QObject::disconnect(this, 0, rl, 0);
 }
 
 Client::~Client() { 

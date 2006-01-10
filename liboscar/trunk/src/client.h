@@ -28,12 +28,15 @@
 #include "liboscar.h"
 #include "parser.h"
 #include "roster.h"
+#include "rosterlistener.h"
+#include "connectionlistener.h"
 #include <qobject.h>
 
 namespace liboscar {
 
 	class UIN;
 	class Connection;
+	class ListenerManager;
 
 class Client : public QObject {
 Q_OBJECT
@@ -53,12 +56,27 @@ public:
 	ConnectionResult connect();
 	void disconnect(ConnectionError err=CONN_NO_ERROR);
 
+	void addConnectionListener(ConnectionListener *cl);
+	void delConnectionListener(ConnectionListener *cl);
+	void addRosterListener(RosterListener *rl);
+	void delRosterListener(RosterListener *rl);
+
 	virtual ~Client();
+
+signals:
+	// Connection
+	void notifyConnect();
+	void notifyDisconnect();
+
+	// Roster
+	void notifyNewContact(Contact *c);
 
 public slots:
 
 	void getBOSInfo(QString server, QString port);
 	void unexpectedDisconnect(QString reason, DisconnectReason error);
+	void finishedConnection();
+	void rosterArrived(Roster roster);
 
 protected:
 	DWord getLocalIP();
