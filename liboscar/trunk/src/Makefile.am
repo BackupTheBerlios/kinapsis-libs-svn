@@ -11,7 +11,7 @@ liboscar_la_SOURCES = buffer.cpp capabilities.cpp capabilitiestlv.cpp \
 		      client.cpp connection.cpp connectionlistener.cpp connectionresult.cpp \
 		      contact.cpp directconnectiontlv.cpp errortlv.cpp \
 		      families.cpp flap.cpp parser.cpp \
-		      roster.cpp servertlv.cpp snac.cpp snac_bos.cpp \
+		      roster.cpp rosterlistener.cpp servertlv.cpp snac.cpp snac_bos.cpp \
 		      snac_contact.cpp snac_icbm.cpp snac_interval.cpp snac_location.cpp \
 		      snac_roster.cpp snac_service.cpp statustlv.cpp passwordtlv.cpp \
 		      tlv.cpp uin.cpp userinfo.cpp

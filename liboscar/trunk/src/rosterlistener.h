@@ -23,6 +23,7 @@
 #define _ROSTERLISTENER_H_
 
 #include <qobject.h>
+#include "contact.h"
 
 namespace liboscar {
 
