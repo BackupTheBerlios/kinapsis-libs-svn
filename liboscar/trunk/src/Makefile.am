@@ -17,7 +17,7 @@ liboscar_la_SOURCES = buffer.cpp capabilities.cpp capabilitiestlv.cpp \
 		      tlv.cpp uin.cpp userinfo.cpp
 
 liboscarincludedir = $(includedir)/liboscar
-liboscarinclude_HEADERS = buffer.h client.h connection.h connectionresult.h \
-			  flap.h parser.h snac.h tlv.h uin.h
+liboscarinclude_HEADERS = buffer.h client.h connectionresult.h \
+			  connectionlistener.h liboscar.h rosterlistener.h uin.h
 
 METASOURCES = AUTO
