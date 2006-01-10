@@ -26,6 +26,7 @@
 #include "client.h"
 #include "families.h"
 #include "capabilities.h"
+#include "roster.h"
 #include <qobject.h>
 #include <qstring.h>
 
@@ -47,6 +48,7 @@ signals:
 	void receivedBOS(QString server, QString port);
 	void serverDisconnected(QString reason, DisconnectReason error);
 	void loginSequenceFinished();
+	void rosterInfo(Roster r);
 
 public slots:
 	void parse();

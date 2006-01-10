@@ -172,7 +172,8 @@ ConnectionResult Client::connect(){
 		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
 				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
-		QObject::connect(m_parser, SIGNAL(loginSequenceFinished), this, SLOT(finishedConnection));
+		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
+		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
 	}
 
 	e = connAuth();
@@ -256,6 +257,9 @@ void Client::finishedConnection(){
 }
 
 void Client::rosterArrived(Roster r){
+
+	m_roster = r;
+
 	QPtrList<Contact> c = r.getContacts();
 	Contact *tmp;
 
@@ -270,8 +274,8 @@ Roster& Client::getRoster(){
 // LISTENERS' STUFF
 
 void Client::addConnectionListener(ConnectionListener *cl) {
-	QObject::connect(this, SIGNAL(notifyConnect), cl, SLOT(onConnect));
-	QObject::connect(this, SIGNAL(notifyDisconnect), cl, SLOT(onDisconnect));
+	QObject::connect(this, SIGNAL(notifyConnect()), cl, SLOT(onConnect()));
+	QObject::connect(this, SIGNAL(notifyDisconnect()), cl, SLOT(onDisconnect()));
 }
 
 void Client::delConnectionListener(ConnectionListener *cl) {
@@ -279,7 +283,7 @@ void Client::delConnectionListener(ConnectionListener *cl) {
 }
 
 void Client::addRosterListener(RosterListener *rl) {
-	QObject::connect(this, SIGNAL(notifyNewContact), rl, SLOT(onNewContact));
+	QObject::connect(this, SIGNAL(notifyNewContact(Contact *)), rl, SLOT(onNewContact(Contact *)));
 }
 
 void Client::delRosterListener(RosterListener *rl) {

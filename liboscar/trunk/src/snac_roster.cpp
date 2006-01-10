@@ -71,6 +71,7 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 	i = count;
 
 	while (i--){
+		name = ""; nick = "";
 		b.readString(name);
 		b >> group;
 		b >> id;

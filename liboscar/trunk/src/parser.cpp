@@ -624,6 +624,7 @@ void Parser::parseCh2Roster(Buffer& buf) {
 			break;
 		case ROSTER_SRV_REPLYROSTER:
 			srr.parse(buf);
+			emit rosterInfo(srr.getRoster());
 			break;
 		case ROSTER_SRV_UPDATEACK:
 			sua.parse(buf);
