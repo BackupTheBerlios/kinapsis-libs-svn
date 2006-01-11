@@ -22,6 +22,7 @@
 #include "client.h"
 #include "flap.h"
 #include "snac_icbm.h"
+#include "snac_service.h"
 
 namespace liboscar {
 
@@ -123,6 +124,14 @@ void Client::disconnect(ConnectionError err){
 void Client::sendMessage(UIN uin, QString message) {
 	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
 	CliSendMsgSNAC *s = new CliSendMsgSNAC(uin, message);
+	f.addSNAC(s);
+	send(f.pack());
+}
+
+void Client::setPresence(PresenceStatus status) {
+	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	// FIXME: wired values
+	CliSetStatusSNAC *s = new CliSetStatusSNAC(status, 0, 0, NORMAL);
 	f.addSNAC(s);
 	send(f.pack());
 }

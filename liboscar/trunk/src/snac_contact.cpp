@@ -138,12 +138,15 @@ UIN SrvUserOfflineSNAC::getUin() {
 
 void SrvUserOfflineSNAC::parse(Buffer &b) {
 	UnformattedTLV tlv(TLV_TYPE_GENERIC);
-	DWord data;
+	Word warn;
+	Word count;
 
 	m_uin.parse(b);
 
-	b >> data; // Unknown
-	tlv.parse(b);
+	b >> warn;
+	b >> count;
+	while (count--)
+		tlv.parse(b); // We just don't care
 }
 
 	// 

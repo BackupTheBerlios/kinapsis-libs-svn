@@ -59,6 +59,7 @@ public:
 	void disconnect(ConnectionError err=CONN_NO_ERROR);
 
 	void sendMessage(UIN uin, QString message);
+	void setPresence(PresenceStatus status);
 
 	void addConnectionListener(ConnectionListener *cl);
 	void delConnectionListener(ConnectionListener *cl);

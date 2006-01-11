@@ -70,33 +70,37 @@ void StatusTLV::specPack(){
 }
 
 void StatusTLV::parse(Buffer& b){
-	DWord s;
+	Word f;
+	Word s;
 
+	// TODO: ignoring flags. We must handle them
+	b >> f;
 	b >> s;
 	switch (s) {
-		case 0xffffffff:
+		case 0xffff:
 			m_status = STATUS_OFFLINE;
 			break;
-		case 0x00000100:
+		case 0x0100:
 			m_status = STATUS_INVISIBLE;
 			break;
-		case 0x00000013:
+		case 0x0013:
+		case 0x0002:
 			m_status = STATUS_DND;
 			break;
-		case 0x00000011:
+		case 0x0011:
 			m_status = STATUS_OCUPPIED;
 			break;
-		case 0x00000005:
+		case 0x0005:
 			m_status = STATUS_NA;
 			break;
-		case 0x00000001:
+		case 0x0001:
 			m_status = STATUS_AWAY;
 			break;
-		case 0x00000020:
+		case 0x0020:
 			m_status = STATUS_FFC;
 			break;
 		default:
-		case 0x00000000:
+		case 0x0000:
 			m_status = STATUS_ONLINE;
 			break;
 
