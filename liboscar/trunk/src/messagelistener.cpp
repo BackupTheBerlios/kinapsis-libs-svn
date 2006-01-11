@@ -19,54 +19,14 @@
  ***************************************************************************/
 
 
-#ifndef _USERINFO_H_
-#define _USERINFO_H_
-
-#include "uin.h"
-#include "buffer.h"
-#include "capabilities.h"
-#include "directconnectiontlv.h"
+#include "messagelistener.h"
 
 namespace liboscar {
 
-	class UIN;
-	class Buffer;
-	class Capabilities;
-	class DirectConnectionTLV;
+MessageListener::MessageListener() { }
 
-class UserInfo {
-
-public:
-	UserInfo();
-	virtual ~UserInfo();
-	
-	// TODO: gets
-	
-	UIN getUin();
-	PresenceStatus getStatus();
-
-	void parse(Buffer& b);
-
-private:
-	UIN m_uin;
-	Word m_warn;
-	DirectConnectionTLV *m_dc;
-	UserClass m_class;
-
-	DWord m_createtime;
-	DWord m_signontime;
-	DWord m_idletime;
-	DWord m_creationtime;
-	DWord m_onlinetime;
-
-	DWord m_extip;
-
-	PresenceStatus m_status;
-
-	Capabilities m_cap;
-};
-
+MessageListener::~MessageListener() { }
 
 }
 
-#endif // _USERINFO_H_
+#include "messagelistener.moc"

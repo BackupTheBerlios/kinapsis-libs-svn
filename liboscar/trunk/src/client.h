@@ -30,6 +30,8 @@
 #include "roster.h"
 #include "rosterlistener.h"
 #include "connectionlistener.h"
+#include "messagelistener.h"
+#include "presencelistener.h"
 #include <qobject.h>
 
 namespace liboscar {
@@ -56,10 +58,16 @@ public:
 	ConnectionResult connect();
 	void disconnect(ConnectionError err=CONN_NO_ERROR);
 
+	void sendMessage(UIN uin, QString message);
+
 	void addConnectionListener(ConnectionListener *cl);
 	void delConnectionListener(ConnectionListener *cl);
 	void addRosterListener(RosterListener *rl);
 	void delRosterListener(RosterListener *rl);
+	void addMessageListener(MessageListener *ml);
+	void delMessageListener(MessageListener *ml);
+	void addPresenceListener(PresenceListener *pl);
+	void delPresenceListener(PresenceListener *pl);
 
 	virtual ~Client();
 
@@ -71,12 +79,20 @@ signals:
 	// Roster
 	void notifyNewContact(Contact *c);
 
+	// Message
+	void notifyMessage(UIN uin, QString message);
+
+	// Presence
+	void notifyPresence(UIN uin, PresenceStatus status);
+
 public slots:
 
 	void getBOSInfo(QString server, QString port);
 	void unexpectedDisconnect(QString reason, DisconnectReason error);
 	void finishedConnection();
 	void rosterArrived(Roster roster);
+	void messageArrived(UIN uin, QString message);
+	void statusChanged(UIN uin, PresenceStatus status);
 
 protected:
 	DWord getLocalIP();

@@ -50,7 +50,7 @@ void UIN::setUin(const unsigned int uin){
 }
 
 void UIN::appendUin(Buffer &b){
-	b << m_uin.length();
+	b << (Byte) m_uin.length();
 	b << m_uin;
 }
 

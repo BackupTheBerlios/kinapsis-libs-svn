@@ -113,6 +113,14 @@ SrvUserOnlineSNAC::SrvUserOnlineSNAC()
 
 SrvUserOnlineSNAC::~SrvUserOnlineSNAC() {}
 
+PresenceStatus SrvUserOnlineSNAC::getStatus(){
+	return m_info.getStatus();
+}
+
+UIN SrvUserOnlineSNAC::getUin(){
+	return m_info.getUin();
+}
+
 void SrvUserOnlineSNAC::parse(Buffer &b) {
 	// FIXME: some TLVs maybe are not getting properly parsed
 	m_info.parse(b);

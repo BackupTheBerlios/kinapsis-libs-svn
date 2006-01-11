@@ -468,6 +468,7 @@ void Parser::parseCh2Contact(Buffer& buf) {
 		case CONTACT_SRV_USERONLINE:
 			// TODO: report status event
 			uos.parse(buf);
+			emit statusChanged(uos.getUin(), uos.getStatus());
 			break;
 		case CONTACT_SRV_USEROFFLINE:
 			// TODO: report offline event
@@ -515,7 +516,8 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 			break;
 		case ICBM_SRV_RECVMSG:
 			irm.parse(buf);
-			// TODO: report
+			qDebug("hola");
+			emit newMessage(irm.getUin(), irm.getMessage());
 			break;
 		case ICBM_SRV_MISSEDICBM:
 			imi.parse(buf);

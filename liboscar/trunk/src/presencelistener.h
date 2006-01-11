@@ -19,54 +19,24 @@
  ***************************************************************************/
 
 
-#ifndef _USERINFO_H_
-#define _USERINFO_H_
+#ifndef _PRESENCELISTENER_H_
+#define _PRESENCELISTENER_H_
 
+#include <qobject.h>
 #include "uin.h"
-#include "buffer.h"
-#include "capabilities.h"
-#include "directconnectiontlv.h"
 
 namespace liboscar {
 
-	class UIN;
-	class Buffer;
-	class Capabilities;
-	class DirectConnectionTLV;
-
-class UserInfo {
-
+class PresenceListener : public QObject{
+Q_OBJECT
 public:
-	UserInfo();
-	virtual ~UserInfo();
-	
-	// TODO: gets
-	
-	UIN getUin();
-	PresenceStatus getStatus();
-
-	void parse(Buffer& b);
-
-private:
-	UIN m_uin;
-	Word m_warn;
-	DirectConnectionTLV *m_dc;
-	UserClass m_class;
-
-	DWord m_createtime;
-	DWord m_signontime;
-	DWord m_idletime;
-	DWord m_creationtime;
-	DWord m_onlinetime;
-
-	DWord m_extip;
-
-	PresenceStatus m_status;
-
-	Capabilities m_cap;
+	PresenceListener();
+	virtual ~PresenceListener();
+public slots:
+	virtual void presenceChanged(UIN uin, PresenceStatus status) = 0;
 };
 
 
 }
 
-#endif // _USERINFO_H_
+#endif // _PRESENCELISTENER_H_

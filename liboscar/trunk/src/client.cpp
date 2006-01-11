@@ -20,16 +20,22 @@
 
 
 #include "client.h"
+#include "flap.h"
+#include "snac_icbm.h"
 
 namespace liboscar {
 
 Client::Client(){
+	m_conn = m_logconn = 0;
+	m_parser = 0;
 	initvalues();
 }
 
 Client::Client(const UIN& uin, const QString& password){
 	m_uin = uin;
 	m_password = password;
+	m_conn = m_logconn = 0;
+	m_parser = 0;
 	initvalues();
 }
 
@@ -107,10 +113,18 @@ void Client::disconnect(ConnectionError err){
 
 	if (m_state == CLI_AUTHING && m_logconn)
 		m_logconn->disconnect();
-	else if ((m_state == CLI_CONNECTING) || (m_state == CLI_CONNECTED) && m_conn)
+	else if ((m_state == CLI_CONNECTING) || (m_state == CLI_CONNECTED) && m_conn){
 		m_conn->disconnect();
+		emit notifyDisconnect();
+	}
 
-	emit notifyDisconnect();
+}
+
+void Client::sendMessage(UIN uin, QString message) {
+	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	CliSendMsgSNAC *s = new CliSendMsgSNAC(uin, message);
+	f.addSNAC(s);
+	send(f.pack());
 }
 
 ConnectionError Client::connAuth() {
@@ -174,6 +188,8 @@ ConnectionResult Client::connect(){
 				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
 		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
 		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
+		QObject::connect(m_parser, SIGNAL(newMessage(UIN, QString)), this, SLOT(messageArrived(UIN, QString)));
+		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
 	}
 
 	e = connAuth();
@@ -267,6 +283,14 @@ void Client::rosterArrived(Roster r){
 		emit notifyNewContact(tmp);
 }
 
+void Client::messageArrived(UIN uin, QString message){
+	emit notifyMessage(uin, message);
+}
+
+void Client::statusChanged(UIN uin, PresenceStatus status){
+	emit notifyPresence(uin, status);
+}
+
 Roster& Client::getRoster(){
 	return m_roster;
 }
@@ -288,6 +312,22 @@ void Client::addRosterListener(RosterListener *rl) {
 
 void Client::delRosterListener(RosterListener *rl) {
 	QObject::disconnect(this, 0, rl, 0);
+}
+
+void Client::addMessageListener(MessageListener *ml) {
+	QObject::connect(this, SIGNAL(notifyMessage(UIN, QString)), ml, SLOT(incomingMessage(UIN, QString)));
+}
+
+void Client::delMessageListener(MessageListener *ml) {
+	QObject::disconnect(this, 0, ml, 0);
+}
+
+void Client::addPresenceListener(PresenceListener *pl) {
+	QObject::connect(this, SIGNAL(notifyPresence(UIN, PresenceStatus)), pl, SLOT(presenceChanged(UIN, PresenceStatus)));
+}
+
+void Client::delPresenceListener(PresenceListener *pl) {
+	QObject::disconnect(this, 0, pl, 0);
 }
 
 Client::~Client() { 

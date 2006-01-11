@@ -27,7 +27,7 @@ SNAC::SNAC(Word family, Word command, bool raw) {
 	m_family = family;
 	m_command = command;
 	m_flags = 0;
-	m_reference = 0;
+	m_reference = 6;
 	m_raw = raw;
 }
 

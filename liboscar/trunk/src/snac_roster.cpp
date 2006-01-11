@@ -83,12 +83,14 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 			switch (tlv.getType()){
 				case 0x0131:
 					tlv.data().readString(nick);
-					c = new Contact();
-					c->setUin(UIN(name));
-					c->setNickname(nick);
-					m_roster.addContact(c);
 				default:
 					break;
+			}
+			if (type == 0x0000){
+				c = new Contact();
+				c->setUin(UIN(name));
+				c->setNickname(nick);
+				m_roster.addContact(c);
 			}
 			len -= (tlv.data().len() + 4);
 		}

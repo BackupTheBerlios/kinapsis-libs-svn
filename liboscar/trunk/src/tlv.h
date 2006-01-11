@@ -57,6 +57,9 @@ namespace liboscar {
 	const Word TLV_TYPE_LESSER = 0x0019;
 	const Word TLV_TYPE_BUILD = 0x001a;
 
+	const Word TLV_TYPE_MESSAGE = 0x0101;
+	const Word TLV_TYPE_CAPABILITIES2 = 0x0501;
+
 	const Word TLV_VERMAJOR = 0x0002;
 
 	const Word TLV_VERMINOR_ICQ2001B = 0x000f;

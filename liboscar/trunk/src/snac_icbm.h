@@ -75,6 +75,8 @@ public:
 	SrvRecvMsg();
 	virtual ~SrvRecvMsg();
 // TODO: gets
+	UIN getUin(); // FIXME: tmp
+	QString getMessage();
 	void parse(Buffer &b);
 private:
 	UserInfo m_info;
@@ -134,7 +136,7 @@ public:
 class CliSendMsgSNAC : public SNAC_ICBM {
 
 public:
-	CliSendMsgSNAC();
+	CliSendMsgSNAC(UIN uin, QString message);
 	virtual ~CliSendMsgSNAC();
 
 	void parse(Buffer &b) {return ; };

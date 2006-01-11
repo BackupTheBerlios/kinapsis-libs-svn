@@ -43,6 +43,10 @@ UIN UserInfo::getUin(){
 	return m_uin;
 }
 
+PresenceStatus UserInfo::getStatus(){
+	return m_status;
+}
+
 void UserInfo::parse(Buffer& b) {
 
 	Word count, type, len;

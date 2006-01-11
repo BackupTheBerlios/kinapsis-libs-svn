@@ -86,6 +86,14 @@ SrvRecvMsg::SrvRecvMsg()
 
 SrvRecvMsg::~SrvRecvMsg() { }
 
+UIN SrvRecvMsg::getUin() {
+	return m_info.getUin();
+}
+
+QString SrvRecvMsg::getMessage() {
+	return m_msg;
+}
+
 void SrvRecvMsg::parse(Buffer &b) {
 
 	DWord dw;
@@ -103,6 +111,8 @@ void SrvRecvMsg::parse(Buffer &b) {
 	m_info.parse(b);
 
 	// Fixed part parsed. Let's go to format specifics
+	
+	b >> dw; //TLV header
 	switch (m_format) {
 		case 0x0001:
 			tlv.parse(b); // Capabilities
@@ -120,6 +130,7 @@ void SrvRecvMsg::parse(Buffer &b) {
 				b >> by;
 				m_msg.append(by);
 			}
+			qDebug("Message: " + m_msg);
 			b.removeFromBegin();
 			break;
 		case 0x0002:
@@ -252,10 +263,38 @@ CliReqICBMSNAC::CliReqICBMSNAC()
 CliReqICBMSNAC::~CliReqICBMSNAC() { }
 
 	// CliSendMsg SNAC
-CliSendMsgSNAC::CliSendMsgSNAC()
+CliSendMsgSNAC::CliSendMsgSNAC(UIN uin, QString message)
 	: SNAC_ICBM(ICBM_CLI_SENDMSG, false) {
 
-	// TODO: all
+	UnformattedTLV *tlv;
+	UnformattedTLV *tlvm;
+	
+	// FIXME: message types (make message class?)
+	m_data << (DWord) 0x67c31501;
+	m_data << (DWord) 0x3d3a3721;
+
+	m_data << (Word) 0x0001; // Type-1
+	uin.appendUin(m_data);
+
+	tlvm = new UnformattedTLV(TLV_TYPE_PASSWORD);
+
+	tlv = new UnformattedTLV(TLV_TYPE_CAPABILITIES2);
+	tlv->data() << (Word) 0x0106;
+
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	tlv = new UnformattedTLV(TLV_TYPE_MESSAGE);
+	tlv->data() << (Word) 0x0000; // ASCII
+	tlv->data() << (Word) 0x0000; // Unknown
+	tlv->data() << message;
+
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	addTLV(tlvm);
+	tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
+	addTLV(tlv);
 }
 
 CliSendMsgSNAC::~CliSendMsgSNAC() { }

@@ -42,6 +42,7 @@ public:
 	Parser(Client *c);
 
 	void add(Byte *data, int len);
+	Word getNextSeqNumber();
 	virtual ~Parser();
 
 signals:
@@ -49,12 +50,13 @@ signals:
 	void serverDisconnected(QString reason, DisconnectReason error);
 	void loginSequenceFinished();
 	void rosterInfo(Roster r);
+	void newMessage(UIN uin, QString message);
+	void statusChanged(UIN uin, PresenceStatus status);
 
 public slots:
 	void parse();
 
 private:
-	Word getNextSeqNumber();
 	void parseCh1(Buffer& buf);
 	void parseCh2(Buffer& buf);
 	void parseCh4(Buffer& buf);
