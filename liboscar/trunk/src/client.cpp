@@ -23,6 +23,7 @@
 #include "flap.h"
 #include "snac_icbm.h"
 #include "snac_service.h"
+#include "snac_newuser.h"
 
 namespace liboscar {
 
@@ -136,6 +137,17 @@ void Client::setPresence(PresenceStatus status) {
 	send(f.pack());
 }
 
+void Client::registerNewUin(QString password) {
+
+	if (m_state == CLI_NO_STATE) ; // TODO: make a connection requesting a UIN
+	else {
+		FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+		CliReqUINSNAC *s = new CliReqUINSNAC(password);
+		f.addSNAC(s);
+		send(f.pack());
+	}
+}
+
 ConnectionError Client::connAuth() {
 
 	ConnectionStatus s;
@@ -198,7 +210,8 @@ ConnectionResult Client::connect(){
 		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
 		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
 		QObject::connect(m_parser, SIGNAL(newMessage(UIN, QString)), this, SLOT(messageArrived(UIN, QString)));
-		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
+		QObject::connect(m_parser, SIGNAL(statusChanged(UserInfo)), this, SLOT(statusChanged(UserInfo)));
+		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
 	}
 
 	e = connAuth();
@@ -296,8 +309,12 @@ void Client::messageArrived(UIN uin, QString message){
 	emit notifyMessage(uin, message);
 }
 
-void Client::statusChanged(UIN uin, PresenceStatus status){
-	emit notifyPresence(uin, status);
+void Client::statusChanged(UserInfo info){
+	emit notifyPresence(info);
+}
+
+void Client::newUin(UIN uin){
+	emit notifyNewUin(uin);
 }
 
 Roster& Client::getRoster(){
@@ -332,11 +349,19 @@ void Client::delMessageListener(MessageListener *ml) {
 }
 
 void Client::addPresenceListener(PresenceListener *pl) {
-	QObject::connect(this, SIGNAL(notifyPresence(UIN, PresenceStatus)), pl, SLOT(presenceChanged(UIN, PresenceStatus)));
+	QObject::connect(this, SIGNAL(notifyPresence(UserInfo)), pl, SLOT(presenceChanged(UserInfo)));
 }
 
 void Client::delPresenceListener(PresenceListener *pl) {
 	QObject::disconnect(this, 0, pl, 0);
+}
+
+void Client::addUINRegistrationListener(UINRegistrationListener *ul) {
+	QObject::connect(this, SIGNAL(notifyNewUin(UIN)), ul, SLOT(newUin(UIN)));
+}
+
+void Client::delUINRegistrationListener(UINRegistrationListener *ul) {
+	QObject::disconnect(this, 0, ul, 0);
 }
 
 Client::~Client() { 

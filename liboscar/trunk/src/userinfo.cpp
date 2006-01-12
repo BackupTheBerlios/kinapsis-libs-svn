@@ -47,6 +47,35 @@ PresenceStatus UserInfo::getStatus(){
 	return m_status;
 }
 
+DWord UserInfo::getCreateTime() {
+	return m_createtime;
+}
+
+DWord UserInfo::getSignOnTime() {
+	return m_signontime;
+}
+
+DWord UserInfo::getIdleTime() {
+	return m_idletime;
+}
+
+DWord UserInfo::getCreationTime() {
+	return m_creationtime;
+}
+
+DWord UserInfo::getOnlineTime() {
+	return m_onlinetime;
+}
+
+UserClass UserInfo::getUserClass() {
+	return m_class;
+}
+
+
+void UserInfo::setStatus(PresenceStatus status) {
+	m_status = status;
+}
+
 void UserInfo::parse(Buffer& b) {
 
 	Word count, type, len;

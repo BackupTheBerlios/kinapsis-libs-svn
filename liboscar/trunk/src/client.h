@@ -32,6 +32,7 @@
 #include "connectionlistener.h"
 #include "messagelistener.h"
 #include "presencelistener.h"
+#include "uinregistrationlistener.h"
 #include <qobject.h>
 
 namespace liboscar {
@@ -60,6 +61,7 @@ public:
 
 	void sendMessage(UIN uin, QString message);
 	void setPresence(PresenceStatus status);
+	void registerNewUin(QString password);
 
 	void addConnectionListener(ConnectionListener *cl);
 	void delConnectionListener(ConnectionListener *cl);
@@ -69,6 +71,8 @@ public:
 	void delMessageListener(MessageListener *ml);
 	void addPresenceListener(PresenceListener *pl);
 	void delPresenceListener(PresenceListener *pl);
+	void addUINRegistrationListener(UINRegistrationListener *ul);
+	void delUINRegistrationListener(UINRegistrationListener *ul);
 
 	virtual ~Client();
 
@@ -83,8 +87,11 @@ signals:
 	// Message
 	void notifyMessage(UIN uin, QString message);
 
-	// Presence
-	void notifyPresence(UIN uin, PresenceStatus status);
+	// presence
+	void notifyPresence(UserInfo info);
+
+	// uinregistration
+	void notifyNewUin(UIN uin);
 
 public slots:
 
@@ -93,7 +100,8 @@ public slots:
 	void finishedConnection();
 	void rosterArrived(Roster roster);
 	void messageArrived(UIN uin, QString message);
-	void statusChanged(UIN uin, PresenceStatus status);
+	void statusChanged(UserInfo info);
+	void newUin(UIN uin);
 
 protected:
 	DWord getLocalIP();

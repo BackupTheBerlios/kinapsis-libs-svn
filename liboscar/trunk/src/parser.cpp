@@ -31,6 +31,7 @@
 #include "snac_bos.h"
 #include "snac_interval.h"
 #include "snac_roster.h"
+#include "snac_newuser.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -228,6 +229,7 @@ void Parser::parseCh2(Buffer& buf){
 		case SNAC_FAM_OLDICQ:
 			break;
 		case SNAC_FAM_NEWUSER:
+			parseCh2NewUser(buf);
 			break;
 		default:
 			qDebug(QString("SNAC from an unknown family %1").arg(family));
@@ -467,11 +469,11 @@ void Parser::parseCh2Contact(Buffer& buf) {
 			break;
 		case CONTACT_SRV_USERONLINE:
 			uos.parse(buf);
-			emit statusChanged(uos.getUin(), uos.getStatus());
+			emit statusChanged(uos.getUserInfo());
 			break;
 		case CONTACT_SRV_USEROFFLINE:
 			uofs.parse(buf);
-			emit statusChanged(uofs.getUin(), STATUS_OFFLINE);
+			emit statusChanged(uofs.getUserInfo());
 			break;
 		default:
 			qDebug("Unknown command on SNAC Contact family");
@@ -676,6 +678,46 @@ void Parser::parseCh2Roster(Buffer& buf) {
 			m_inlogin = false;
 			emit loginSequenceFinished();
 		}
+	}
+}
+
+void Parser::parseCh2NewUser(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvRegRefusedSNAC srrs;
+	SrvReplyLoginSNAC srls;
+	SrvReplyUINSNAC srus;
+	SrvReplyMD5SNAC srms;
+	SrvReqSecureIdSNAC srsis;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case NEWUSER_SRV_REGREFUSED:
+			srrs.parse(buf);
+			break;
+		case NEWUSER_SRV_REPLYLOGIN:
+			srls.parse(buf);
+			break;
+		case NEWUSER_SRV_REPLYUIN:
+			srus.parse(buf);
+			emit newUin(srus.getUin());
+			break;
+		case NEWUSER_SRV_REPLYMD5:
+			srms.parse(buf);
+			break;
+		case NEWUSER_SRV_REQSECUREID:
+			srsis.parse(buf);
+			break;
+		default:
+			qDebug("Unknown command on SNAC NewUser family");
+			break;
 	}
 }
 

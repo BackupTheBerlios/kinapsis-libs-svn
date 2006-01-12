@@ -19,24 +19,31 @@
  ***************************************************************************/
 
 
-#ifndef _PRESENCELISTENER_H_
-#define _PRESENCELISTENER_H_
+#ifndef _MESSAGE_H_
+#define _MESSAGE_H_
 
-#include <qobject.h>
-#include "userinfo.h"
+#include "uin.h"
 
 namespace liboscar {
 
-class PresenceListener : public QObject{
-Q_OBJECT
+class Message {
+
 public:
-	PresenceListener();
-	virtual ~PresenceListener();
-public slots:
-	virtual void presenceChanged(UserInfo info) = 0;
+	Message();
+	virtual ~Message();
+
+	QString getMessage();
+	void setMessage(QString message);
+	
+	UIN getUin();
+	void setUin(UIN uin);
+
+private:
+	QString m_msg;
+	UIN m_uin;
 };
 
 
 }
 
-#endif // _PRESENCELISTENER_H_
+#endif // _MESSAGE_H_

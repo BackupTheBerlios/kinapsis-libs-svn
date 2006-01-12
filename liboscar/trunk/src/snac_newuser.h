@@ -19,126 +19,118 @@
  ***************************************************************************/
 
 
-#ifndef _SNAC_CONTACT_H_
-#define _SNAC_CONTACT_H_
+#ifndef _SNAC_NEWUSER_H_
+#define _SNAC_NEWUSER_H_
 
 #include "snac.h"
 #include "uin.h"
-#include "userinfo.h"
 
 namespace liboscar {
 
-	const Word CONTACT_SRV_CONTACT_ERR = 0x0001; 
-	const Word CONTACT_CLI_REQBUDDY = 0x0002; 
-	const Word CONTACT_SRV_REPLYBUDDY = 0x0003; 
-	const Word CONTACT_CLI_ADDCONTACT = 0x0004; 
-	const Word CONTACT_CLI_REMCONTACT = 0x0005; 
-	const Word CONTACT_SRV_REFUSED = 0x000a; 
-	const Word CONTACT_SRV_USERONLINE = 0x000b; 
-	const Word CONTACT_SRV_USEROFFLINE = 0x000c; 
+	const Word NEWUSER_SRV_REGREFUSED = 0x0001; 
+	const Word NEWUSER_CLI_REQLOGIN = 0x0002; 
+	const Word NEWUSER_SRV_REPLYLOGIN = 0x0003; 
+	const Word NEWUSER_CLI_REQUIN = 0x0004; 
+	const Word NEWUSER_SRV_REPLYUIN = 0x0005; 
+	const Word NEWUSER_CLI_REQMD5 = 0x0006; 
+	const Word NEWUSER_SRV_REPLYMD5 = 0x0007; 
+	const Word NEWUSER_SRV_REQSECUREID = 0x000a; 
+	const Word NEWUSER_CLI_REPLYSECUREID = 0x000b; 
 
-class SNAC_Contact : public SNAC {
+class SNAC_NewUser : public SNAC {
 
 public:
-	SNAC_Contact(Word command = 0, bool raw = true);
-	virtual ~SNAC_Contact();
+	SNAC_NewUser(Word command = 0, bool raw = true);
+	virtual ~SNAC_NewUser();
 
 	virtual void parse(Buffer& b) = 0;
 };
 
-class SrvContactErrSNAC : public SNAC_Contact {
+class SrvRegRefusedSNAC : public SNAC_NewUser {
 
 public:
-	SrvContactErrSNAC();
-	virtual ~SrvContactErrSNAC();
-
-	ContactError getError();
-
-	void parse(Buffer& b);
-private:
-	ContactError m_err;
-};
-
-class SrvReplyBuddySNAC : public SNAC_Contact {
-
-public:
-	SrvReplyBuddySNAC();
-	virtual ~SrvReplyBuddySNAC();
-
-	Word getMaxUins();
-	Word getMaxWatchers();
+	SrvRegRefusedSNAC();
+	virtual ~SrvRegRefusedSNAC();
 
 	void parse(Buffer &b);
-
-private:
-	Word m_maxuins;
-	Word m_maxwatchers;
 };
 
-class SrvRefusedSNAC : public SNAC_Contact {
+class SrvReplyLoginSNAC : public SNAC_NewUser {
 
 public:
-	SrvRefusedSNAC();
-	virtual ~SrvRefusedSNAC();
+	SrvReplyLoginSNAC();
+	virtual ~SrvReplyLoginSNAC();
+
+	void parse(Buffer &b);
+};
+
+class SrvReplyUINSNAC : public SNAC_NewUser {
+
+public:
+	SrvReplyUINSNAC();
+	virtual ~SrvReplyUINSNAC();
 
 	UIN getUin();
 
 	void parse(Buffer &b);
 private:
-	UIN m_uin;
+	DWord m_uin;
 };
 
-class SrvUserOnlineSNAC : public SNAC_Contact {
+class SrvReplyMD5SNAC : public SNAC_NewUser {
 
 public:
-	SrvUserOnlineSNAC();
-	virtual ~SrvUserOnlineSNAC();
-	UserInfo getUserInfo();
-	void parse(Buffer &b);
-private:
-	UserInfo m_info;
-};
-
-class SrvUserOfflineSNAC : public SNAC_Contact {
-
-public:
-	SrvUserOfflineSNAC();
-	virtual ~SrvUserOfflineSNAC();
-
-	UserInfo getUserInfo();
+	SrvReplyMD5SNAC();
+	virtual ~SrvReplyMD5SNAC();
 
 	void parse(Buffer &b);
-private:
-	UserInfo m_info;
 };
 
-class CliReqBuddySNAC : public SNAC_Contact {
+class SrvReqSecureIdSNAC : public SNAC_NewUser {
 
 public:
-	CliReqBuddySNAC();
-	virtual ~CliReqBuddySNAC();
+	SrvReqSecureIdSNAC();
+	virtual ~SrvReqSecureIdSNAC();
+
+	void parse(Buffer &b);
+};
+
+class CliReqLoginSNAC : public SNAC_NewUser {
+
+public:
+	CliReqLoginSNAC();
+	virtual ~CliReqLoginSNAC();
 
 	void parse(Buffer &b) {return ; };
 };
 
-class CliAddContactSNAC : public SNAC_Contact {
+class CliReqUINSNAC : public SNAC_NewUser {
 
 public:
-	CliAddContactSNAC(UIN uin);
-	virtual ~CliAddContactSNAC();
+	CliReqUINSNAC(QString password);
+	virtual ~CliReqUINSNAC();
 
 	void parse(Buffer &b) {return ; };
 };
 
-class CliRemContactSNAC : public SNAC_Contact {
+class CliReqMD5SNAC : public SNAC_NewUser {
 
 public:
-	CliRemContactSNAC(UIN uin);
-	virtual ~CliRemContactSNAC();
+	CliReqMD5SNAC();
+	virtual ~CliReqMD5SNAC();
 
 	void parse(Buffer &b) {return ; };
 };
+
+class CliReplySecureIdSNAC : public SNAC_NewUser {
+
+public:
+	CliReplySecureIdSNAC();
+	virtual ~CliReplySecureIdSNAC();
+
+	void parse(Buffer &b) {return ; };
+};
+
 
 }
-
-#endif // _SNAC_CONTACT_H_
+#endif // _SNAC_NEWUSER_H_

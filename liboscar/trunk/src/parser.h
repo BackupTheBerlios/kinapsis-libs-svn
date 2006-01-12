@@ -27,6 +27,7 @@
 #include "families.h"
 #include "capabilities.h"
 #include "roster.h"
+#include "userinfo.h"
 #include <qobject.h>
 #include <qstring.h>
 
@@ -51,7 +52,8 @@ signals:
 	void loginSequenceFinished();
 	void rosterInfo(Roster r);
 	void newMessage(UIN uin, QString message);
-	void statusChanged(UIN uin, PresenceStatus status);
+	void statusChanged(UserInfo info);
+	void newUin(UIN uin);
 
 public slots:
 	void parse();
@@ -69,6 +71,7 @@ private:
 	void parseCh2BOS(Buffer& buf);
 	void parseCh2Interval(Buffer& buf);
 	void parseCh2Roster(Buffer& buf);
+	void parseCh2NewUser(Buffer& buf);
 
 	void sendKeepAlive();
 

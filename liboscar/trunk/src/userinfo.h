@@ -40,10 +40,17 @@ public:
 	UserInfo();
 	virtual ~UserInfo();
 	
-	// TODO: gets
-	
 	UIN getUin();
 	PresenceStatus getStatus();
+
+	DWord getCreateTime();
+	DWord getSignOnTime();
+	DWord getIdleTime();
+	DWord getCreationTime();
+	DWord getOnlineTime();
+	UserClass getUserClass();
+
+	void setStatus(PresenceStatus status);
 
 	void parse(Buffer& b);
 

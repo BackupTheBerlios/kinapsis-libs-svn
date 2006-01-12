@@ -113,12 +113,8 @@ SrvUserOnlineSNAC::SrvUserOnlineSNAC()
 
 SrvUserOnlineSNAC::~SrvUserOnlineSNAC() {}
 
-PresenceStatus SrvUserOnlineSNAC::getStatus(){
-	return m_info.getStatus();
-}
-
-UIN SrvUserOnlineSNAC::getUin(){
-	return m_info.getUin();
+UserInfo SrvUserOnlineSNAC::getUserInfo(){
+	return m_info;
 }
 
 void SrvUserOnlineSNAC::parse(Buffer &b) {
@@ -132,21 +128,13 @@ SrvUserOfflineSNAC::SrvUserOfflineSNAC()
 
 SrvUserOfflineSNAC::~SrvUserOfflineSNAC() {}
 
-UIN SrvUserOfflineSNAC::getUin() {
-	return m_uin;
+UserInfo SrvUserOfflineSNAC::getUserInfo() {
+	return m_info;
 }
 
 void SrvUserOfflineSNAC::parse(Buffer &b) {
-	UnformattedTLV tlv(TLV_TYPE_GENERIC);
-	Word warn;
-	Word count;
-
-	m_uin.parse(b);
-
-	b >> warn;
-	b >> count;
-	while (count--)
-		tlv.parse(b); // We just don't care
+	m_info.parse(b);
+	m_info.setStatus(STATUS_OFFLINE);
 }
 
 	// 

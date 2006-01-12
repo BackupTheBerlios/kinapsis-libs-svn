@@ -19,24 +19,14 @@
  ***************************************************************************/
 
 
-#ifndef _PRESENCELISTENER_H_
-#define _PRESENCELISTENER_H_
-
-#include <qobject.h>
-#include "userinfo.h"
+#include "uinregistrationlistener.h"
 
 namespace liboscar {
 
-class PresenceListener : public QObject{
-Q_OBJECT
-public:
-	PresenceListener();
-	virtual ~PresenceListener();
-public slots:
-	virtual void presenceChanged(UserInfo info) = 0;
-};
+UINRegistrationListener::UINRegistrationListener() { }
 
+UINRegistrationListener::~UINRegistrationListener() { }
 
 }
 
-#endif // _PRESENCELISTENER_H_
+#include "uinregistrationlistener.moc"
