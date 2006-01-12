@@ -1,6 +1,6 @@
 AM_CPPFLAGS = $(all_includes)
 
-SUBDIRS = . examples
+SUBDIRS = .
 
 lib_LTLIBRARIES = liboscar.la
 
