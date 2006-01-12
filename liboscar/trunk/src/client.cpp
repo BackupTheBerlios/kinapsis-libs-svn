@@ -104,13 +104,12 @@ void Client::send(Buffer& b){
 
 void Client::disconnect(ConnectionError err){
 
-	if ((err == CONN_RECONNECT) ||(err == CONN_NO_ERROR && m_state == CLI_AUTHING))
+	if ((err == CONN_RECONNECT) || (err == CONN_NO_ERROR && m_state == CLI_AUTHING))
 		m_exit = false;
 	else
 		m_exit = true;
 
-
-	if ((err != CONN_NO_ERROR) && m_logconn) // Got an error
+	if ((err != CONN_NO_ERROR) && (err != CONN_ERR_USER_REQUEST) && m_logconn) // Got an error
 		m_middledisconnect = true;
 
 	if (m_state == CLI_AUTHING && m_logconn)

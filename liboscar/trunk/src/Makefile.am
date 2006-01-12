@@ -21,6 +21,6 @@ liboscarincludedir = $(includedir)/liboscar
 liboscarinclude_HEADERS = buffer.h capabilities.h client.h connection.h connectionresult.h contact.h \
 			  connectionlistener.h directconnectiontlv.h families.h liboscar.h \
 			  message.h messagelistener.h roster.h rosterlistener.h parser.h presencelistener.h \
-			  uin.h uinregistrationlistener.h userinfo.h
+			  tlv.h uin.h uinregistrationlistener.h userinfo.h
 
 METASOURCES = AUTO
