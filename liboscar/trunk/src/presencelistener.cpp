@@ -27,6 +27,10 @@ PresenceListener::PresenceListener() { }
 
 PresenceListener::~PresenceListener() { }
 
+void PresenceListener::presenceChangedSlot(UIN uin, PresenceStatus status) {
+	this->presenceChanged(uin, status);
+}
+
 }
 
 #include "presencelistener.moc"

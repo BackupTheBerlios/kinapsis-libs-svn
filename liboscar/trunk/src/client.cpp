@@ -209,7 +209,7 @@ ConnectionResult Client::connect(){
 		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
 		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
 		QObject::connect(m_parser, SIGNAL(newMessage(UIN, QString)), this, SLOT(messageArrived(UIN, QString)));
-		QObject::connect(m_parser, SIGNAL(statusChanged(UserInfo)), this, SLOT(statusChanged(UserInfo)));
+		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
 		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
 	}
 
@@ -308,8 +308,8 @@ void Client::messageArrived(UIN uin, QString message){
 	emit notifyMessage(uin, message);
 }
 
-void Client::statusChanged(UserInfo info){
-	emit notifyPresence(info);
+void Client::statusChanged(UIN uin, PresenceStatus status){
+	emit notifyPresence(uin, status);
 }
 
 void Client::newUin(UIN uin){
@@ -323,8 +323,8 @@ Roster& Client::getRoster(){
 // LISTENERS' STUFF
 
 void Client::addConnectionListener(ConnectionListener *cl) {
-	QObject::connect(this, SIGNAL(notifyConnect()), cl, SLOT(onConnect()));
-	QObject::connect(this, SIGNAL(notifyDisconnect()), cl, SLOT(onDisconnect()));
+	QObject::connect(this, SIGNAL(notifyConnect()), cl, SLOT(connectSlot()));
+	QObject::connect(this, SIGNAL(notifyDisconnect()), cl, SLOT(disconnectSlot()));
 }
 
 void Client::delConnectionListener(ConnectionListener *cl) {
@@ -340,7 +340,7 @@ void Client::delRosterListener(RosterListener *rl) {
 }
 
 void Client::addMessageListener(MessageListener *ml) {
-	QObject::connect(this, SIGNAL(notifyMessage(UIN, QString)), ml, SLOT(incomingMessage(UIN, QString)));
+	QObject::connect(this, SIGNAL(notifyMessage(UIN, QString)), ml, SLOT(incomingSlot(UIN, QString)));
 }
 
 void Client::delMessageListener(MessageListener *ml) {
@@ -348,7 +348,7 @@ void Client::delMessageListener(MessageListener *ml) {
 }
 
 void Client::addPresenceListener(PresenceListener *pl) {
-	QObject::connect(this, SIGNAL(notifyPresence(UserInfo)), pl, SLOT(presenceChanged(UserInfo)));
+	QObject::connect(this, SIGNAL(notifyPresence(UIN, PresenceStatus)), pl, SLOT(presenceChangedSlot(UIN, PresenceStatus)));
 }
 
 void Client::delPresenceListener(PresenceListener *pl) {
@@ -356,7 +356,7 @@ void Client::delPresenceListener(PresenceListener *pl) {
 }
 
 void Client::addUINRegistrationListener(UINRegistrationListener *ul) {
-	QObject::connect(this, SIGNAL(notifyNewUin(UIN)), ul, SLOT(newUin(UIN)));
+	QObject::connect(this, SIGNAL(notifyNewUin(UIN)), ul, SLOT(newUinSlot(UIN)));
 }
 
 void Client::delUINRegistrationListener(UINRegistrationListener *ul) {

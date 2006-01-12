@@ -27,6 +27,15 @@ ConnectionListener::ConnectionListener() { }
 
 ConnectionListener::~ConnectionListener() { }
 
+void ConnectionListener::connectSlot(){
+	this->onConnect();
+}
+
+void ConnectionListener::disconnectSlot(){
+	this->onDisconnect();
+}
+
+
 }
 
 #include "connectionlistener.moc"

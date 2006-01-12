@@ -32,8 +32,11 @@ Q_OBJECT
 public:
 	MessageListener();
 	virtual ~MessageListener();
-public slots:
+
 	virtual void incomingMessage(UIN uin, QString message) = 0;
+
+public slots:
+	void incomingSlot(UIN uin, QString message);
 };
 
 

@@ -31,9 +31,13 @@ Q_OBJECT
 public:
 	ConnectionListener();
 	virtual ~ConnectionListener();
-public slots:
+
 	virtual void onConnect() = 0;
 	virtual void onDisconnect() = 0;
+
+public slots:
+	void connectSlot();
+	void disconnectSlot();
 };
 
 

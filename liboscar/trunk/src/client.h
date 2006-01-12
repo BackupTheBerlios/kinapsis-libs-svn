@@ -88,7 +88,7 @@ signals:
 	void notifyMessage(UIN uin, QString message);
 
 	// presence
-	void notifyPresence(UserInfo info);
+	void notifyPresence(UIN uin, PresenceStatus status);
 
 	// uinregistration
 	void notifyNewUin(UIN uin);
@@ -100,7 +100,7 @@ public slots:
 	void finishedConnection();
 	void rosterArrived(Roster roster);
 	void messageArrived(UIN uin, QString message);
-	void statusChanged(UserInfo info);
+	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
 
 protected:

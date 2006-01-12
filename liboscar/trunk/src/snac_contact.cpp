@@ -113,8 +113,12 @@ SrvUserOnlineSNAC::SrvUserOnlineSNAC()
 
 SrvUserOnlineSNAC::~SrvUserOnlineSNAC() {}
 
-UserInfo SrvUserOnlineSNAC::getUserInfo(){
-	return m_info;
+UIN SrvUserOnlineSNAC::getUin(){
+	return m_info.getUin();
+}
+
+PresenceStatus SrvUserOnlineSNAC::getStatus(){
+	return m_info.getStatus();
 }
 
 void SrvUserOnlineSNAC::parse(Buffer &b) {
@@ -128,13 +132,12 @@ SrvUserOfflineSNAC::SrvUserOfflineSNAC()
 
 SrvUserOfflineSNAC::~SrvUserOfflineSNAC() {}
 
-UserInfo SrvUserOfflineSNAC::getUserInfo() {
-	return m_info;
+UIN SrvUserOfflineSNAC::getUin() {
+	return m_info.getUin();
 }
 
 void SrvUserOfflineSNAC::parse(Buffer &b) {
 	m_info.parse(b);
-	m_info.setStatus(STATUS_OFFLINE);
 }
 
 	// 

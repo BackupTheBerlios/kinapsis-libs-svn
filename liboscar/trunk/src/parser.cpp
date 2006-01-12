@@ -257,6 +257,7 @@ void Parser::parseCh4(Buffer& buf){
 				buf.removeFromBegin();
 				break;
 			case 0x0004:
+			case 0x000b:
 				for (i=0; i < l; i++){
 					buf >> b;
 					reason.append(b);
@@ -275,6 +276,7 @@ void Parser::parseCh4(Buffer& buf){
 				buf.removeFromBegin();
 				break;
 			case 0x0008:
+			case 0x0009:
 				errt.parse(buf);
 				buf.removeFromBegin();
 				break;
@@ -469,11 +471,11 @@ void Parser::parseCh2Contact(Buffer& buf) {
 			break;
 		case CONTACT_SRV_USERONLINE:
 			uos.parse(buf);
-			emit statusChanged(uos.getUserInfo());
+			emit statusChanged(uos.getUin(), uos.getStatus());
 			break;
 		case CONTACT_SRV_USEROFFLINE:
 			uofs.parse(buf);
-			emit statusChanged(uofs.getUserInfo());
+			emit statusChanged(uofs.getUin(), STATUS_OFFLINE);
 			break;
 		default:
 			qDebug("Unknown command on SNAC Contact family");

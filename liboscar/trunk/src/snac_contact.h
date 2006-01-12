@@ -93,7 +93,8 @@ class SrvUserOnlineSNAC : public SNAC_Contact {
 public:
 	SrvUserOnlineSNAC();
 	virtual ~SrvUserOnlineSNAC();
-	UserInfo getUserInfo();
+	UIN getUin();
+	PresenceStatus getStatus();
 	void parse(Buffer &b);
 private:
 	UserInfo m_info;
@@ -105,7 +106,7 @@ public:
 	SrvUserOfflineSNAC();
 	virtual ~SrvUserOfflineSNAC();
 
-	UserInfo getUserInfo();
+	UIN getUin();
 
 	void parse(Buffer &b);
 private:

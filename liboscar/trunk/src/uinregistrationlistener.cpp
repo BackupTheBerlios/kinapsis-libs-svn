@@ -27,6 +27,11 @@ UINRegistrationListener::UINRegistrationListener() { }
 
 UINRegistrationListener::~UINRegistrationListener() { }
 
+void UINRegistrationListener::newUinSlot(UIN uin){
+	this->newUin(uin);
+}
+
+
 }
 
 #include "uinregistrationlistener.moc"

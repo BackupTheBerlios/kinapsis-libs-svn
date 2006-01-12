@@ -52,7 +52,7 @@ signals:
 	void loginSequenceFinished();
 	void rosterInfo(Roster r);
 	void newMessage(UIN uin, QString message);
-	void statusChanged(UserInfo info);
+	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
 
 public slots:

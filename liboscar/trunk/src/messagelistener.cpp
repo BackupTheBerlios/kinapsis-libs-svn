@@ -27,6 +27,11 @@ MessageListener::MessageListener() { }
 
 MessageListener::~MessageListener() { }
 
+void MessageListener::incomingSlot(UIN uin, QString message) {
+	this->incomingMessage(uin, message);
+}
+
+
 }
 
 #include "messagelistener.moc"

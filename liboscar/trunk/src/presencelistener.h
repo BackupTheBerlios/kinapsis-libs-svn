@@ -23,7 +23,7 @@
 #define _PRESENCELISTENER_H_
 
 #include <qobject.h>
-#include "userinfo.h"
+#include "uin.h"
 
 namespace liboscar {
 
@@ -32,8 +32,11 @@ Q_OBJECT
 public:
 	PresenceListener();
 	virtual ~PresenceListener();
+
+	virtual void presenceChanged(UIN uin, PresenceStatus status) = 0;
+
 public slots:
-	virtual void presenceChanged(UserInfo info) = 0;
+	void presenceChangedSlot(UIN uin, PresenceStatus status);
 };
 
 

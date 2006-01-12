@@ -31,8 +31,11 @@ Q_OBJECT
 public:
 	UINRegistrationListener();
 	virtual ~UINRegistrationListener();
-public slots:
+
 	virtual void newUin(UIN uin) = 0;
+
+public slots:
+	void newUinSlot(UIN uin);
 };
 
 
