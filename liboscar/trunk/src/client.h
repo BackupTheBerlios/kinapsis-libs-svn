@@ -59,10 +59,13 @@ public:
 	ConnectionResult connect();
 	void disconnect(ConnectionError err=CONN_NO_ERROR);
 
+	// Actions
 	void sendMessage(UIN uin, QString message);
 	void setPresence(PresenceStatus status);
 	void registerNewUin(QString password);
+	void authorize(UIN uin, QString message, bool ack);
 
+	// Listener's connections
 	void addConnectionListener(ConnectionListener *cl);
 	void delConnectionListener(ConnectionListener *cl);
 	void addRosterListener(RosterListener *rl);
@@ -83,6 +86,7 @@ signals:
 
 	// Roster
 	void notifyNewContact(Contact *c);
+	void notifyAuthRequest(UIN uin, QString reason);
 
 	// Message
 	void notifyMessage(UIN uin, QString message);
@@ -102,6 +106,7 @@ public slots:
 	void messageArrived(UIN uin, QString message);
 	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
+	void authReq(UIN uin, QString reason);
 
 protected:
 	DWord getLocalIP();

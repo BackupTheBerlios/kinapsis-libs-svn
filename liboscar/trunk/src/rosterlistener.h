@@ -32,8 +32,13 @@ Q_OBJECT
 public:
 	RosterListener();
 	virtual ~RosterListener();
-public slots:
+
 	virtual void onNewContact(Contact *c) = 0;
+	virtual void onAuthRequest(UIN uin, QString reason) = 0;
+
+public slots:
+	void onNewContactSlot(Contact *c);
+	void onAuthRequestSlot(UIN uin, QString reason);
 };
 
 

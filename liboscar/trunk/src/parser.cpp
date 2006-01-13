@@ -619,6 +619,14 @@ void Parser::parseCh2Roster(Buffer& buf) {
 	buf >> flags;
 	buf >> reference;
 
+	if (flags == 0x8000){ // unknown extra data TODO: parse it in SNAC
+		Word len;
+		Byte by;
+
+		buf >> len;
+		while (len--) buf >> by;
+	}
+
 	buf.removeFromBegin();
 
 	switch (command) {
@@ -638,6 +646,7 @@ void Parser::parseCh2Roster(Buffer& buf) {
 			break;
 		case ROSTER_SRV_AUTHREQ:
 			sar.parse(buf);
+			emit authReq(sar.getUin(), sar.getReason());
 			break;
 		case ROSTER_SRV_AUTHREPLY:
 			sare.parse(buf);

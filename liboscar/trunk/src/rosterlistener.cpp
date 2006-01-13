@@ -27,6 +27,14 @@ RosterListener::RosterListener() { }
 
 RosterListener::~RosterListener() { }
 
+void RosterListener::onNewContactSlot(Contact *c){
+	this->onNewContact(c);
+}
+
+void RosterListener::onAuthRequestSlot(UIN uin, QString reason){
+	this->onAuthRequest(uin, reason);
+}
+
 }
 
 #include "rosterlistener.moc"

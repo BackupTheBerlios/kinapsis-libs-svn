@@ -163,6 +163,7 @@ void SrvAuthReqSNAC::parse(Buffer &b) {
 		b >> by;
  		m_reason.append(by);
 	}
+	b >> len; // Unknown
 	b.removeFromBegin();
 }
 

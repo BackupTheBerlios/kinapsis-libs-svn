@@ -54,6 +54,7 @@ signals:
 	void newMessage(UIN uin, QString message);
 	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
+	void authReq(UIN uin, QString reason);
 
 public slots:
 	void parse();

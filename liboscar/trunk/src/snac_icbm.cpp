@@ -123,12 +123,35 @@ void SrvRecvMsg::parse(Buffer &b) {
 			len -= 4; // Two words
 
 			b >> w;
-			m_encoding = (MessageEncoding) w;
+			switch (w){
+				case 0x0000:
+					m_encoding = ASCII;
+					break;
+				case 0x0002:
+					m_encoding = UCS2BE;
+					break;
+				case 0x0003:
+					m_encoding = LOCAL;
+					break;
+			}
 			b >> w;
 
-			while (len--){
-				b >> by;
-				m_msg.append(by);
+			if (m_encoding == UCS2BE){
+				len /=2; // Reading Words
+
+				Word strucs2[len];
+				int i = 0;
+
+				while (len--)
+					b >> strucs2[i++];
+
+				m_msg = QString::fromUcs2(strucs2);
+			}
+			else {
+				while (len--){
+					b >> by;
+					m_msg.append(by);
+				}
 			}
 			qDebug("Message: " + m_msg);
 			b.removeFromBegin();

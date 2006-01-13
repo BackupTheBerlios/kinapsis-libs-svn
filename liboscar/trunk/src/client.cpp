@@ -24,6 +24,7 @@
 #include "snac_icbm.h"
 #include "snac_service.h"
 #include "snac_newuser.h"
+#include "snac_roster.h"
 
 namespace liboscar {
 
@@ -147,6 +148,13 @@ void Client::registerNewUin(QString password) {
 	}
 }
 
+void Client::authorize(UIN uin, QString message, bool auth) {
+	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	CliAuthorizeSNAC *s = new CliAuthorizeSNAC(uin, auth, message);
+	f.addSNAC(s);
+	send(f.pack());
+}
+
 ConnectionError Client::connAuth() {
 
 	ConnectionStatus s;
@@ -211,6 +219,7 @@ ConnectionResult Client::connect(){
 		QObject::connect(m_parser, SIGNAL(newMessage(UIN, QString)), this, SLOT(messageArrived(UIN, QString)));
 		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
 		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
+		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), this, SLOT(authReq(UIN, QString)));
 	}
 
 	e = connAuth();
@@ -316,6 +325,10 @@ void Client::newUin(UIN uin){
 	emit notifyNewUin(uin);
 }
 
+void Client::authReq(UIN uin, QString reason){
+	emit notifyAuthRequest(uin, reason);
+}
+
 Roster& Client::getRoster(){
 	return m_roster;
 }
@@ -332,7 +345,8 @@ void Client::delConnectionListener(ConnectionListener *cl) {
 }
 
 void Client::addRosterListener(RosterListener *rl) {
-	QObject::connect(this, SIGNAL(notifyNewContact(Contact *)), rl, SLOT(onNewContact(Contact *)));
+	QObject::connect(this, SIGNAL(notifyNewContact(Contact *)), rl, SLOT(onNewContactSlot(Contact *)));
+	QObject::connect(this, SIGNAL(notifyAuthRequest(UIN, QString)), rl, SLOT(onAuthRequestSlot(UIN, QString)));
 }
 
 void Client::delRosterListener(RosterListener *rl) {
