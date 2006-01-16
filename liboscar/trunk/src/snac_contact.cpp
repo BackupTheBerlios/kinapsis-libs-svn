@@ -109,7 +109,9 @@ void SrvRefusedSNAC::parse(Buffer &b) {
 
 	// SrvUserOnline SNAC
 SrvUserOnlineSNAC::SrvUserOnlineSNAC()
-	: SNAC_Contact(CONTACT_SRV_USERONLINE, false) {}
+	: SNAC_Contact(CONTACT_SRV_USERONLINE, false) {
+	m_info.setStatus(STATUS_ONLINE);	
+}
 
 SrvUserOnlineSNAC::~SrvUserOnlineSNAC() {}
 
@@ -128,7 +130,9 @@ void SrvUserOnlineSNAC::parse(Buffer &b) {
 
 	// SrvUserOffline SNAC
 SrvUserOfflineSNAC::SrvUserOfflineSNAC()
-	: SNAC_Contact(CONTACT_SRV_USEROFFLINE, false) {}
+	: SNAC_Contact(CONTACT_SRV_USEROFFLINE, false) {
+	m_info.setStatus(STATUS_OFFLINE);	
+}
 
 SrvUserOfflineSNAC::~SrvUserOfflineSNAC() {}
 
