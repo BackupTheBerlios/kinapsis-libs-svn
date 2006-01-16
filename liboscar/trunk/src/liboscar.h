@@ -25,11 +25,19 @@
 #define ICQ_LOGIN_SERVER "login.icq.com"
 #define ICQ_LOGIN_PORT 5190
 
+#define AIM_LOGIN_SERVER "login.oscar.aol.com"
+#define AIM_LOGIN_PORT 5190
+
 namespace liboscar {
 
 	typedef unsigned char Byte;
 	typedef unsigned short int Word;
 	typedef unsigned int DWord;
+
+	enum ProtocolType {
+		AIM,
+		ICQ
+	};
 
 	enum ConnectionStatus {
 		CONN_DISCONNECTED,

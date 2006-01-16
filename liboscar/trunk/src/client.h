@@ -47,13 +47,14 @@ Q_OBJECT
 	friend class Parser;
 
 public:
-	Client();
-	Client(const UIN& uin, const QString& password);
+	Client(const ProtocolType type = ICQ);
+	Client(const UIN& uin, const QString& password, const ProtocolType type = ICQ);
 
 	QString getPassword();
 	void setPassword(const QString& password);
 	UIN getUIN();
 	void setUIN(const UIN& uin);
+	void setType(const ProtocolType type);
 	ClientState state();
 
 	ConnectionResult connect();
@@ -64,6 +65,7 @@ public:
 	void setPresence(PresenceStatus status);
 	void registerNewUin(QString password);
 	void authorize(UIN uin, QString message, bool ack);
+	void addContact(UIN uin, bool reqAuth);
 
 	// Listener's connections
 	void addConnectionListener(ConnectionListener *cl);
@@ -121,11 +123,15 @@ private:
 	ConnectionError connAuth();
 	ConnectionError connBOS();
 
+	void rosterEditStart();
+	void rosterEditEnd();
+
 	QString m_bos;
 	int m_bosport;
 
 	UIN m_uin;
 	QString m_password;
+	ProtocolType m_type;
 
 	ClientState m_state;
 	bool m_middledisconnect;

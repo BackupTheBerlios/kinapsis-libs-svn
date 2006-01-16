@@ -28,17 +28,19 @@
 
 namespace liboscar {
 
-Client::Client(){
+Client::Client(const ProtocolType type){
 	m_conn = m_logconn = 0;
 	m_parser = 0;
+	m_type = type;
 	initvalues();
 }
 
-Client::Client(const UIN& uin, const QString& password){
+Client::Client(const UIN& uin, const QString& password, const ProtocolType type){
 	m_uin = uin;
 	m_password = password;
 	m_conn = m_logconn = 0;
 	m_parser = 0;
+	m_type = type;
 	initvalues();
 }
 
@@ -155,13 +157,35 @@ void Client::authorize(UIN uin, QString message, bool auth) {
 	send(f.pack());
 }
 
+void Client::addContact(UIN uin, bool reqAuth) {
+	// TODO:
+}
+
+void Client::rosterEditStart() {
+	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	CliAddStartSNAC *s = new CliAddStartSNAC();
+	f.addSNAC(s);
+	send(f.pack());
+}
+
+void Client::rosterEditEnd() {
+	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	CliAddEndSNAC *s = new CliAddEndSNAC();
+	f.addSNAC(s);
+	send(f.pack());
+}
+
 ConnectionError Client::connAuth() {
 
 	ConnectionStatus s;
 	ConnectionError e;
 
-	if (!m_logconn)
-		m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, m_parser);
+	if (!m_logconn){
+		if (m_type == ICQ)
+			m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, m_parser);
+		else if (m_type == AIM)
+			m_logconn = new Connection(AIM_LOGIN_SERVER, AIM_LOGIN_PORT, m_parser);
+	}
 
 		
 	m_state = CLI_AUTHING;
