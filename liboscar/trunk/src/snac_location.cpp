@@ -228,8 +228,8 @@ CliReqUserInfoSNAC::CliReqUserInfoSNAC(UIN uin, InfoRequestType type)
 			break;
 	}
 
-	m_data << (Word) uin.getUin().length();
-	m_data << uin.getUin();
+	m_data << (Word) uin.getId().length();
+	m_data << uin.getId();
 }
 
 CliReqUserInfoSNAC::~CliReqUserInfoSNAC() { }

@@ -140,7 +140,7 @@ void Parser::parseCh1(Buffer& buf){
 
 		// UIN
 		tlv = new UnformattedTLV(TLV_TYPE_UIN);
-		tlv->data() << m_client->getUIN().getUin();
+		tlv->data() << m_client->getUIN().getId();
 		f.addTLV(tlv);
 
 		// Password

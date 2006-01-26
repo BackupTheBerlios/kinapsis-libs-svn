@@ -35,7 +35,7 @@ UIN::UIN(const QString &uin){
 	this->setUin(uin);
 }
 
-QString UIN::getUin(){
+QString UIN::getId(){
 	return m_uin;
 }
 

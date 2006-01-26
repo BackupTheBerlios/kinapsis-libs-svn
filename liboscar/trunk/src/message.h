@@ -25,6 +25,7 @@
 #include "uin.h"
 #include "buffer.h"
 #include "userinfo.h"
+#include <qdatetime.h>
 
 namespace liboscar {
 
@@ -34,8 +35,8 @@ public:
 	Message();
 	virtual ~Message();
 
-	QString getMessage();
-	void setMessage(QString message);
+	QString getText();
+	void setText(QString message);
 	
 	UIN getUin();
 	void setUin(UIN uin);
@@ -53,6 +54,9 @@ public:
 
 	MessageRequest getRequest();
 	void setRequest(MessageRequest req);
+
+	QDateTime getTime();
+	void setTime(QDateTime time);
 
 	void parse(Buffer &b);
 
@@ -82,6 +86,8 @@ private:
 
 	Word m_ch2cookie;
 	MessageRequest m_ch2req;
+
+	QDateTime m_time;
 
 	Buffer m_data;
 };

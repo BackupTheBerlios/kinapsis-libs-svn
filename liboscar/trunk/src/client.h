@@ -100,7 +100,7 @@ signals:
 	void notifyAuthRequest(UIN uin, QString reason);
 
 	// Message
-	void notifyMessage(UIN uin, QString message);
+	void notifyMessage(Message message);
 
 	// presence
 	void notifyPresence(UIN uin, PresenceStatus status);

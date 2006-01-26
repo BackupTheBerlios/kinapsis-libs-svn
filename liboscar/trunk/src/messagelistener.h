@@ -24,6 +24,7 @@
 
 #include <qobject.h>
 #include "uin.h"
+#include "message.h"
 
 namespace liboscar {
 
@@ -33,10 +34,10 @@ public:
 	MessageListener();
 	virtual ~MessageListener();
 
-	virtual void incomingMessage(UIN uin, QString message) = 0;
+	virtual void incomingMessage(Message message) = 0;
 
 public slots:
-	void incomingSlot(UIN uin, QString message);
+	void incomingSlot(Message message);
 };
 
 

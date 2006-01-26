@@ -31,11 +31,11 @@ Message::Message() {
 
 Message::~Message() { }
 	
-QString Message::getMessage(){
+QString Message::getText(){
 	return m_msg;
 }
 
-void Message::setMessage(QString message) {
+void Message::setText(QString message) {
 	m_msg = message;
 }
 
@@ -81,6 +81,14 @@ MessageRequest Message::getRequest(){
 
 void Message::setRequest(MessageRequest req) {
 	m_ch2req = req;
+}
+
+QDateTime Message::getTime(){
+	return m_time;
+}
+
+void Message::setTime(QDateTime time){
+	m_time = time;
 }
 
 Buffer& Message::pack() {
@@ -133,6 +141,8 @@ Buffer& Message::pack() {
 void Message::parse(Buffer &b) {
 
 	Word w;
+
+	m_time = QDateTime::currentDateTime(); // No date info for online messages
 
 	b >> m_cookiehigh;
 	b >> m_cookielow;

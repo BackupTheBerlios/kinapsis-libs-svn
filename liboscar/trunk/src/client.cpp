@@ -144,7 +144,7 @@ void Client::sendMessage(Message message) {
 
 void Client::sendMessage(UIN uin, QString message) {
 	Message m;
-	m.setMessage(message);
+	m.setText(message);
 	m.setUin(uin);
 	m.setFormat(0x0001);
 	m.setEncoding(ASCII);
@@ -370,7 +370,7 @@ void Client::messageArrived(Message message){
 		// TODO
 	}
 	else // App must handle this
-		emit notifyMessage(message.getUin(), message.getMessage());
+		emit notifyMessage(message);
 }
 
 void Client::statusChanged(UIN uin, PresenceStatus status){
@@ -415,7 +415,7 @@ void Client::delRosterListener(RosterListener *rl) {
 }
 
 void Client::addMessageListener(MessageListener *ml) {
-	QObject::connect(this, SIGNAL(notifyMessage(UIN, QString)), ml, SLOT(incomingSlot(UIN, QString)));
+	QObject::connect(this, SIGNAL(notifyMessage(Message)), ml, SLOT(incomingSlot(Message)));
 }
 
 void Client::delMessageListener(MessageListener *ml) {

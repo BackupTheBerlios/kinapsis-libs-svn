@@ -35,7 +35,7 @@ public:
 	UIN(const QString& uin);
 	virtual ~UIN();
 	
-	QString getUin();
+	QString getId();
 	void setUin(const QString uin);
 	void setUin(const unsigned int uin);
 
