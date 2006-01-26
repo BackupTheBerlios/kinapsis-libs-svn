@@ -24,12 +24,10 @@
 
 #include "liboscar.h"
 #include <qvaluelist.h>
-#include <qobject.h>
 
 namespace liboscar {
 
-class Buffer : public QObject {
-Q_OBJECT
+class Buffer {
 
 public:
 	Buffer();
@@ -44,6 +42,7 @@ public:
 	Buffer& operator>>(Word &);
 	Buffer& operator>>(DWord &);
 	void readString(QString &);
+	void readString(QString &, Word);
 
 	void prepend(Byte);
 	void prepend(Word);
@@ -68,9 +67,6 @@ public:
 	unsigned int len();
 
 	virtual ~Buffer();
-
-signals:
-	void dataAvailable();
 
 private:
 	typedef QValueList<Byte>::iterator BIterator;

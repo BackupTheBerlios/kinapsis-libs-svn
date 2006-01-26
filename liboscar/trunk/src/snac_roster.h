@@ -42,6 +42,8 @@ namespace liboscar {
 	const Word ROSTER_CLI_ADDSTART = 0x0011; 
 	const Word ROSTER_CLI_ADDEND = 0x0012; 
 	const Word ROSTER_CLI_GRANTAUTH = 0x0014; 
+	const Word ROSTER_SRV_FUTUREGRANTREC = 0x0015; 
+	const Word ROSTER_CLI_DELYOURSELF = 0x0016; 
 	const Word ROSTER_CLI_REQAUTH = 0x0018; 
 	const Word ROSTER_SRV_AUTHREQ = 0x0019; 
 	const Word ROSTER_CLI_AUTHORIZE = 0x001a; 
@@ -97,6 +99,21 @@ public:
 	virtual ~SrvReplyRosterOkSNAC();
 
 	void parse(Buffer &b);
+};
+
+class SrvFutureGrantRecSNAC : public SNAC_Roster {
+
+public:
+	SrvFutureGrantRecSNAC();
+	virtual ~SrvFutureGrantRecSNAC();
+
+	UIN getUin();
+	QString getReason();
+
+	void parse(Buffer &b);
+private:
+	UIN m_uin;
+	QString m_reason;
 };
 
 class SrvAuthReqSNAC : public SNAC_Roster {
@@ -227,6 +244,15 @@ class CliGrantAuthSNAC : public SNAC_Roster {
 public:
 	CliGrantAuthSNAC(UIN uin);
 	virtual ~CliGrantAuthSNAC();
+
+	void parse(Buffer &b) {return ; };
+};
+
+class CliDelYourselfSNAC : public SNAC_Roster {
+
+public:
+	CliDelYourselfSNAC(UIN uin);
+	virtual ~CliDelYourselfSNAC();
 
 	void parse(Buffer &b) {return ; };
 };

@@ -27,6 +27,8 @@
 #include "connectionresult.h"
 #include "liboscar.h"
 #include "parser.h"
+#include "message.h"
+#include "capabilities.h"
 #include "roster.h"
 #include "rosterlistener.h"
 #include "connectionlistener.h"
@@ -52,9 +54,15 @@ public:
 
 	QString getPassword();
 	void setPassword(const QString& password);
+	
 	UIN getUIN();
 	void setUIN(const UIN& uin);
+	
 	void setType(const ProtocolType type);
+
+	void setAwayMessage(QString message);
+	QString getAwayMessage();
+
 	ClientState state();
 
 	ConnectionResult connect();
@@ -62,6 +70,7 @@ public:
 
 	// Actions
 	void sendMessage(UIN uin, QString message);
+	void sendMessage(Message message);
 	void setPresence(PresenceStatus status);
 	void registerNewUin(QString password);
 	void authorize(UIN uin, QString message, bool ack);
@@ -105,7 +114,7 @@ public slots:
 	void unexpectedDisconnect(QString reason, DisconnectReason error);
 	void finishedConnection();
 	void rosterArrived(Roster roster);
-	void messageArrived(UIN uin, QString message);
+	void messageArrived(Message message);
 	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
 	void authReq(UIN uin, QString reason);
@@ -115,6 +124,7 @@ protected:
 	Word getPort();
 	FirewallConfiguration getFirewall();
 	Roster& getRoster();
+	Capabilities& getCapabilities();
 
 private:
 	void send(Buffer &b);
@@ -132,6 +142,7 @@ private:
 	UIN m_uin;
 	QString m_password;
 	ProtocolType m_type;
+	QString m_awaymsg;
 
 	ClientState m_state;
 	bool m_middledisconnect;
@@ -144,6 +155,8 @@ private:
 	Parser* m_parser;
 
 	Roster m_roster;
+
+	Capabilities m_cap;
 };
 
 }

@@ -57,7 +57,13 @@ namespace liboscar {
 	const Word TLV_TYPE_LESSER = 0x0019;
 	const Word TLV_TYPE_BUILD = 0x001a;
 
+	const Word TLV_TYPE_AUTH = 0x0066;
+
 	const Word TLV_TYPE_MESSAGE = 0x0101;
+	const Word TLV_TYPE_NICK = 0x0131;
+	const Word TLV_TYPE_MAIL = 0x0137;
+	const Word TLV_TYPE_SMS = 0x013a;
+	const Word TLV_TYPE_COMMENT = 0x013c;
 	const Word TLV_TYPE_CAPABILITIES2 = 0x0501;
 
 	const Word TLV_VERMAJOR = 0x0002;
@@ -105,6 +111,7 @@ public:
 	virtual ~UnformattedTLV();
 	
 	Word getType();
+	Word len();
 
 	void specPack() { return ; };
 	void parse(Buffer& b);

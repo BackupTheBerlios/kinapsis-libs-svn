@@ -23,8 +23,7 @@
 #define _SNAC_ICBM_H_
 
 #include "snac.h"
-#include "uin.h"
-#include "userinfo.h"
+#include "message.h"
 
 namespace liboscar {
 
@@ -74,15 +73,10 @@ class SrvRecvMsg : public SNAC_ICBM {
 public:
 	SrvRecvMsg();
 	virtual ~SrvRecvMsg();
-// TODO: gets
-	UIN getUin(); // FIXME: tmp
-	QString getMessage();
+	Message getMessage();
 	void parse(Buffer &b);
 private:
-	UserInfo m_info;
-	MessageFormat m_format;
-	MessageEncoding m_encoding;
-	QString m_msg;
+	Message m_msg;
 };
 
 class SrvMissedICBMSNAC : public SNAC_ICBM {
@@ -111,7 +105,7 @@ public:
 	void parse(Buffer &b);
 private:
 	UIN m_uin;
-	MessageFormat m_format;
+	Word m_format;
 
 };
 
@@ -136,7 +130,7 @@ public:
 class CliSendMsgSNAC : public SNAC_ICBM {
 
 public:
-	CliSendMsgSNAC(UIN uin, QString message);
+	CliSendMsgSNAC(Message message);
 	virtual ~CliSendMsgSNAC();
 
 	void parse(Buffer &b) {return ; };

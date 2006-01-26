@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,85 +19,68 @@
  ***************************************************************************/
 
 
+#ifndef _SBLITEM_H_
+#define _SBLITEM_H_
+
 #include "tlv.h"
+#include "buffer.h"
+#include <qptrlist.h>
 
 namespace liboscar {
 
-TLV::TLV(const Word type){
-	m_type = type;
-	m_length = 0;
-}
+	enum SBLType {
+		ITEM_BUDDY,
+		ITEM_GROUP,
+		ITEM_PERMIT,
+		ITEM_DENY,
+		ITEM_SETTINGS,
+		ITEM_PRESENCE,
+		ITEM_UNKNOWN,
+		ITEM_IGNORE,
+		ITEM_LASTUPDATE,
+		ITEM_NONICQ,
+		ITEM_IMPORTTIME,
+		ITEM_AVATAR,
+		ITEM_LINKEDLIST,
+		ITEM_LINKED
+	};
 
-void TLV::setType (const Word type){
-	m_type = type;
-}
+class SBLItem {
 
-void TLV::setLength (const Word length){
-	m_length = length;
-}
-
-Buffer& TLV::data(){
-	return m_data;
-}
-
-Buffer& TLV::pack(){
-
-	this->specPack();
-	m_data.prepend((Word) m_data.len());
-	m_data.prepend(m_type);
-
-	return m_data;
-}
-
-TLV::~TLV(){ }
+public:
+	SBLItem();
+	virtual ~SBLItem();
 	
+	void setName(QString name);
+	void setGroupId(Word group);
+	void setItemId(Word item);
+	void setType(SBLType type);
+	void setTypeBuddy(bool reqAuth = false, QString nick = "", QString mail = "", QString smsnumber = "", QString comment = "");
 
-UnformattedTLV::UnformattedTLV(Word type) 
-	: TLV (type) { }
+	QString getName();
+	Word getGroupId();
+	Word getItemId();
+	SBLType getType();
 
-UnformattedTLV::~UnformattedTLV(){ }
+	void addTLV(TLV *tlv);
+	bool delTLV(TLV *tlv);
+	QPtrList<TLV> getTLVs();
 
-void UnformattedTLV::parse(Buffer &b){
+	void parse(Buffer& b);
+	Buffer& pack();
 
-	unsigned int i;
-	Byte by;
+private:
+	Buffer m_data;
 
-	m_data.wipe();
-	m_data.gotoBegin();
+	QString m_name;
+	Word m_groupid;
+	Word m_itemid;
+	SBLType m_type;
 
-	b >> m_type;
-	b >> m_length;
+	QPtrList<TLV> m_tlvs;
+};
 
-	for (i=0; i < m_length; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-	m_data.gotoBegin();
-}
-	
-void UnformattedTLV::parseData(Buffer &b, Word len){
-
-	unsigned int i;
-	Byte by;
-
-	m_data.wipe();
-	m_data.gotoBegin();
-
-	for (i=0; i < len; i++){
-		b >> by;
-		m_data << (Byte) by;
-	}
-	b.removeFromBegin();
-	m_data.gotoBegin();
-}
-	
-Word UnformattedTLV::getType(){
-	return m_type;
-}
-
-Word UnformattedTLV::len(){
-	return m_length;
-}
 
 }
+
+#endif // _SBLITEM_H_

@@ -25,7 +25,7 @@
 #include "buffer.h"
 #include "client.h"
 #include "families.h"
-#include "capabilities.h"
+#include "message.h"
 #include "roster.h"
 #include "userinfo.h"
 #include <qobject.h>
@@ -51,7 +51,7 @@ signals:
 	void serverDisconnected(QString reason, DisconnectReason error);
 	void loginSequenceFinished();
 	void rosterInfo(Roster r);
-	void newMessage(UIN uin, QString message);
+	void newMessage(Message msg);
 	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
 	void authReq(UIN uin, QString reason);
@@ -80,7 +80,6 @@ private:
 	Word m_seq; /* FLAP's sequence number */
 	Client *m_client;
 	Families m_fam;
-	Capabilities m_cap;
 
 	Buffer m_cookie;
 

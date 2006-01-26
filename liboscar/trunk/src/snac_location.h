@@ -99,7 +99,7 @@ public:
 class CliSetUserInfoSNAC : public SNAC_Location {
 
 public:
-	CliSetUserInfoSNAC(Capabilities cap);
+	CliSetUserInfoSNAC(Capabilities cap, QString awaymessage);
 	virtual ~CliSetUserInfoSNAC();
 
 	void parse(Buffer &b) {return ; };

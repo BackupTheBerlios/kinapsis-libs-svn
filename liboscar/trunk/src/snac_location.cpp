@@ -188,10 +188,20 @@ CliReqLocationSNAC::~CliReqLocationSNAC() { }
 
 	//CliSetUserInfoSNAC
 
-CliSetUserInfoSNAC::CliSetUserInfoSNAC(Capabilities cap )
+CliSetUserInfoSNAC::CliSetUserInfoSNAC(Capabilities cap, QString awaymessage)
 	: SNAC_Location(LOCATION_CLI_SETUSERINFO, false) {
+
+	// TODO: some AIM TLVs here (0x0001, 0x0002, 0x0003)
+
+	UnformattedTLV *ut = new UnformattedTLV(TLV_TYPE_DESCRIPTION);
+	ut->data() << awaymessage;
+	if (awaymessage.length())
+		ut->data() << (Byte) 0x00;
+
 	CapabilitiesTLV *t = new CapabilitiesTLV(0);
 	t->setCapabilities(cap);
+
+	addTLV(ut);
 	addTLV(t);
 }
 

@@ -25,6 +25,7 @@
 #include "snac_service.h"
 #include "snac_newuser.h"
 #include "snac_roster.h"
+#include "snac_location.h"
 
 namespace liboscar {
 
@@ -55,6 +56,8 @@ void Client::initvalues(){
 	m_state = CLI_NO_STATE;
 	m_middledisconnect = false;
 	m_exit = false;
+	m_cap.setDefault();
+	m_awaymsg = "I'm away now.";
 }
 
 QString Client::getPassword(){
@@ -75,6 +78,14 @@ void Client::setUIN(const UIN& uin){
 			;
 	} OJO */
 	m_uin = uin;
+}
+
+void Client::setAwayMessage(QString message){
+	m_awaymsg = message;
+}
+
+QString Client::getAwayMessage(){
+	return m_awaymsg;
 }
 
 DWord Client::getLocalIP() {
@@ -124,17 +135,32 @@ void Client::disconnect(ConnectionError err){
 
 }
 
-void Client::sendMessage(UIN uin, QString message) {
+void Client::sendMessage(Message message) {
 	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-	CliSendMsgSNAC *s = new CliSendMsgSNAC(uin, message);
+	CliSendMsgSNAC *s = new CliSendMsgSNAC(message);
 	f.addSNAC(s);
 	send(f.pack());
 }
 
+void Client::sendMessage(UIN uin, QString message) {
+	Message m;
+	m.setMessage(message);
+	m.setUin(uin);
+	m.setFormat(0x0001);
+	m.setEncoding(ASCII);
+	m.setType(TYPE_PLAIN);
+	this->sendMessage(m);
+}
+
 void Client::setPresence(PresenceStatus status) {
 	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-	// FIXME: wired values
-	CliSetStatusSNAC *s = new CliSetStatusSNAC(status, 0, 0, NORMAL);
+	SNAC *s;
+
+	if (m_type == ICQ) // FIXME: wired values
+		s = new CliSetStatusSNAC(status, 0, 0, NORMAL);
+	else
+		s = new CliSetUserInfoSNAC(m_cap, (status == STATUS_ONLINE ? "" : m_awaymsg));
+
 	f.addSNAC(s);
 	send(f.pack());
 }
@@ -240,7 +266,7 @@ ConnectionResult Client::connect(){
 				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
 		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
 		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
-		QObject::connect(m_parser, SIGNAL(newMessage(UIN, QString)), this, SLOT(messageArrived(UIN, QString)));
+		QObject::connect(m_parser, SIGNAL(newMessage(Message)), this, SLOT(messageArrived(Message)));
 		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
 		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
 		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), this, SLOT(authReq(UIN, QString)));
@@ -337,8 +363,14 @@ void Client::rosterArrived(Roster r){
 		emit notifyNewContact(tmp);
 }
 
-void Client::messageArrived(UIN uin, QString message){
-	emit notifyMessage(uin, message);
+void Client::messageArrived(Message message){
+	// TODO: handle more message stuff here
+	if (message.getFormat() == 0x0002 && message.getRequest() == REQUEST){
+		// We must reply this
+		// TODO
+	}
+	else // App must handle this
+		emit notifyMessage(message.getUin(), message.getMessage());
 }
 
 void Client::statusChanged(UIN uin, PresenceStatus status){
@@ -356,6 +388,11 @@ void Client::authReq(UIN uin, QString reason){
 Roster& Client::getRoster(){
 	return m_roster;
 }
+
+Capabilities& Client::getCapabilities(){
+	return m_cap;
+}
+
 
 // LISTENERS' STUFF
 

@@ -82,7 +82,8 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 			tlv.parse(b);
 			switch (tlv.getType()){
 				case 0x0131:
-					tlv.data().readString(nick);
+					tlv.data().gotoBegin();
+					tlv.data().readString(nick, tlv.len());
 				default:
 					break;
 			}
@@ -136,6 +137,36 @@ void SrvReplyRosterOkSNAC::parse(Buffer &b) {
 	b >> dw; b >> w;
 	b.removeFromBegin();
 
+}
+
+	// SrvFutureGrantRecSNAC
+SrvFutureGrantRecSNAC::SrvFutureGrantRecSNAC()
+	: SNAC_Roster ( ROSTER_SRV_FUTUREGRANTREC, true) { }
+
+SrvFutureGrantRecSNAC::~SrvFutureGrantRecSNAC() { }
+
+UIN SrvFutureGrantRecSNAC::getUin() {
+	return m_uin;
+}
+
+QString SrvFutureGrantRecSNAC::getReason() {
+	return m_reason;
+}
+
+void SrvFutureGrantRecSNAC::parse(Buffer &b) {
+
+	Word len;
+	Byte by;
+
+	m_uin.parse(b);
+
+	b >> len;
+	while (len--){
+		b >> by;
+		m_reason.append(by);
+	}
+	b >> len;
+	b.removeFromBegin();
 }
 
 	// SrvAuthReqSNAC
@@ -292,11 +323,19 @@ CliGrantAuthSNAC::CliGrantAuthSNAC(UIN uin)
 
 CliGrantAuthSNAC::~CliGrantAuthSNAC() { }
 
+	//CliDelYourselfSNAC
+CliDelYourselfSNAC::CliDelYourselfSNAC(UIN uin)
+	: SNAC_Roster(ROSTER_CLI_DELYOURSELF, true) {
+	uin.appendUin(m_data);
+}
+
+CliDelYourselfSNAC::~CliDelYourselfSNAC() { }
+
 	//CliReqAuthSNAC
 CliReqAuthSNAC::CliReqAuthSNAC(UIN uin, QString reason)
 	: SNAC_Roster(ROSTER_CLI_REQAUTH, true) {
 	uin.appendUin(m_data);
-	m_data << (Word) reason.length();
+	m_data << (Byte) reason.length();
 	m_data << reason;
 	m_data << (Word) 0x0000;
 }

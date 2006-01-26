@@ -31,7 +31,7 @@ Buffer& Buffer::operator<<(Byte b){
 	bool wasEmpty = (m_data.count() == 0);
 	m_data << b;
 
-	if (wasEmpty) emit dataAvailable();
+//	if (wasEmpty) emit dataAvailable();
 
 	return *this;
 }
@@ -47,7 +47,7 @@ Buffer& Buffer::operator<<(Word w){
 		m_data << (w & 0xFF);
 	}
 
-	if (wasEmpty) emit dataAvailable();
+	//if (wasEmpty) emit dataAvailable();
 
 	return *this;
 }
@@ -67,7 +67,7 @@ Buffer& Buffer::operator<<(DWord dw) {
 		m_data << (dw & 0xFF);
 	}
 
-	if (wasEmpty) emit dataAvailable();
+	//if (wasEmpty) emit dataAvailable();
 	return *this;
 }
 
@@ -81,7 +81,7 @@ Buffer& Buffer::operator<<(const QString& s){
 	for (i=0;i < s.length(); i++)
 		m_data << (Byte) c[i];
 
-	if (wasEmpty) emit dataAvailable();
+	//if (wasEmpty) emit dataAvailable();
 
 	return *this;
 }
@@ -148,6 +148,13 @@ void Buffer::readString(QString &s){
 
 	len = getWord();
 
+	if (m_data.count() >= len){
+		while (len--)
+			s.append(getByte());
+	}
+}
+
+void Buffer::readString(QString &s, Word len){
 	if (m_data.count() >= len){
 		while (len--)
 			s.append(getByte());
@@ -277,5 +284,3 @@ Buffer::~Buffer() { }
 
 
 }
-
-#include "buffer.moc"

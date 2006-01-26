@@ -139,12 +139,6 @@ namespace liboscar {
 		MALFORMED_PACKET
 	};
 
-	enum MessageFormat {
-		MSG_SIMPLE,
-		MSG_ADVANCED,
-		MSG_SERVER
-	};
-
 	enum MessageEncoding {
 		ASCII,
 		UCS2BE,
@@ -176,6 +170,12 @@ namespace liboscar {
 		FLAG_NORMAL,
 		FLAG_AUTO,
 		FLAG_MULTI
+	};
+
+	enum MessageRequest {
+		REQUEST,
+		CANCEL,
+		ACCEPT
 	};
 
 	enum LostReason {

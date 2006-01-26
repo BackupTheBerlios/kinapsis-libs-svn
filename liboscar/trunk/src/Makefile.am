@@ -14,13 +14,13 @@ liboscar_la_SOURCES = buffer.cpp capabilities.cpp capabilitiestlv.cpp \
 		      roster.cpp rosterlistener.cpp servertlv.cpp snac.cpp snac_bos.cpp \
 		      snac_contact.cpp snac_icbm.cpp snac_interval.cpp snac_newuser.cpp \
 		      snac_location.cpp snac_roster.cpp snac_service.cpp statustlv.cpp \
-		      passwordtlv.cpp presencelistener.cpp tlv.cpp uin.cpp \
+		      passwordtlv.cpp presencelistener.cpp tlv.cpp sblitem.cpp uin.cpp \
 		      uinregistrationlistener.cpp userinfo.cpp
 
 liboscarincludedir = $(includedir)/liboscar
 liboscarinclude_HEADERS = buffer.h capabilities.h client.h connection.h connectionresult.h contact.h \
 			  connectionlistener.h directconnectiontlv.h families.h liboscar.h \
 			  message.h messagelistener.h roster.h rosterlistener.h parser.h presencelistener.h \
-			  tlv.h uin.h uinregistrationlistener.h userinfo.h
+			  sblitem.h tlv.h uin.h uinregistrationlistener.h userinfo.h
 
 METASOURCES = AUTO

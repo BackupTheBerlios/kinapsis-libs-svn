@@ -23,6 +23,8 @@
 #define _MESSAGE_H_
 
 #include "uin.h"
+#include "buffer.h"
+#include "userinfo.h"
 
 namespace liboscar {
 
@@ -38,9 +40,50 @@ public:
 	UIN getUin();
 	void setUin(UIN uin);
 
+	Word getFormat();
+	void setFormat(Word format);
+
+	UserInfo getInfo();
+
+	MessageEncoding getEncoding();
+	void setEncoding(MessageEncoding encoding);
+
+	MessageType getType();
+	void setType(MessageType type);
+
+	MessageRequest getRequest();
+	void setRequest(MessageRequest req);
+
+	void parse(Buffer &b);
+
+	Buffer& pack();
+
 private:
+	void parseCh1(Buffer& b);
+	void parseCh2(Buffer& b);
+	void parseCh4(Buffer& b);
+	void parse2711(Buffer& b);
+
+	MessageType byteToType(Byte b);
+	MessageFlags byteToFlags(Byte b);
+
+	Word m_format;
 	QString m_msg;
 	UIN m_uin;
+
+	UserInfo m_info;
+	
+	MessageEncoding m_encoding;
+	MessageType m_type;
+	MessageFlags m_flags;
+
+	DWord m_cookiehigh;
+	DWord m_cookielow;
+
+	Word m_ch2cookie;
+	MessageRequest m_ch2req;
+
+	Buffer m_data;
 };
 
 

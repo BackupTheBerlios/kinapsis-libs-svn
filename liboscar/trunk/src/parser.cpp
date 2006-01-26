@@ -44,7 +44,6 @@ Parser::Parser(Client *c){
 	srand(time(NULL));
 	m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
 	m_client = c;
-	m_cap.setDefault();
 	m_inlogin = true;
 }
 
@@ -226,7 +225,7 @@ void Parser::parseCh2(Buffer& buf){
 		case SNAC_FAM_ROSTER:
 			parseCh2Roster(buf);
 			break;
-		case SNAC_FAM_OLDICQ:
+		case SNAC_FAM_ICQ:
 			break;
 		case SNAC_FAM_NEWUSER:
 			parseCh2NewUser(buf);
@@ -239,7 +238,7 @@ void Parser::parseCh2(Buffer& buf){
 
 void Parser::parseCh4(Buffer& buf){
 
-	Word id, l, err;
+	Word id, l, err, w;
 	Byte b;
 	unsigned int i;
 	QString reason;
@@ -278,6 +277,14 @@ void Parser::parseCh4(Buffer& buf){
 			case 0x0008:
 			case 0x0009:
 				errt.parse(buf);
+				buf.removeFromBegin();
+				break;
+			case 0x0013:
+				buf >> w; // XXX: Registration status
+				buf.removeFromBegin();
+				break;
+			case 0x0054:
+				buf.advance(l); // XXX: Change password URL
 				buf.removeFromBegin();
 				break;
 			default:
@@ -414,7 +421,7 @@ void Parser::parseCh2Location(Buffer& buf) {
 			break;
 		case LOCATION_SRV_REPLYLOCATION:
 			srls.parse(buf);
-			m_cap.setMaxCap(srls.getMaxCap());
+			m_client->getCapabilities().setMaxCap(srls.getMaxCap());
 			break;
 		case LOCATION_SRV_USERINFO:
 			suis.parse(buf);
@@ -427,7 +434,7 @@ void Parser::parseCh2Location(Buffer& buf) {
 	// React to commands
 	if (command == LOCATION_SRV_REPLYLOCATION && m_inlogin) {
 		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliSetUserInfoSNAC *cuinfo = new CliSetUserInfoSNAC(m_cap);
+		CliSetUserInfoSNAC *cuinfo = new CliSetUserInfoSNAC(m_client->getCapabilities(), m_client->getAwayMessage());
 		f->addSNAC(cuinfo);
 		m_client->send(f->pack());
 		delete f;
@@ -519,7 +526,7 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 			break;
 		case ICBM_SRV_RECVMSG:
 			irm.parse(buf);
-			emit newMessage(irm.getUin(), irm.getMessage());
+			emit newMessage(irm.getMessage());
 			break;
 		case ICBM_SRV_MISSEDICBM:
 			imi.parse(buf);

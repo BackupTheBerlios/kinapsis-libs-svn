@@ -23,6 +23,7 @@
 #define _UINREGISTRATIONLISTENER_H_
 
 #include "uin.h"
+#include <qobject.h>
 
 namespace liboscar {
 

@@ -40,7 +40,7 @@ namespace liboscar {
 	const Word SNAC_FAM_BOS = 0x0009;
 	const Word SNAC_FAM_INTERVAL = 0x000b;
 	const Word SNAC_FAM_ROSTER = 0x0013;
-	const Word SNAC_FAM_OLDICQ = 0x0015;
+	const Word SNAC_FAM_ICQ = 0x0015;
 	const Word SNAC_FAM_NEWUSER = 0x0017;
 
 class SNAC {

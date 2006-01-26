@@ -86,103 +86,12 @@ SrvRecvMsg::SrvRecvMsg()
 
 SrvRecvMsg::~SrvRecvMsg() { }
 
-UIN SrvRecvMsg::getUin() {
-	return m_info.getUin();
-}
-
-QString SrvRecvMsg::getMessage() {
+Message SrvRecvMsg::getMessage() {
 	return m_msg;
 }
 
 void SrvRecvMsg::parse(Buffer &b) {
-
-	DWord dw;
-	Word w;
-	Word len, type;
-	Byte by;
-	UnformattedTLV tlv(TLV_TYPE_GENERIC);
-
-	b >> dw; // TODO: get stamp to receive ACKs
-	b >> dw;
-
-	b >> w;
-	m_format = (MessageFormat) w;
-
-	m_info.parse(b);
-
-	// Fixed part parsed. Let's go to format specifics
-	
-	b >> dw; //TLV header
-	switch (m_format) {
-		case 0x0001:
-			tlv.parse(b); // Capabilities
-
-			b >> type;
-			b >> len;
-
-			len -= 4; // Two words
-
-			b >> w;
-			switch (w){
-				case 0x0000:
-					m_encoding = ASCII;
-					break;
-				case 0x0002:
-					m_encoding = UCS2BE;
-					break;
-				case 0x0003:
-					m_encoding = LOCAL;
-					break;
-			}
-			b >> w;
-
-			if (m_encoding == UCS2BE){
-				len /=2; // Reading Words
-
-				Word strucs2[len];
-				int i = 0;
-
-				while (len--)
-					b >> strucs2[i++];
-
-				m_msg = QString::fromUcs2(strucs2);
-			}
-			else {
-				while (len--){
-					b >> by;
-					m_msg.append(by);
-				}
-			}
-			qDebug("Message: " + m_msg);
-			b.removeFromBegin();
-			break;
-		case 0x0002:
-			// TODO: support type2 messages
-			// XXX: make message class?
-			break;
-		case 0x0004:
-			m_encoding = ASCII;
-			b >> type;
-			b >> len;
-			b >> dw; // UIN in hex
-
-			b >> by; // TODO: msg type and flags
-			b >> by;
-
-			b.setLittleEndian();
-			b >> len;
-			b.setBigEndian();
-
-			while (len--){
-				b >> by;
-				m_msg.append(by);
-			}
-			b.removeFromBegin();
-			break;
-		default:
-			qDebug("Unknown message format.");
-			break;
-	}
+	m_msg.parse(b);
 }
 
 	// SvrMissedICBM SNAC
@@ -251,7 +160,7 @@ void SrvAckMsgSNAC::parse(Buffer &b) {
 
 	b >> w;
 
-	m_format = (MessageFormat) w;
+	m_format = w;
 
 	m_uin.parse(b);
 }
@@ -267,8 +176,7 @@ CliSetICBMSNAC::CliSetICBMSNAC()
 	: SNAC_ICBM(ICBM_CLI_SETICBM, true) {
 
 	m_data << (Word) 0x0000;
-	m_data << (Word) 0x0000;
-	m_data << (Word) 0x0003;
+	m_data << (DWord) 0x00000003; // TODO: MTN
 	m_data << (Word) 0x1f40;
 	m_data << (Word) 0x03e7;
 	m_data << (Word) 0x03e7;
@@ -286,9 +194,11 @@ CliReqICBMSNAC::CliReqICBMSNAC()
 CliReqICBMSNAC::~CliReqICBMSNAC() { }
 
 	// CliSendMsg SNAC
-CliSendMsgSNAC::CliSendMsgSNAC(UIN uin, QString message)
+CliSendMsgSNAC::CliSendMsgSNAC(Message message)
 	: SNAC_ICBM(ICBM_CLI_SENDMSG, false) {
 
+	m_data << message.pack();
+/*
 	UnformattedTLV *tlv;
 	UnformattedTLV *tlvm;
 	
@@ -317,7 +227,7 @@ CliSendMsgSNAC::CliSendMsgSNAC(UIN uin, QString message)
 
 	addTLV(tlvm);
 	tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
-	addTLV(tlv);
+	addTLV(tlv); */
 }
 
 CliSendMsgSNAC::~CliSendMsgSNAC() { }

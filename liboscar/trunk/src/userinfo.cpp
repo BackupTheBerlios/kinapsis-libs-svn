@@ -32,7 +32,7 @@ UserInfo::UserInfo() {
 	m_warn = 0;
 	m_createtime = m_signontime = m_idletime = m_createtime = m_onlinetime = 0;
 	m_extip = 0;
-	m_status = STATUS_OFFLINE;
+	m_status = STATUS_ONLINE;
 }
 
 UserInfo::~UserInfo() {
@@ -71,15 +71,13 @@ UserClass UserInfo::getUserClass() {
 	return m_class;
 }
 
-
 void UserInfo::setStatus(PresenceStatus status) {
 	m_status = status;
 }
 
 void UserInfo::parse(Buffer& b) {
 
-	Word count, type, len;
-	DWord dw;
+	Word count, type, len, w;
 	UnformattedTLV tlv(TLV_TYPE_GENERIC);
 	CapabilitiesTLV *ct = 0;
 	StatusTLV st;
@@ -93,45 +91,47 @@ void UserInfo::parse(Buffer& b) {
 		b >> type;
 		b >> len;
 		switch (type) {
-			case 0x01:
+			case 0x0001:
 				tlv.parseData(b, len);
-				tlv.data() >> dw; m_class = (UserClass) dw;
+				tlv.data() >> w; m_class = (UserClass) w;
+				if (w & 0x0020)
+					m_status = STATUS_AWAY;
 				break;
-			case 0x02:
+			case 0x0002:
 				tlv.parseData(b, len);
 				tlv.data() >> m_createtime;
 				break;
-			case 0x03:
+			case 0x0003:
 				tlv.parseData(b, len);
 				tlv.data() >> m_signontime;
 				break;
-			case 0x04:
+			case 0x0004:
 				tlv.parseData(b, len);
 				tlv.data() >> m_idletime;
 				break;
-			case 0x05:
+			case 0x0005:
 				tlv.parseData(b, len);
 				tlv.data() >> m_createtime;
 				break;
-			case 0x06:
+			case 0x0006:
 				st.parse(b);
 				m_status = st.getStatus();
 				break;
-			case 0x0a:
+			case 0x000a:
 				tlv.parseData(b, len);
 				tlv.data() >> m_extip;
 				break;
-			case 0x0c:
+			case 0x000c:
 				m_dc = new DirectConnectionTLV();
 				m_dc->parse(b);
 				break;
-			case 0x0d:
+			case 0x000d:
 				ct = new CapabilitiesTLV(len);
 				ct->parse(b);
 				m_cap = ct->getCapabilities();
 				delete ct;
 				break;
-			case 0x0f:
+			case 0x000f:
 				tlv.parseData(b, len);
 				tlv.data() >> m_onlinetime;
 				break;
