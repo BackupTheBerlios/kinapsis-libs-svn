@@ -68,6 +68,11 @@ private:
 	void parseCh4(Buffer& b);
 	void parse2711(Buffer& b);
 
+	void packCh2();
+
+	Byte typeToByte(MessageType t);
+	Byte flagsToByte(MessageFlags f);
+
 	MessageType byteToType(Byte b);
 	MessageFlags byteToFlags(Byte b);
 

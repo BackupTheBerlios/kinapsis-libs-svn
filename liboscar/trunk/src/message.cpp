@@ -25,8 +25,19 @@
 namespace liboscar {
 
 Message::Message() {
+	m_format = 0x0001;
 	m_msg = "";
 	m_uin = UIN(0);
+	
+	m_encoding = ASCII;
+	m_type = TYPE_PLAIN;
+	m_flags = FLAG_NORMAL;
+
+	m_cookiehigh = 0x00000000; 
+	m_cookielow = 0x00000000; 
+
+	m_ch2cookie = 0x0000;
+	m_ch2req = REQUEST;
 }
 
 Message::~Message() { }
@@ -91,6 +102,60 @@ void Message::setTime(QDateTime time){
 	m_time = time;
 }
 
+Byte Message::typeToByte(MessageType t) {
+	switch (t) {
+		default:
+		case TYPE_PLAIN:
+			return 0x01;
+		case TYPE_CHAT:
+			return 0x02;
+		case TYPE_FILEREQ:
+			return 0x03;
+		case TYPE_URL:
+			return 0x04;
+		case TYPE_AUTHREQ:
+			return 0x06;
+		case TYPE_AUTHDENY:
+			return 0x07;
+		case TYPE_AUTHOK:
+			return 0x08;
+		case TYPE_SERVER:
+			return 0x09;
+		case TYPE_ADDED:
+			return 0x0c;
+		case TYPE_WWP:
+			return 0x0d;
+		case TYPE_EEXPRESS:
+			return 0x0e;
+		case TYPE_CONTACTS:
+			return 0x13;
+		case TYPE_PLUGIN:
+			return 0x1a;
+		case TYPE_AUTOAWAY:
+			return 0xe8;
+		case TYPE_AUTOBUSY:
+			return 0xe9;
+		case TYPE_AUTONA:
+			return 0xea;
+		case TYPE_AUTODND:
+			return 0xeb;
+		case TYPE_AUTOFFC:
+			return 0xec;
+	}
+}
+
+Byte Message::flagsToByte(MessageFlags f) {
+	switch (f) {
+		default:
+		case FLAG_NORMAL:
+			return 0x01;
+		case FLAG_AUTO:
+			return 0x03;
+		case FLAG_MULTI:
+			return 0x80;
+	}
+}
+
 Buffer& Message::pack() {
 
 	UnformattedTLV* tlvm;
@@ -123,19 +188,112 @@ Buffer& Message::pack() {
 		
 			m_data << tlvm->pack();
 			delete tlvm;
-			tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
-			m_data << tlv->pack(); 
-			delete tlv;
 			break;
 		case 0x0002:
-			// TODO
+			packCh2();
 			break;
 		case 0x0004:
-			// TODO
+			tlvm = new UnformattedTLV(TLV_TYPE_SERVER);
+			tlvm->data().setLittleEndian();
+			tlvm->data() << (DWord) m_uin.getId().toUInt(); // XXX: port
+			tlvm->data() << typeToByte(m_type);
+			tlvm->data() << flagsToByte(m_flags);
+			tlvm->data() << (Word) m_msg.length();
+			tlvm->data() << m_msg;
+
+			m_data << tlvm->pack();
+			delete tlvm;
 			break;
 	}
 
+	// Request offline storage TODO: we don't want to store it ever
+	tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
+	m_data << tlv->pack(); 
+	delete tlv;
+
 	return m_data;
+}
+
+void Message::packCh2(){
+
+	// This code sucks
+	
+	UnformattedTLV* tlvm;
+	UnformattedTLV* tlv;
+
+	tlvm = new UnformattedTLV(0x0005);
+
+	tlvm->data() << (Word) m_ch2req;
+	tlvm->data() << (DWord) m_cookiehigh;
+	tlvm->data() << (DWord) m_cookielow;
+
+	// FIXME: wired capability. Seems to be the one all people use. why?
+	tlvm->data() << (DWord) 0x09461349;
+	tlvm->data() << (DWord) 0x4c7f11d1;
+	tlvm->data() << (DWord) 0x82224445;
+	tlvm->data() << (DWord) 0x53540000;
+
+	tlv = new UnformattedTLV(0x0003);
+	tlv->data() << (DWord) 0x00000000; // FIXME: internal IP. Add it
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	tlv = new UnformattedTLV(0x0005);
+	tlv->data() << (Word) 0x0000; // FIXME: listen port. Add it
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	tlv = new UnformattedTLV(0x000a);
+	tlv->data() << (Word) 0x0001;
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	tlv = new UnformattedTLV(0x000b);
+	tlv->data() << (Word) 0x0000;
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	tlv = new UnformattedTLV(0x000f);
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	// Message stuff
+	tlv = new UnformattedTLV(0x2711);
+	tlv->data().setLittleEndian();
+	tlv->data() << (Word) 0x001b; // 27
+	tlv->data() << (Word) 0x0008;
+
+	for (unsigned int i = 0; i < 16; i++)
+		tlv->data() << (Byte) 0x00; //plugin
+
+	tlv->data() << (Word) 0x0000;
+	tlv->data() << (DWord) 0x00000003; //capabilities: as seen in doc
+	tlv->data() << (Byte) 0x00;
+
+	tlv->data() << m_ch2cookie;
+
+	tlv->data() << (Word) 0x000e; //len: 14
+	tlv->data() << m_ch2cookie; // again :-?
+	for (unsigned int i = 0; i < 12; i++)
+		tlv->data() << (Byte) 0x00; // I hate the OSCAR guys
+
+	// Let's go for the fucking real message
+	
+	tlv->data() << typeToByte(m_type);
+	tlv->data() << flagsToByte(m_flags);
+
+	tlv->data() << (Word) 0x0000; // status
+	tlv->data() << (Word) 0x0000; // prio
+
+	tlv->data() << m_msg.length() + 1;
+	tlv->data() << m_msg;
+	tlv->data() << (Byte) 0x00; // the string must be null terminated
+
+	tlvm->data() << tlv->pack();
+	delete tlv;
+
+	m_data << tlvm->pack();
+	delete tlvm;
 }
 
 void Message::parse(Buffer &b) {
@@ -284,7 +442,7 @@ void Message::parseCh1(Buffer &b) {
 			m_msg.append(by);
 		}
 	}
-	qDebug("Message: " + m_msg);
+
 	b.removeFromBegin();
 	// TODO: are we getting a empty 0x06 TLV in the end? what does that mean?
 }
