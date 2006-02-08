@@ -28,7 +28,7 @@ Buffer::Buffer(){
 }
 
 Buffer& Buffer::operator<<(Byte b){
-	bool wasEmpty = (m_data.count() == 0);
+//	bool wasEmpty = (m_data.count() == 0);
 	m_data << b;
 
 //	if (wasEmpty) emit dataAvailable();
@@ -37,7 +37,7 @@ Buffer& Buffer::operator<<(Byte b){
 }
 
 Buffer& Buffer::operator<<(Word w){
-	bool wasEmpty = (m_data.count() == 0);
+//	bool wasEmpty = (m_data.count() == 0);
 	if (m_lendian){
 		m_data << (w & 0xFF);
 		m_data << ((w >> 8) & 0xFF);
@@ -53,7 +53,7 @@ Buffer& Buffer::operator<<(Word w){
 }
 
 Buffer& Buffer::operator<<(DWord dw) {
-	bool wasEmpty = (m_data.count() == 0);
+//	bool wasEmpty = (m_data.count() == 0);
 	if (m_lendian){
 		m_data << (dw & 0xFF);
 		m_data << ((dw >> 8) & 0xFF);
@@ -74,7 +74,7 @@ Buffer& Buffer::operator<<(DWord dw) {
 Buffer& Buffer::operator<<(const QString& s){
 	unsigned int i;
 	char *c;
-	bool wasEmpty = (m_data.count() == 0);
+//	bool wasEmpty = (m_data.count() == 0);
 
 	c = (char *) s.ascii();
 

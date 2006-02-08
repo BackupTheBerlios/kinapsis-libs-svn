@@ -38,6 +38,9 @@ Message::Message() {
 
 	m_ch2cookie = 0x0000;
 	m_ch2req = REQUEST;
+
+	m_time.setDate(QDate(1970,1,1));
+	m_time.setTime(QTime(0,0));
 }
 
 Message::~Message() { }
@@ -84,6 +87,14 @@ MessageType Message::getType(){
 
 void Message::setType(MessageType type) {
 	m_type = type;
+}
+
+MessageFlags Message::getFlags(){
+	return m_flags;
+}
+
+void Message::setFlags(MessageFlags flags) {
+	m_flags = flags;
 }
 
 MessageRequest Message::getRequest(){

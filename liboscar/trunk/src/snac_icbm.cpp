@@ -241,4 +241,50 @@ CliAckMsgSNAC::CliAckMsgSNAC()
 
 CliAckMsgSNAC::~CliAckMsgSNAC() { }
 
+Message CliAckMsgSNAC::getMessage(){
+	return m_msg;
+}
+
+void CliAckMsgSNAC::parse(Buffer &b) {
+
+	DWord dw;
+	Word w, channel;
+	Byte by;
+	UIN uin;
+	QString m;
+
+	b >> dw; b >> dw;
+
+	b >> channel;
+	m_msg.setFormat(channel);
+
+	uin.parse(b);
+	m_msg.setUin(uin);
+
+	b >> m_reason;
+	
+	switch (channel){
+		case 0x0001:
+			// TODO
+			break;
+		case 0x0002:
+			b.setLittleEndian();
+			b >> w; b.advance(w);
+			b >> w; b.advance(w);
+			b >> by; m_msg.setType(Message::byteToType(by));
+			b >> by; m_msg.setFlags(Message::byteToFlags(by));
+			b.advance(4);
+			b.readString(m); 
+			m.truncate(m.length() - 1); // Null terminated string
+			m_msg.setText(m);
+			b.removeFromBegin();
+			break;
+		default:
+			qDebug("Unknown channel in SNAC 0x04,0x0B"); 
+			break;
+	}
+
+}
+
+
 }

@@ -43,6 +43,7 @@ Buffer& TLV::data(){
 Buffer& TLV::pack(){
 
 	this->specPack();
+	m_data.setBigEndian();
 	m_data.prepend((Word) m_data.len());
 	m_data.prepend(m_type);
 

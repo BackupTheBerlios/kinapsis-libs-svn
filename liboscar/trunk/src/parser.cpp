@@ -32,6 +32,7 @@
 #include "snac_interval.h"
 #include "snac_roster.h"
 #include "snac_newuser.h"
+#include "snac_icq.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -226,6 +227,7 @@ void Parser::parseCh2(Buffer& buf){
 			parseCh2Roster(buf);
 			break;
 		case SNAC_FAM_ICQ:
+			parseCh2ICQ(buf);
 			break;
 		case SNAC_FAM_NEWUSER:
 			parseCh2NewUser(buf);
@@ -444,6 +446,10 @@ void Parser::parseCh2Location(Buffer& buf) {
 		m_client->send(f->pack());
 		delete f;
 	}
+	else if (command == LOCATION_SRV_USERINFO) {
+		if (suis.getType() == AWAY_MESSAGE)
+			emit awayMessageArrived(suis.getUserOnlineInfo().getUin(), suis.getAwayMessage());
+	}
 }
 
 void Parser::parseCh2Contact(Buffer& buf) {
@@ -508,6 +514,7 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 	SrvRecvMsg irm;
 	SrvMissedICBMSNAC imi;
 	SrvAckMsgSNAC iam;
+	CliAckMsgSNAC cam;
 
 	buf >> command;
 	buf >> flags;
@@ -535,6 +542,9 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 		case ICBM_SRV_SRVACKMSG:
 			iam.parse(buf);
 			break;
+		case ICBM_CLI_ACKMSG:
+			cam.parse(buf);
+			break;
 		default:
 			qDebug("Unknown command on SNAC ICBM family");
 			break;
@@ -552,6 +562,8 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 		m_client->send(f->pack());
 		delete f;
 	}
+	else if (command == ICBM_CLI_ACKMSG) // TODO: more checks
+			emit awayMessageArrived(cam.getMessage().getUin(), cam.getMessage().getText());
 }
 
 void Parser::parseCh2BOS(Buffer& buf) {
@@ -692,9 +704,66 @@ void Parser::parseCh2Roster(Buffer& buf) {
 			m_client->send(f->pack());
 			delete f;
 
-			//Finished login sequence (TODO: offline messages)
+			//Finished login sequence
 			m_inlogin = false;
 			emit loginSequenceFinished();
+
+			// Request offline messages
+			if (m_client->getType() == ICQ){
+				f = new FLAP(0x02, getNextSeqNumber(), 0);
+				CliMetaReqOfflineSNAC *cmr = new CliMetaReqOfflineSNAC(m_client->getUIN().getId().toUInt());
+				f->addSNAC(cmr);
+				m_client->send(f->pack());
+				delete f;
+			}
+		}
+	}
+}
+
+void Parser::parseCh2ICQ(Buffer& buf) {
+
+	Word command, flags;
+	DWord reference;
+
+	SrvICQErrSNAC ies;
+	SrvMetaReplySNAC mrs;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case ICQ_SRV_ICQ_ERR:
+			ies.parse(buf);
+			qDebug(QString("Error on channel 2 family 15: %1").arg(ies.getError()));
+			break;
+		case ICQ_SRV_METAREPLY:
+			mrs.parse(buf);
+			break;
+		default:
+			qDebug("Unknown command on SNAC ICQ family");
+			break;
+	}
+	// React to commands
+	if (command == ICQ_SRV_METAREPLY) {
+		FLAP *f;
+		CliMetaReqOfflineDeleteSNAC *cmrod;
+		switch (mrs.getType()){
+			case OFFLINE_MESSAGE:
+				emit newMessage(mrs.getMessage());
+				break;
+			case END_OFFLINE_MESSAGES:
+				f = new FLAP(0x02, getNextSeqNumber(), 0);
+				cmrod = new CliMetaReqOfflineDeleteSNAC(m_client->getUIN().getId().toUInt());
+				f->addSNAC(cmrod);
+				m_client->send(f->pack());
+				delete f;
+				break;
+			case META_INFO_RESPONSE:
+				// TODO
+				break;
 		}
 	}
 }

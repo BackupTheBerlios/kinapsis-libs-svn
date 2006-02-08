@@ -81,10 +81,17 @@ public:
 	SrvUserInfoSNAC();
 	virtual ~SrvUserInfoSNAC();
 
+	InfoRequestType getType();
+	QString getAwayMessage();
+	QString getProfile();
+	UserInfo getUserOnlineInfo();
+
 	void parse(Buffer &b);
 private:
+	InfoRequestType m_type;
 	UserInfo m_info;
 	QString m_away;
+	QString m_profile;
 };
 
 class CliReqLocationSNAC : public SNAC_Location {

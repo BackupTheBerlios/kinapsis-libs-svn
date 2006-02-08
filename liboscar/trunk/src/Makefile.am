@@ -12,7 +12,7 @@ liboscar_la_SOURCES = buffer.cpp capabilities.cpp capabilitiestlv.cpp \
 		      contact.cpp directconnectiontlv.cpp errortlv.cpp \
 		      families.cpp flap.cpp message.cpp messagelistener.cpp parser.cpp \
 		      roster.cpp rosterlistener.cpp servertlv.cpp snac.cpp snac_bos.cpp \
-		      snac_contact.cpp snac_icbm.cpp snac_interval.cpp snac_newuser.cpp \
+		      snac_contact.cpp snac_icbm.cpp snac_icq.cpp snac_interval.cpp snac_newuser.cpp \
 		      snac_location.cpp snac_roster.cpp snac_service.cpp statustlv.cpp \
 		      passwordtlv.cpp presencelistener.cpp tlv.cpp sblitem.cpp uin.cpp \
 		      uinregistrationlistener.cpp userinfo.cpp

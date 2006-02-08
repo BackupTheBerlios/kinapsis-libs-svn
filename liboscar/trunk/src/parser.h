@@ -55,6 +55,7 @@ signals:
 	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
 	void authReq(UIN uin, QString reason);
+	void awayMessageArrived(UIN uin, QString awaymsg);
 
 public slots:
 	void parse();
@@ -72,6 +73,7 @@ private:
 	void parseCh2BOS(Buffer& buf);
 	void parseCh2Interval(Buffer& buf);
 	void parseCh2Roster(Buffer& buf);
+	void parseCh2ICQ(Buffer& buf);
 	void parseCh2NewUser(Buffer& buf);
 
 	void sendKeepAlive();

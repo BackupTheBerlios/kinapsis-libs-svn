@@ -142,7 +142,12 @@ public:
 	CliAckMsgSNAC();
 	virtual ~CliAckMsgSNAC();
 
-	void parse(Buffer &b) {return ; };
+	Message getMessage();
+
+	void parse(Buffer &b);
+private:
+	Message m_msg;
+	Word m_reason;
 };
 
 }

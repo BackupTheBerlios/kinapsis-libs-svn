@@ -59,6 +59,7 @@ public:
 	void setUIN(const UIN& uin);
 	
 	void setType(const ProtocolType type);
+	ProtocolType getType();
 
 	void setAwayMessage(QString message);
 	QString getAwayMessage();
@@ -104,6 +105,7 @@ signals:
 
 	// presence
 	void notifyPresence(UIN uin, PresenceStatus status);
+	void notifyAwayMessage(UIN uin, QString awaymsg);
 
 	// uinregistration
 	void notifyNewUin(UIN uin);
@@ -118,6 +120,7 @@ public slots:
 	void statusChanged(UIN uin, PresenceStatus status);
 	void newUin(UIN uin);
 	void authReq(UIN uin, QString reason);
+	void newAwayMessage(UIN uin, QString awaymsg);
 
 protected:
 	DWord getLocalIP();

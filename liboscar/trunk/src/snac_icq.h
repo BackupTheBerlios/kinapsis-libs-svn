@@ -19,88 +19,92 @@
  ***************************************************************************/
 
 
-#ifndef _MESSAGE_H_
-#define _MESSAGE_H_
+#ifndef _SNAC_ICQ_H_
+#define _SNAC_ICQ_H_
 
-#include "uin.h"
-#include "buffer.h"
-#include "userinfo.h"
-#include <qdatetime.h>
+#include "snac.h"
+#include "message.h"
 
 namespace liboscar {
 
-class Message {
+	const Word OFFLINE_MESSAGES = 0x003c;
+	const Word DELETE_OFFLINE_MESSAGES = 0x003e;
+	const Word META_INFO = 0x07D0;
+
+	enum MetaResponseType {
+		OFFLINE_MESSAGE = 0x0041,
+		END_OFFLINE_MESSAGES = 0x0042,
+		META_INFO_RESPONSE = 0x07Da
+	};
+
+	const Word ICQ_SRV_ICQ_ERR = 0x0001; 
+	const Word ICQ_CLI_METAREQ = 0x0002; 
+	const Word ICQ_SRV_METAREPLY = 0x0003; 
+
+class SNAC_ICQ : public SNAC {
 
 public:
-	Message();
-	virtual ~Message();
+	SNAC_ICQ(Word command = 0, bool raw = true);
+	virtual ~SNAC_ICQ();
 
-	QString getText();
-	void setText(QString message);
-	
-	UIN getUin();
-	void setUin(UIN uin);
-
-	Word getFormat();
-	void setFormat(Word format);
-
-	UserInfo getInfo();
-
-	MessageEncoding getEncoding();
-	void setEncoding(MessageEncoding encoding);
-
-	MessageType getType();
-	void setType(MessageType type);
-
-	MessageFlags getFlags();
-	void setFlags(MessageFlags flags);
-
-	MessageRequest getRequest();
-	void setRequest(MessageRequest req);
-
-	QDateTime getTime();
-	void setTime(QDateTime time);
-
-	void parse(Buffer &b);
-
-	Buffer& pack();
-
-	static MessageType byteToType(Byte b);
-	static MessageFlags byteToFlags(Byte b);
-
-private:
-	void parseCh1(Buffer& b);
-	void parseCh2(Buffer& b);
-	void parseCh4(Buffer& b);
-	void parse2711(Buffer& b);
-
-	void packCh2();
-
-	Byte typeToByte(MessageType t);
-	Byte flagsToByte(MessageFlags f);
-
-	Word m_format;
-	QString m_msg;
-	UIN m_uin;
-
-	UserInfo m_info;
-	
-	MessageEncoding m_encoding;
-	MessageType m_type;
-	MessageFlags m_flags;
-
-	DWord m_cookiehigh;
-	DWord m_cookielow;
-
-	Word m_ch2cookie;
-	MessageRequest m_ch2req;
-
-	QDateTime m_time;
-
-	Buffer m_data;
+	virtual void parse(Buffer& b) = 0;
 };
 
+class SrvICQErrSNAC : public SNAC_ICQ {
+
+public:
+	SrvICQErrSNAC();
+	virtual ~SrvICQErrSNAC();
+
+	Word getError();
+
+	void parse(Buffer& b);
+
+private:
+	Word m_error;
+};
+
+class SrvMetaReplySNAC : public SNAC_ICQ {
+
+public:
+	SrvMetaReplySNAC();
+	virtual ~SrvMetaReplySNAC();
+
+	MetaResponseType getType();
+	Message getMessage();
+
+	void parse(Buffer &b);
+private:
+	MetaResponseType m_type;
+	Message m_msg;
+};
+
+class CliMetaReqOfflineSNAC : public SNAC_ICQ {
+
+public:
+	CliMetaReqOfflineSNAC(DWord uin);
+	virtual ~CliMetaReqOfflineSNAC();
+
+	void parse(Buffer &b) {return ; };
+};
+	
+class CliMetaReqOfflineDeleteSNAC : public SNAC_ICQ {
+
+public:
+	CliMetaReqOfflineDeleteSNAC(DWord uin);
+	virtual ~CliMetaReqOfflineDeleteSNAC();
+
+	void parse(Buffer &b) {return ; };
+};
+	
+class CliMetaReqMetaInfoSNAC : public SNAC_ICQ {
+
+public:
+	CliMetaReqMetaInfoSNAC();
+	virtual ~CliMetaReqMetaInfoSNAC();
+
+	void parse(Buffer &b) {return ; };
+};
 
 }
-
-#endif // _MESSAGE_H_
+#endif // _SNAC_ICQ_H_

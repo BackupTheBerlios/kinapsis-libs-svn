@@ -168,10 +168,64 @@ SrvUserInfoSNAC::SrvUserInfoSNAC()
 
 SrvUserInfoSNAC::~SrvUserInfoSNAC() { }
 
-void SrvUserInfoSNAC::parse(Buffer &b) {
-	m_info.parse(b);
+InfoRequestType SrvUserInfoSNAC::getType(){
+	return m_type;
+}
 
-	// TODO: parse TLVs 1,2,3,4,5
+QString SrvUserInfoSNAC::getAwayMessage(){
+	if (m_type == AWAY_MESSAGE)
+		return m_away;
+	else
+		return "";
+}
+
+QString SrvUserInfoSNAC::getProfile(){
+	if (m_type == GENERAL_INFO)
+		return m_profile;
+	else
+		return "";
+}
+
+UserInfo SrvUserInfoSNAC::getUserOnlineInfo(){
+	return m_info;
+}
+
+void SrvUserInfoSNAC::parse(Buffer &b) {
+	UnformattedTLV tlv(TLV_TYPE_GENERIC);
+
+	m_info.parse(b);
+	b.removeFromBegin();
+
+	if (!b.len()){
+		m_type = SHORT_USER_INFO;
+		return ;
+	}
+
+	while (b.len()){
+		tlv.parse(b);
+		switch(tlv.getType()){
+			case 0x0001:
+				m_type = GENERAL_INFO;
+				break;
+			case 0x0002:
+				tlv.data().readString(m_profile);
+				break;
+			case 0x0003:
+				m_type = AWAY_MESSAGE;
+				break;
+			case 0x0004:
+				tlv.data().readString(m_away, tlv.len());
+				break;
+			case 0x0005:
+				m_type = CAPABILITIES;
+				// TODO handle stuff
+				break;
+			default:
+				qDebug("Unknown TLV in server UserInfo reply.");
+		}
+		b.removeFromBegin();
+	}
+
 	return ;
 }
 
@@ -228,7 +282,7 @@ CliReqUserInfoSNAC::CliReqUserInfoSNAC(UIN uin, InfoRequestType type)
 			break;
 	}
 
-	m_data << (Word) uin.getId().length();
+	m_data << (Byte) uin.getId().length();
 	m_data << uin.getId();
 }
 

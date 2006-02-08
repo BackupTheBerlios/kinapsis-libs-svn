@@ -68,6 +68,10 @@ void Client::setPassword(const QString& password){
 	m_password = password;
 }
 
+ProtocolType Client::getType(){
+	return m_type;
+}
+
 UIN Client::getUIN(){
 	return m_uin;
 }
@@ -146,6 +150,7 @@ void Client::sendMessage(UIN uin, QString message) {
 	Message m;
 	m.setText(message);
 	m.setUin(uin);
+	// TODO: check message for non-ASCII characters
 	m.setFormat(0x0001);
 	m.setEncoding(ASCII);
 	m.setType(TYPE_PLAIN);
@@ -270,6 +275,7 @@ ConnectionResult Client::connect(){
 		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
 		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
 		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), this, SLOT(authReq(UIN, QString)));
+		QObject::connect(m_parser, SIGNAL(awayMessageArrived(UIN, QString)), this, SLOT(newAwayMessage(UIN, QString)));
 	}
 
 	e = connAuth();
@@ -374,6 +380,38 @@ void Client::messageArrived(Message message){
 }
 
 void Client::statusChanged(UIN uin, PresenceStatus status){
+	if (status == STATUS_DND || status == STATUS_AWAY ||
+			status == STATUS_NA || status == STATUS_OCUPPIED){
+		if (m_type == AIM){
+			// Request away message
+			FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+			CliReqUserInfoSNAC *s = new CliReqUserInfoSNAC(uin, AWAY_MESSAGE);
+			f.addSNAC(s);
+			send(f.pack());
+		}
+		else {
+			Message m;
+			m.setFormat(0x0002);
+			m.setUin(uin);
+			switch(status){
+				case STATUS_DND:
+					m.setType(TYPE_AUTODND);
+					break;
+				default:
+				case STATUS_AWAY:
+					m.setType(TYPE_AUTOAWAY);
+					break;
+				case STATUS_NA:
+					m.setType(TYPE_AUTONA);
+					break;
+				case STATUS_OCUPPIED:
+					m.setType(TYPE_AUTOBUSY);
+					break;
+			}
+			m.setRequest(REQUEST);
+			sendMessage(m);
+		}
+	}
 	emit notifyPresence(uin, status);
 }
 
@@ -383,6 +421,10 @@ void Client::newUin(UIN uin){
 
 void Client::authReq(UIN uin, QString reason){
 	emit notifyAuthRequest(uin, reason);
+}
+
+void Client::newAwayMessage(UIN uin, QString away) {
+	emit notifyAwayMessage(uin, away);
 }
 
 Roster& Client::getRoster(){
@@ -424,6 +466,7 @@ void Client::delMessageListener(MessageListener *ml) {
 
 void Client::addPresenceListener(PresenceListener *pl) {
 	QObject::connect(this, SIGNAL(notifyPresence(UIN, PresenceStatus)), pl, SLOT(presenceChangedSlot(UIN, PresenceStatus)));
+	QObject::connect(this, SIGNAL(notifyAwayMessage(UIN, QString)), pl, SLOT(awayMessageSlot(UIN, QString)));
 }
 
 void Client::delPresenceListener(PresenceListener *pl) {
