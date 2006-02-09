@@ -45,6 +45,24 @@ Message::Message() {
 
 Message::~Message() { }
 	
+void Message::fromMessage(Message &m){
+	m_format = m.m_format;
+	m_msg = m.m_msg;
+	m_uin = m.m_uin;
+	
+	m_encoding = m.m_encoding;
+	m_type = m.m_type;
+	m_flags = m.m_flags;
+
+	m_cookiehigh = m.m_cookiehigh; 
+	m_cookielow = m.m_cookielow; 
+
+	m_ch2cookie = m.m_ch2cookie;
+	m_ch2req = m.m_ch2req;
+
+	m_time = m.m_time;
+}
+
 QString Message::getText(){
 	return m_msg;
 }
@@ -111,6 +129,30 @@ QDateTime Message::getTime(){
 
 void Message::setTime(QDateTime time){
 	m_time = time;
+}
+
+DWord Message::getCookieHigh(){
+	return m_cookiehigh;
+}
+
+void Message::setCookieHigh(DWord h){
+	m_cookiehigh = h;
+}
+	
+DWord Message::getCookieLow(){
+	return m_cookielow;
+}
+
+void Message::setCookieLow(DWord l){
+	m_cookielow = l;
+}
+	
+Word Message::getCh2Cookie(){
+	return m_ch2cookie;
+}
+
+void Message::setCh2Cookie(Word cookie){
+	m_ch2cookie = cookie;
 }
 
 Byte Message::typeToByte(MessageType t) {
@@ -488,10 +530,10 @@ void Message::parseCh2(Buffer &b) {
 				parse2711(tlv.data());
 				break;
 			default:
-				qDebug("Unknown TLV in channel 2 message");
+				qDebug("Unknown TLV in channel 2 message: " + QString::number(tlv.getType()));
 				break;
 		}
-		len -= tlv.len();
+		len -= (tlv.len() + 4);
 	}
 }
 

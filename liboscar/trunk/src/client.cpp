@@ -372,8 +372,14 @@ void Client::rosterArrived(Roster r){
 void Client::messageArrived(Message message){
 	// TODO: handle more message stuff here
 	if (message.getFormat() == 0x0002 && message.getRequest() == REQUEST){
-		// We must reply this
-		// TODO
+		if (message.getType() >= TYPE_AUTOAWAY){
+			qDebug("Request :-)");
+			Message m;
+
+			m.fromMessage(message);
+			m.setText(getAwayMessage());
+			sendMessage(m);
+		}
 	}
 	else // App must handle this
 		emit notifyMessage(message);

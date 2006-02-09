@@ -35,6 +35,8 @@ public:
 	Message();
 	virtual ~Message();
 
+	void fromMessage(Message &m);
+
 	QString getText();
 	void setText(QString message);
 	
@@ -64,6 +66,15 @@ public:
 	void parse(Buffer &b);
 
 	Buffer& pack();
+
+	DWord getCookieHigh();
+	DWord getCookieLow();
+
+	void setCookieHigh(DWord h);
+	void setCookieLow(DWord l);
+
+	void setCh2Cookie(Word cookie);
+	Word getCh2Cookie();
 
 	static MessageType byteToType(Byte b);
 	static MessageFlags byteToFlags(Byte b);
