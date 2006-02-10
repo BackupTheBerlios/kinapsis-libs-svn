@@ -53,7 +53,7 @@ public:
 	void gotoBegin();
 	void gotoEnd();
 	void setPosition(unsigned int pos);
-	void advance(unsigned int pos);
+	void advance(int pos);
 
 	void setLength(unsigned int length);
 

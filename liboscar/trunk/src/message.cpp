@@ -365,7 +365,6 @@ void Message::parse(Buffer &b) {
 	m_uin = m_info.getUin();
 
 	// Fixed part parsed. Let's go to format specifics
-	
 	switch (m_format) {
 		case 0x0001:
 			parseCh1(b);
@@ -501,12 +500,18 @@ void Message::parseCh1(Buffer &b) {
 }
 
 void Message::parseCh2(Buffer &b) {
-	Word type, len, reqType;
+	Word type=0, len=0, reqType=0;
 	DWord dw;
 	UnformattedTLV tlv(TLV_TYPE_GENERIC);
 
-	b >> type;
-	b >> len;
+	// XXX: well it seems like ICQ5 sends a unknown 0x13 TLV here.
+	// Ignore TLVs other than 0x0005
+	
+	while (type != 0x0005){
+		b.advance(len);
+		b >> type;
+		b >> len;
+	}
 
 	b >> reqType; m_ch2req = (MessageRequest) reqType;
 

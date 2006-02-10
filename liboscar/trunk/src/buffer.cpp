@@ -261,7 +261,7 @@ void Buffer::setPosition(unsigned int pos){
 	m_it = m_data.at(pos);
 }
 
-void Buffer::advance(unsigned int pos){
+void Buffer::advance(int pos){
 	m_it += pos;
 }
 
