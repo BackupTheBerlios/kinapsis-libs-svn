@@ -437,13 +437,20 @@ MessageFlags Message::byteToFlags(Byte b) {
 
 void Message::parseCh1(Buffer &b) {
 	UnformattedTLV tlv(TLV_TYPE_GENERIC);
-	Word type, len, w;
+	Word type=0, len=0, w;
 	Byte by;
 
 	m_type = TYPE_PLAIN;
 	m_flags = FLAG_NORMAL;
 
-	b >> type; b >> len;
+	// XXX: well it seems like ICQ5 sends a unknown 0x13 TLV here.
+	// Ignore TLVs other than 0x0004 and 0x0002
+	// TODO: make this a TLVchain
+	
+	while (type != 0x0004 && type != 0x0002){
+		b.advance(len);
+		b >> type; b >> len;
+	}
 
 	if (type == 0x0004){
 		b >> type; b >> len; // ¿only AUTOAWAY? TODO automated messages
