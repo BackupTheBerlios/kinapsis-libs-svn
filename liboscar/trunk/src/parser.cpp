@@ -692,12 +692,7 @@ void Parser::parseCh2Roster(Buffer& buf) {
 		m_client->send(f->pack());
 		delete f;
 		if (m_inlogin) {
-			f = new FLAP(0x02, getNextSeqNumber(), 0);
-			// FIXME: wired values
-			CliSetStatusSNAC *css = new CliSetStatusSNAC(STATUS_ONLINE, 0, 0, NORMAL);
-			f->addSNAC(css);
-			m_client->send(f->pack());
-			delete f;
+			m_client->setPresence(STATUS_ONLINE);
 			f = new FLAP(0x02, getNextSeqNumber(), 0);
 			CliReadySNAC *crs = new CliReadySNAC;
 			f->addSNAC(crs);

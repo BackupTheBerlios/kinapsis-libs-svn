@@ -40,6 +40,8 @@ void Capabilities::setDefault() {
 	addCapability(CAP_UTF8);
 	addCapability(CAP_RTFMSGS);
 	addCapability(CAP_AIM_ISICQ);
+	// XXX: tmp
+	addCapability(CAP_CHAT_ROOM);
 }
 
 void Capabilities::setMaxCap(Word max) {
