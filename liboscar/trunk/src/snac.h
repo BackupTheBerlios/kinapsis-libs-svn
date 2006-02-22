@@ -79,6 +79,7 @@ private:
 
 	bool m_raw;
 
+	static DWord snac_sequence;
 };
 
 

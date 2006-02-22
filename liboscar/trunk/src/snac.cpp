@@ -21,13 +21,17 @@
 
 #include "snac.h"
 
+#define SNAC_POSITIVE_MASK 0x7fffffff
+
 namespace liboscar {
+
+	DWord SNAC::snac_sequence = (DWord) SNAC_POSITIVE_MASK * (rand()/RAND_MAX);
 
 SNAC::SNAC(Word family, Word command, bool raw) { 
 	m_family = family;
 	m_command = command;
 	m_flags = 0;
-	m_reference = 6;
+	m_reference = 0;
 	m_raw = raw;
 }
 
@@ -80,6 +84,8 @@ Buffer& SNAC::pack(){
 			m_data << t->pack();
 	}
 	
+	m_reference = ++SNAC::snac_sequence & SNAC_POSITIVE_MASK;
+
 	m_data.prepend(m_reference);
 	m_data.prepend(m_flags);
 	m_data.prepend(m_command);
