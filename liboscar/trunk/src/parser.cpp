@@ -515,6 +515,7 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 	SrvMissedICBMSNAC imi;
 	SrvAckMsgSNAC iam;
 	CliAckMsgSNAC cam;
+	SrvCliTypingSNAC scts;
 
 	buf >> command;
 	buf >> flags;
@@ -545,6 +546,10 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 		case ICBM_CLI_ACKMSG:
 			cam.parse(buf);
 			break;
+		case ICBM_SRV_CLI_TYPING:
+			scts.parse(buf);
+			emit typingEventArrived(scts.getUin(), scts.getType());
+			break;
 		default:
 			qDebug("Unknown command on SNAC ICBM family");
 			break;
@@ -563,7 +568,7 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 		delete f;
 	}
 	else if (command == ICBM_CLI_ACKMSG) // TODO: more checks
-			emit awayMessageArrived(cam.getMessage().getUin(), cam.getMessage().getText());
+		emit awayMessageArrived(cam.getMessage().getUin(), cam.getMessage().getText());
 }
 
 void Parser::parseCh2BOS(Buffer& buf) {

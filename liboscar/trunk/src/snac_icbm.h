@@ -36,6 +36,7 @@ namespace liboscar {
 	const Word ICBM_SRV_MISSEDICBM = 0x000a; 
 	const Word ICBM_CLI_ACKMSG = 0x000b; 
 	const Word ICBM_SRV_SRVACKMSG = 0x000c; 
+	const Word ICBM_SRV_CLI_TYPING = 0x0014; 
 
 class SNAC_ICBM : public SNAC {
 
@@ -107,6 +108,21 @@ private:
 	UIN m_uin;
 	Word m_format;
 
+};
+
+class SrvCliTypingSNAC : public SNAC_ICBM {
+public:
+	SrvCliTypingSNAC();
+	SrvCliTypingSNAC(UIN uin, IsTypingType type);
+	virtual ~SrvCliTypingSNAC();
+
+	IsTypingType getType();
+	UIN getUin();
+
+	void parse(Buffer &b);
+private:
+	UIN m_uin;
+	IsTypingType m_type;
 };
 
 class CliSetICBMSNAC : public SNAC_ICBM {

@@ -178,6 +178,12 @@ namespace liboscar {
 		ACCEPT
 	};
 
+	enum IsTypingType {
+		FINISHED = 0x0000,
+		TYPED = 0x0001 ,
+		BEGIN = 0x0002
+	};
+
 	enum LostReason {
 		MESSAGE_INVALID,
 		MESSAGE_TOO_LARGE,

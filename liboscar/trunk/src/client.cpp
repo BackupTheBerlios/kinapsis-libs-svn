@@ -192,6 +192,13 @@ void Client::addContact(UIN uin, bool reqAuth) {
 	// TODO:
 }
 
+void Client::sendTypingNotice(UIN uin, IsTypingType type) {
+	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	SrvCliTypingSNAC *s = new SrvCliTypingSNAC(uin, type);
+	f.addSNAC(s);
+	send(f.pack());
+}
+
 void Client::rosterEditStart() {
 	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
 	CliAddStartSNAC *s = new CliAddStartSNAC();
@@ -276,6 +283,7 @@ ConnectionResult Client::connect(){
 		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
 		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), this, SLOT(authReq(UIN, QString)));
 		QObject::connect(m_parser, SIGNAL(awayMessageArrived(UIN, QString)), this, SLOT(newAwayMessage(UIN, QString)));
+		QObject::connect(m_parser, SIGNAL(typingEventArrived(UIN, IsTypingType)), this, SLOT(newTypingEvent(UIN, IsTypingType)));
 	}
 
 	e = connAuth();
@@ -433,6 +441,10 @@ void Client::newAwayMessage(UIN uin, QString away) {
 	emit notifyAwayMessage(uin, away);
 }
 
+void Client::newTypingEvent(UIN uin, IsTypingType type) {
+	emit notifyTypingEvent(uin, type);
+}
+
 Roster& Client::getRoster(){
 	return m_roster;
 }
@@ -485,6 +497,14 @@ void Client::addUINRegistrationListener(UINRegistrationListener *ul) {
 
 void Client::delUINRegistrationListener(UINRegistrationListener *ul) {
 	QObject::disconnect(this, 0, ul, 0);
+}
+
+void Client::addIsTypingListener(IsTypingListener *tl) {
+	QObject::connect(this, SIGNAL(notifyTypingEvent(UIN, IsTypingType)), tl, SLOT(isTypingEventSlot(UIN, IsTypingType)));
+}
+
+void Client::delIsTypingListener(IsTypingListener *tl) {
+	QObject::disconnect(this, 0, tl, 0);
 }
 
 Client::~Client() { 

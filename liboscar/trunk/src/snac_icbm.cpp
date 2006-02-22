@@ -165,6 +165,40 @@ void SrvAckMsgSNAC::parse(Buffer &b) {
 	m_uin.parse(b);
 }
 
+SrvCliTypingSNAC::SrvCliTypingSNAC() 
+	: SNAC_ICBM(ICBM_SRV_CLI_TYPING, true) { }
+
+SrvCliTypingSNAC::SrvCliTypingSNAC(UIN uin, IsTypingType type) 
+	: SNAC_ICBM(ICBM_SRV_CLI_TYPING, true) {
+
+	m_data << (DWord) 0x00000000;
+	m_data << (DWord) 0x00000000;
+	m_data << (Word) 0x0001; // always Ch1
+	uin.appendUin(m_data);
+	m_data << (Word) type;
+}
+
+SrvCliTypingSNAC::~SrvCliTypingSNAC() { }
+
+IsTypingType SrvCliTypingSNAC::getType(){
+	return m_type;
+}
+
+UIN SrvCliTypingSNAC::getUin(){
+	return m_uin;
+}
+
+void SrvCliTypingSNAC::parse(Buffer &b) { 
+	if (b.len()<=12)
+		return;
+
+	Word w;
+	b.advance(10); // id and channel
+	
+	m_uin.parse(b);
+	b >> w; m_type = (IsTypingType) w;
+}
+
 
 	// 
 	// Client's SNACs
@@ -176,7 +210,7 @@ CliSetICBMSNAC::CliSetICBMSNAC()
 	: SNAC_ICBM(ICBM_CLI_SETICBM, true) {
 
 	m_data << (Word) 0x0000;
-	m_data << (DWord) 0x00000003; // TODO: MTN
+	m_data << (DWord) 0x0000000b;
 	m_data << (Word) 0x1f40;
 	m_data << (Word) 0x03e7;
 	m_data << (Word) 0x03e7;

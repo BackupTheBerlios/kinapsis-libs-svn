@@ -35,6 +35,7 @@
 #include "messagelistener.h"
 #include "presencelistener.h"
 #include "uinregistrationlistener.h"
+#include "istypinglistener.h"
 #include <qobject.h>
 
 namespace liboscar {
@@ -76,6 +77,7 @@ public:
 	void registerNewUin(QString password);
 	void authorize(UIN uin, QString message, bool ack);
 	void addContact(UIN uin, bool reqAuth);
+	void sendTypingNotice(UIN uin, IsTypingType type);
 
 	// Listener's connections
 	void addConnectionListener(ConnectionListener *cl);
@@ -88,6 +90,8 @@ public:
 	void delPresenceListener(PresenceListener *pl);
 	void addUINRegistrationListener(UINRegistrationListener *ul);
 	void delUINRegistrationListener(UINRegistrationListener *ul);
+	void addIsTypingListener(IsTypingListener *tl);
+	void delIsTypingListener(IsTypingListener *tl);
 
 	virtual ~Client();
 
@@ -110,6 +114,9 @@ signals:
 	// uinregistration
 	void notifyNewUin(UIN uin);
 
+	//istyping
+	void notifyTypingEvent(UIN uin, IsTypingType type);
+
 public slots:
 
 	void getBOSInfo(QString server, QString port);
@@ -121,6 +128,7 @@ public slots:
 	void newUin(UIN uin);
 	void authReq(UIN uin, QString reason);
 	void newAwayMessage(UIN uin, QString awaymsg);
+	void newTypingEvent(UIN uin, IsTypingType type);
 
 protected:
 	DWord getLocalIP();

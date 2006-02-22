@@ -56,6 +56,7 @@ signals:
 	void newUin(UIN uin);
 	void authReq(UIN uin, QString reason);
 	void awayMessageArrived(UIN uin, QString awaymsg);
+	void typingEventArrived(UIN uin, IsTypingType type);
 
 public slots:
 	void parse();
