@@ -26,6 +26,7 @@
 #include "snac_newuser.h"
 #include "snac_roster.h"
 #include "snac_location.h"
+#include <qtextcodec.h>
 
 namespace liboscar {
 
@@ -150,9 +151,12 @@ void Client::sendMessage(UIN uin, QString message) {
 	Message m;
 	m.setText(message);
 	m.setUin(uin);
-	// TODO: check message for non-ASCII characters
 	m.setFormat(0x0001);
-	m.setEncoding(ASCII);
+	QTextCodec *c = QTextCodec::codecForMib(4); //iso-8859-1
+	if (c->canEncode(message))
+		m.setEncoding(ASCII);
+	else
+		m.setEncoding(UCS2BE);
 	m.setType(TYPE_PLAIN);
 	this->sendMessage(m);
 }

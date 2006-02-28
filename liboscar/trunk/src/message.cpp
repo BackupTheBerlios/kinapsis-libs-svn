@@ -234,7 +234,15 @@ Buffer& Message::pack() {
 			tlv = new UnformattedTLV(TLV_TYPE_MESSAGE);
 			tlv->data() << (Word) m_encoding;
 			tlv->data() << (Word) 0x0000; // Unknown
-			tlv->data() << m_msg;
+			if (m_encoding == UCS2BE && m_msg.length()){
+				Word *ucs = (Word *) m_msg.ucs2();
+				while (*ucs){
+					tlv->data() << (Word) *ucs;
+					ucs++;
+				}
+			}
+			else
+				tlv->data() << m_msg;
 		
 			tlvm->data() << tlv->pack();
 			delete tlv;

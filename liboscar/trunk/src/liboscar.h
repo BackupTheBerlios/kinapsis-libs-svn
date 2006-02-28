@@ -140,9 +140,9 @@ namespace liboscar {
 	};
 
 	enum MessageEncoding {
-		ASCII,
-		UCS2BE,
-		LOCAL
+		ASCII=0x0000,
+		UCS2BE=0x0002,
+		LOCAL=0x0003
 	};
 
 	enum MessageType {
