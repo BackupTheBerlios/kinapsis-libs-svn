@@ -23,11 +23,15 @@
 
 namespace liboscar {
 
-Contact::Contact() {}
+Contact::Contact() {
+	m_nick = "";
+	m_group = "";
+}
 
-Contact::Contact(UIN uin, QString nick) {
+Contact::Contact(UIN uin, QString nick, QString group) {
 	m_uin = uin;
 	m_nick = nick;
+	m_group = group;
 }
 
 Contact::~Contact() { }
@@ -40,12 +44,20 @@ void Contact::setNickname(QString nick) {
 	m_nick = nick;
 }
 
+void Contact::setGroup(QString group) {
+	m_group = group;
+}
+
 UIN Contact::getUin() { 
 	return m_uin;
 }
 
 QString Contact::getNickname() {
 	return m_nick;
+}
+
+QString Contact::getGroup() {
+	return m_group;
 }
 
 }

@@ -21,6 +21,7 @@
 
 #include "snac_roster.h"
 #include "tlv.h"
+#include <qmap.h>
 
 namespace liboscar {
 
@@ -62,6 +63,7 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 	Word i;
 	DWord time;
 	Contact *c = 0;
+	QMap<Byte,QString> groupMap;
 
 	QString name, nick;
 
@@ -75,6 +77,8 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 		b.readString(name);
 		b >> group;
 		b >> id;
+		if (id == 0 && group != 0) /* We have a group  (that's not master group) */
+			groupMap[group] = name;
 		b >> type;
 		b >> len;
 		while (len){
@@ -91,6 +95,7 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 				c = new Contact();
 				c->setUin(UIN(name));
 				c->setNickname(nick);
+				c->setGroup(groupMap[group]);
 				m_roster.addContact(c);
 			}
 			len -= (tlv.data().len() + 4);

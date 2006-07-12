@@ -30,18 +30,21 @@ class Contact {
 
 public:
 	Contact();
-	Contact(UIN uin, QString nick);
+	Contact(UIN uin, QString nick, QString group);
 	virtual ~Contact();
 	
 	void setUin(UIN uin);
 	void setNickname(QString nick);
+	void setGroup(QString group);
 
 	UIN getUin();
 	QString getNickname();
+	QString getGroup();
 
 private:
 	UIN m_uin;
 	QString m_nick;
+	QString m_group;
 };
 
 
