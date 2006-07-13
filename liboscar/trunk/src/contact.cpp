@@ -26,12 +26,14 @@ namespace liboscar {
 Contact::Contact() {
 	m_nick = "";
 	m_group = "";
+	m_auth = true;
 }
 
 Contact::Contact(UIN uin, QString nick, QString group) {
 	m_uin = uin;
 	m_nick = nick;
 	m_group = group;
+	m_auth = true;
 }
 
 Contact::~Contact() { }
@@ -52,6 +54,10 @@ void Contact::setGroup(QString group) {
 	m_group = group;
 }
 
+void Contact::setAuth(bool value) {
+	m_auth = value;
+}
+
 UIN Contact::getUin() { 
 	return m_uin;
 }
@@ -66,6 +72,10 @@ QString Contact::getNickname() {
 
 QString Contact::getGroup() {
 	return m_group;
+}
+
+bool Contact::getAuth() {
+	return m_auth;
 }
 
 }

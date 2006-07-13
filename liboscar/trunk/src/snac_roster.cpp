@@ -91,6 +91,10 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 				case 0x0131:
 					tlv.data().gotoBegin();
 					tlv.data().readString(nick, tlv.len());
+					break;
+				case 0x0066:
+					c->setAuth(false);
+					break;
 				default:
 					break;
 			}

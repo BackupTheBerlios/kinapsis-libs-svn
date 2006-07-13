@@ -37,17 +37,20 @@ public:
 	void setId(Word id);
 	void setNickname(QString nick);
 	void setGroup(QString group);
+	void setAuth(bool value);
 
 	UIN getUin();
 	Word getId();
 	QString getNickname();
 	QString getGroup();
+	bool getAuth();
 
 private:
 	UIN m_uin;
 	Word m_id;
 	QString m_nick;
 	QString m_group;
+	bool m_auth;
 };
 
 
