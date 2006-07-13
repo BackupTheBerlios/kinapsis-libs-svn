@@ -27,6 +27,14 @@ SBLItem::SBLItem() {
 	m_tlvs.setAutoDelete(true);
 }
 
+SBLItem::SBLItem(Contact* c) {  /* XXX: maybe not useful */
+	m_name = c->getUin().getId();
+	m_itemid = c->getId();
+	setTypeBuddy(false, c->getNickname());
+	m_tlvs.setAutoDelete(true);
+}
+
+
 void SBLItem::setName(QString name) {
 	m_name = name;
 }

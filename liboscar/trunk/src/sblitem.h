@@ -24,6 +24,7 @@
 
 #include "tlv.h"
 #include "buffer.h"
+#include "contact.h"
 #include <qptrlist.h>
 
 namespace liboscar {
@@ -49,6 +50,7 @@ class SBLItem {
 
 public:
 	SBLItem();
+	SBLItem(Contact* c);
 	virtual ~SBLItem();
 	
 	void setName(QString name);

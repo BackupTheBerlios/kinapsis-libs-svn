@@ -21,6 +21,7 @@
 
 #include "client.h"
 #include "flap.h"
+#include "sblitem.h"
 #include "snac_icbm.h"
 #include "snac_service.h"
 #include "snac_newuser.h"
@@ -201,6 +202,27 @@ void Client::sendTypingNotice(UIN uin, IsTypingType type) {
 	SrvCliTypingSNAC *s = new SrvCliTypingSNAC(uin, type);
 	f.addSNAC(s);
 	send(f.pack());
+}
+
+void Client::changeContactGroup(UIN contact, QString newgroupname) {
+	GroupMap map = m_roster.getGroupMap();
+	Contact *c = m_roster.findContactByUin(contact);
+	SBLItem item(c);
+	
+	if (!map[newgroupname]) return; /* Inexistent group FIXME: create it */
+
+	item.setGroupId(map[newgroupname]);
+
+	rosterEditStart();
+
+	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	CliRosterUpdateSNAC *s = new CliRosterUpdateSNAC(item);
+	f.addSNAC(s);
+	send(f.pack());
+
+	rosterEditEnd();
+
+	/* FIXME: server send SNAC(0x13,0x0e) that ACKs the change. Wait for it */
 }
 
 void Client::rosterEditStart() {

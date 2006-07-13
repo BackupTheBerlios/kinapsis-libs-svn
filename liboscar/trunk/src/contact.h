@@ -34,15 +34,18 @@ public:
 	virtual ~Contact();
 	
 	void setUin(UIN uin);
+	void setId(Word id);
 	void setNickname(QString nick);
 	void setGroup(QString group);
 
 	UIN getUin();
+	Word getId();
 	QString getNickname();
 	QString getGroup();
 
 private:
 	UIN m_uin;
+	Word m_id;
 	QString m_nick;
 	QString m_group;
 };

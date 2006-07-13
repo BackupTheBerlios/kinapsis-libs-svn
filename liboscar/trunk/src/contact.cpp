@@ -40,6 +40,10 @@ void Contact::setUin(UIN uin) {
 	m_uin = uin;
 }
 
+void Contact::setId(Word id) {
+	m_id = id;
+}
+
 void Contact::setNickname(QString nick) {
 	m_nick = nick;
 }
@@ -50,6 +54,10 @@ void Contact::setGroup(QString group) {
 
 UIN Contact::getUin() { 
 	return m_uin;
+}
+
+Word Contact::getId(){
+	return m_id;
 }
 
 QString Contact::getNickname() {

@@ -64,6 +64,7 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 	DWord time;
 	Contact *c = 0;
 	QMap<Byte,QString> groupMap;
+	GroupMap rmap;
 
 	QString name, nick;
 
@@ -77,8 +78,10 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 		b.readString(name);
 		b >> group;
 		b >> id;
-		if (id == 0 && group != 0) /* We have a group  (that's not master group) */
+		if (id == 0 && group != 0){ /* We have a group  (that's not master group) */
 			groupMap[group] = name;
+			rmap[name] = group;
+		}
 		b >> type;
 		b >> len;
 		while (len){
@@ -294,9 +297,10 @@ CliRosterAddSNAC::CliRosterAddSNAC()
 CliRosterAddSNAC::~CliRosterAddSNAC() { }
 
 	//CliRosterUpdateSNAC
-CliRosterUpdateSNAC::CliRosterUpdateSNAC()
+CliRosterUpdateSNAC::CliRosterUpdateSNAC(SBLItem item)
 	: SNAC_Roster(ROSTER_CLI_ROSTERUPDATE, false) {
-		//TODO
+
+	m_data << item.pack(); /* the item must have the correct info */
 }
 CliRosterUpdateSNAC::~CliRosterUpdateSNAC() { }
 

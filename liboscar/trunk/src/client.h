@@ -78,6 +78,7 @@ public:
 	void authorize(UIN uin, QString message, bool ack);
 	void addContact(UIN uin, bool reqAuth);
 	void sendTypingNotice(UIN uin, IsTypingType type);
+	void changeContactGroup(UIN contact, QString newgroupname);
 
 	// Listener's connections
 	void addConnectionListener(ConnectionListener *cl);

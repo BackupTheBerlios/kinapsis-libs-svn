@@ -25,6 +25,7 @@
 #include "snac.h"
 #include "uin.h"
 #include "roster.h"
+#include "sblitem.h"
 
 namespace liboscar {
 
@@ -206,7 +207,7 @@ public:
 class CliRosterUpdateSNAC : public SNAC_Roster {
 
 public:
-	CliRosterUpdateSNAC();
+	CliRosterUpdateSNAC(SBLItem item);
 	virtual ~CliRosterUpdateSNAC();
 
 	void parse(Buffer &b) {return ; };

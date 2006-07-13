@@ -54,4 +54,33 @@ QPtrList<Contact>& Roster::getContacts() {
 	return m_data;
 }
 
+void Roster::setGroupMap(GroupMap groups){
+	m_groups = groups;
+}
+
+GroupMap Roster::getGroupMap(){
+	return m_groups;
+}
+
+Contact* Roster::findContactById(Word id){
+
+	Contact* tmp;
+
+	for (tmp = m_data.first(); tmp; tmp = m_data.next())
+		if (tmp->getId() == id) break;
+
+	return tmp;
+}
+
+Contact* Roster::findContactByUin(UIN uin){
+
+	Contact* tmp;
+
+	for (tmp = m_data.first(); tmp; tmp = m_data.next())
+		if (tmp->getUin().getId() == uin.getId()) break;
+
+	return tmp;
+}
+
+
 }
