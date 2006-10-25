@@ -26,7 +26,6 @@
 #include "connection.h"
 #include "connectionresult.h"
 #include "liboscar.h"
-#include "parser.h"
 #include "message.h"
 #include "capabilities.h"
 #include "roster.h"
@@ -43,6 +42,7 @@ namespace liboscar {
 	class UIN;
 	class Connection;
 	class ListenerManager;
+	class Parser;
 
 class Client : public QObject {
 Q_OBJECT
