@@ -291,7 +291,9 @@ void Parser::parseCh4(Buffer& buf){
 				break;
 			default:
 				qDebug("Unknown TLV on channel 4");
-				buf.wipe();
+				// ignore unknown data
+				buf.advance(l);
+				buf.removeFromBegin();
 				break;
 		}
 	}
