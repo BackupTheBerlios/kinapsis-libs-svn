@@ -54,7 +54,7 @@ namespace libimmsnp {
 		m_msnPass = msnPass;
 		QObject::connect(m_parser, SIGNAL(bufferEmpty()), this, SLOT(bufferEmpty()));
 		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
-//		QObject::connect(m_conn, SIGNAL(connected()), this, SLOT(connected()));
+		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
 //		QObject::connect(m_conn, SIGNAL(disconnected()), this, SLOT(disconnected()));
 //		QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
 //		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
@@ -197,9 +197,9 @@ namespace libimmsnp {
 
 	void Client::bufferEmpty(){
 		QString data;
-		qDebug ("@@@@@@ Cliente:" + data + ":#");
+//		qDebug ("@@@@@@ Cliente:" + data + ":#");
 		int l = m_mainSocket->recv(data);
-		qDebug ("@@@@@@ Cliente:" + data + ":#");
+//		qDebug ("@@@@@@ Cliente:" + data + ":#");
 		m_parser->feed (data);
 		m_parser->parse();
 	}

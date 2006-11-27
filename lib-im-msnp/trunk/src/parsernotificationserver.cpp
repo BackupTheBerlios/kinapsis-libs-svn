@@ -12,6 +12,7 @@
 */
 
 #include "parsernotificationserver.h"
+#include "md5.h"
 
 namespace libimmsnp {
 ParserNS::ParserNS(QString msnPassport, QString msnPass){
@@ -22,6 +23,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass){
 	m_socket = 0;
 	m_groups = 0;
 	m_contacts = 0;
+	m_initialStatus = "BSY";
 }
 ParserNS::ParserNS(QString msnPassport, QString msnPass, msocket* s){
 	m_idtr = 2;
@@ -31,6 +33,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, msocket* s){
 	m_socket = s;
 	m_groups = 0;
 	m_contacts = 0;
+	m_initialStatus = "BSY";
 }
 
 void ParserNS::feed (Buffer b){
@@ -196,6 +199,7 @@ void ParserNS::parseUsr () {
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		if (s.contains ("TWN S")){
 			m_ticket = s.mid (s.find ("lc"),s.length()-s.find ("lc")-2);
+			// TODO: if ticket = "" login failed
 			//qDebug (m_ticket);
 
 			// start Twenner
@@ -330,7 +334,14 @@ void ParserNS::parseLst (){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 	}
-
+	if (m_contacts == 0) {
+		QString chg ("CHG " + QString ("%1").arg(m_idtr++) + " " +  m_initialStatus + " 1342558252" + "\r\n");
+		m_socket->send (chg);
+                // añado a lista de comprobacion 
+                QString data;
+                m_socket->recv(data);
+                this->feed(data);
+	}
 }
 
 	
@@ -343,6 +354,103 @@ void ParserNS::parseSbs (){
 		m_buf.removeFromBegin();
 	}
 
+}
+
+void ParserNS::parseChg (){
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		emit connected();
+	}
+}
+
+// This pieze of code  is based on code http://msnpiki.msnfanatic.com/extra/CHL_Cpp.zip
+void challenge (const char *szChallenge, char *szOutput) {
+	const char *szClientID="PROD0090YUAUV{2B";
+	const char *szClientCode="YMM8C_H7KCQ2S_KL";
+	int i;
+	MD5_CTX mdContext;
+	MD5Init(&mdContext);
+	MD5Update(&mdContext,(unsigned char *)szChallenge,strlen(szChallenge));
+	MD5Update(&mdContext,(unsigned char *)szClientCode,strlen(szClientCode));
+	MD5Final(&mdContext);
+	unsigned char pMD5Hash[16];
+	memcpy(pMD5Hash,mdContext.digest,16);
+	int *pMD5Parts=(int *)mdContext.digest;
+	
+	for (i=0; i<4; i++) {
+		pMD5Parts[i]&=0x7FFFFFFF;
+	}
+	
+	int nchlLen=strlen(szChallenge)+strlen(szClientID);
+	if (nchlLen%8!=0)
+		nchlLen+=8-(nchlLen%8);
+	char *chlString=new char[nchlLen];
+	memset(chlString,'0',nchlLen);
+	memcpy(chlString,szChallenge,strlen(szChallenge));
+	memcpy(chlString+strlen(szChallenge),szClientID,strlen(szClientID));
+	int *pchlStringParts=(int *)chlString;
+
+	long long nHigh=0;
+	long long nLow=0;
+
+	for (i=0; i<(nchlLen/4)-1; i+=2) {
+		long long temp=pchlStringParts[i];
+		temp=(pMD5Parts[0] * (((0x0E79A9C1 * (long long)pchlStringParts[i]) % 0x7FFFFFFF)+nHigh) + pMD5Parts[1])%0x7FFFFFFF;
+		nHigh=(pMD5Parts[2] * (((long long)pchlStringParts[i+1]+temp) % 0x7FFFFFFF) + pMD5Parts[3]) % 0x7FFFFFFF;
+		nLow=nLow + nHigh + temp;
+	}
+	
+	nHigh=(nHigh+pMD5Parts[1]) % 0x7FFFFFFF;
+	nLow=(nLow+pMD5Parts[3]) % 0x7FFFFFFF;
+	delete[] chlString;
+
+	unsigned long *pNewHash=(unsigned long *)pMD5Hash;
+	
+	pNewHash[0]^=nHigh;
+	pNewHash[1]^=nLow;
+	pNewHash[2]^=nHigh;
+	pNewHash[3]^=nLow;
+
+	char szHexChars[]="0123456789abcdef";
+	
+	for (i=0; i<16; i++) {
+		szOutput[i*2]=szHexChars[(pMD5Hash[i]>>4)&0xF];
+		szOutput[(i*2)+1]=szHexChars[pMD5Hash[i]&0xF];
+	}
+}
+
+void ParserNS::parseChl (){
+	// <<< CHL 0 22940274951814684551\r\n
+	// >>> QRY 11 PROD0090YUAUV{2B 32\r\nffeb4c3cf93db6a4b708b246baade0d9(no newline)
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		char strChallengeOutTmp[32];
+		challenge (s.mid (6,20).latin1(),strChallengeOutTmp);
+		QString strChallengeOut (strChallengeOutTmp);
+		QString qry ("QRY " + QString ("%1").arg(m_idtr++) + " PROD0090YUAUV{2B 32/r/n" + strChallengeOut);
+                m_socket->send (qry);
+                // añado a lista de comprobacion 
+                QString data;
+                m_socket->recv(data);
+                this->feed(data);
+	}
+}
+
+void ParserNS::parseIln (){
+	// ILN 9 AWY vaticano666@hotmail.com pedro 268435488
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+                // añado a lista de comprobacion 
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+	}
 }
 
 void ParserNS::parse (){
@@ -436,7 +544,7 @@ void ParserNS::parse (){
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
-				//parseChg();
+				parseChg();
 				//break;			
 }
 		else if (cmd ==  "CHL"){
@@ -444,7 +552,7 @@ void ParserNS::parse (){
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
-				//parseChl();
+				parseChl();
 				//break;			
 }
 		else if (cmd ==  "FLN"){
@@ -472,7 +580,7 @@ void ParserNS::parse (){
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
-				//parseIln();
+				parseIln();
 				//break;			
 }
 		else if (cmd ==  "LSG"){
@@ -520,9 +628,9 @@ void ParserNS::parse (){
 		else if (cmd ==  "QRY"){
 				qDebug ("Parsing QRY");
 				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
+				m_buf.setPosition(3 + lIdtr + 3); // QRY 11\r\n
+				m_buf.removeFromBegin();
 				// TODO : quitar de la lista de comprobacion
-				//parseQry();
 				//break;			
 }
 		else if (cmd ==  "SYN"){
@@ -585,14 +693,16 @@ void ParserNS::parse (){
 			qDebug ("UNKNOW command: " + error.replace('\n',"\\n").replace('\r',"\\r"));
 			break;			
 		}
-	qDebug ("@@@@@@@ ITERANDO");
+	QString d;
+	int len = m_buf.data(d);
+	qDebug ("####" + d + "#### len:" + QString ("%1").arg(len) );
 	}	
 
 
 	// emit buffer empty
 	QString d;
 	m_buf.data(d);
-	qDebug ("Buff vacio:" + d.replace('\n',"\\n").replace('\r',"\\r") + "#");
+//	qDebug ("Buff vacio:" + d.replace('\n',"\\n").replace('\r',"\\r") + "#");
 	emit bufferEmpty();
 }
 }

@@ -43,6 +43,10 @@ public:
 	void parseLsg();
 	void parseLst();
 	void parseBpr();
+	void parseChg();
+	void parseChl();
+	void parseQry();
+	void parseIln();
 	void parse ();
 
 private:
@@ -55,10 +59,12 @@ private:
 	int m_connectionSteps;
 	int m_groups;
 	int m_contacts;
+	QString m_initialStatus;
 
 signals:
 	void bufferEmpty ();
 	void mainSocket(msocket*);
+	void connected ();
 
 };
 }
