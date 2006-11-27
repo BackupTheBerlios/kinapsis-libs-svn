@@ -17,16 +17,20 @@
 #include "libimmsnp.h"
 #include "buffer.h"
 #include "msocket.h"
+#include "connection.h"
 #include <curl/curl.h>
 #include <qobject.h>
 
 namespace libimmsnp {
+
+class Client;
+
 class ParserNS:public QObject {
 Q_OBJECT
 
 public:
-	ParserNS (QString, QString);
-	ParserNS (QString, QString, msocket*);
+	ParserNS (QString, QString, Client*);
+	ParserNS (QString, QString, Client*, msocket*);
 	void feed (Buffer);
 	void feed (QString);
 	void parseVer();
@@ -60,9 +64,9 @@ private:
 	int m_groups;
 	int m_contacts;
 	QString m_initialStatus;
+	Client* m_client;
 
 signals:
-	void bufferEmpty ();
 	void mainSocket(msocket*);
 	void connected ();
 

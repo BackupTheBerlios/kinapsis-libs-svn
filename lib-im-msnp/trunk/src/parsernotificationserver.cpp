@@ -12,10 +12,12 @@
 */
 
 #include "parsernotificationserver.h"
+#include "client.h"
+#include "login.h"
 #include "md5.h"
 
 namespace libimmsnp {
-ParserNS::ParserNS(QString msnPassport, QString msnPass){
+ParserNS::ParserNS(QString msnPassport, QString msnPass, Client* c){
 	m_idtr = 2;
 	m_msnPassport = msnPassport;
 	m_msnPass = msnPass;
@@ -24,8 +26,9 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass){
 	m_groups = 0;
 	m_contacts = 0;
 	m_initialStatus = "BSY";
+	m_client = c;
 }
-ParserNS::ParserNS(QString msnPassport, QString msnPass, msocket* s){
+ParserNS::ParserNS(QString msnPassport, QString msnPass,Client* c,msocket* s){
 	m_idtr = 2;
 	m_msnPassport = msnPassport;
 	m_msnPass = msnPass;
@@ -34,6 +37,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, msocket* s){
 	m_groups = 0;
 	m_contacts = 0;
 	m_initialStatus = "BSY";
+	m_client = c;
 }
 
 void ParserNS::feed (Buffer b){
@@ -63,10 +67,6 @@ void ParserNS::parseVer () {
 			// añado a lista de comprobacion 
 			m_buf.advance (l);
 			m_buf.removeFromBegin();
-			QString data;
-			m_socket->recv(data);
-			this->feed(data);
-
 		}
 		else {
 			// return bad state
@@ -89,9 +89,6 @@ void ParserNS::parseCvr () {
 		// añado a lista de comprobacion 
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
-		QString data;
-		m_socket->recv(data);
-		this->feed(data);
 	}
 	m_buf.gotoBegin();
 //	this->parse ();
@@ -111,25 +108,24 @@ void ParserNS::parseXfr () {
 		delete m_socket;
 		m_socket = new msocket(ip,port);
 		m_socket->connect();
-		// TODO: add signal to connection.cpp and client.cpp
-		emit mainSocket(m_socket);
+
 
 		// Restart secuence of authentication.
-		QString msg ("VER " + QString ("%1").arg(m_idtr++) + " MSNP11 MSNP10 CVR0\r\n");
-		 
-		if (m_socket->send (msg) == 0) {
-			return ;
-		}
 
-		QString data;
-		if (m_socket->recv (data) == 0) {
-			return ;
-		}
-
+		VER v(m_idtr++);
+		v.addProtocolSupported("MSNP11");
+		v.addProtocolSupported("MSNP10");
+		m_client->send(v);
+//		QString msg ("VER " + QString ("%1").arg(m_idtr++) + " MSNP11 MSNP10 CVR0\r\n");
+//		 
+//		if (m_socket->send (msg) == 0) {
+//			return ;
+//		}
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
+		qDebug ("### EMITO emit MainSocket(m_socket)");
+		emit mainSocket(m_socket);
 
-		this->feed (data);
 	}
 	m_buf.gotoBegin();
 	QString ss; 
@@ -221,9 +217,6 @@ void ParserNS::parseUsr () {
 			// añado a lista de comprobacion 
 			m_buf.advance (l);
 			m_buf.removeFromBegin();
-			QString data;
-			m_socket->recv(data);
-			this->feed(data);
 		}
 		else if (s.contains ("OK ")){
 			qDebug ("!! USR OK");
@@ -237,7 +230,7 @@ void ParserNS::parseUsr () {
 		}
 	}
 
-	m_buf.gotoBegin();
+//	m_buf.gotoBegin();
 //	this->parse ();
 }
 
@@ -254,9 +247,6 @@ void ParserNS::parseMsg (){
 		QString syn ("SYN " + QString ("%1").arg(m_idtr++) + " 2005-04-23T18:57:44.8130000-07:00 2005-04-23T18:57:54.2070000-07:00\r\n");
 		m_socket->send (syn);
 		// añado a lista de comprobacion 
-		QString data;
-		m_socket->recv(data);
-		this->feed(data);
 	}
 }
 
@@ -338,9 +328,6 @@ void ParserNS::parseLst (){
 		QString chg ("CHG " + QString ("%1").arg(m_idtr++) + " " +  m_initialStatus + " 1342558252" + "\r\n");
 		m_socket->send (chg);
                 // añado a lista de comprobacion 
-                QString data;
-                m_socket->recv(data);
-                this->feed(data);
 	}
 }
 
@@ -436,9 +423,6 @@ void ParserNS::parseChl (){
 		QString qry ("QRY " + QString ("%1").arg(m_idtr++) + " PROD0090YUAUV{2B 32/r/n" + strChallengeOut);
                 m_socket->send (qry);
                 // añado a lista de comprobacion 
-                QString data;
-                m_socket->recv(data);
-                this->feed(data);
 	}
 }
 
@@ -510,7 +494,6 @@ void ParserNS::parse (){
 				m_buf.advance (1+lIdtr+1);
 				parseXfr();
 				// TODO : quitar de la lista de comprobacion
-				//parseUsr();
 				//break;			
 }
 		else if (cmd ==  "ADC"){
@@ -688,6 +671,15 @@ void ParserNS::parse (){
 		else {	// pueden venir errores 715 1\r\n
 			// quitar el primero 
 			// reañadir al buffer ppal
+			//
+			// Errors:
+			if (cmd ==  "715") {
+				qDebug ("####################");
+				qDebug ("### Not expected ###");
+				qDebug ("####################");
+				exit (-1);
+			}
+
 			QString error;
 			m_buf.data(error);
 			qDebug ("UNKNOW command: " + error.replace('\n',"\\n").replace('\r',"\\r"));
@@ -695,15 +687,12 @@ void ParserNS::parse (){
 		}
 	QString d;
 	int len = m_buf.data(d);
-	qDebug ("####" + d + "#### len:" + QString ("%1").arg(len) );
+	qDebug ("####" + d.replace('\n',"\\n").replace('\r',"\\r") + "#### len:" + QString ("%1").arg(len));
 	}	
 
-
-	// emit buffer empty
-	QString d;
-	m_buf.data(d);
+//	QString d;
+//	m_buf.data(d);
 //	qDebug ("Buff vacio:" + d.replace('\n',"\\n").replace('\r',"\\r") + "#");
-	emit bufferEmpty();
 }
 }
-//#include "parsernotificationserver.moc"
+#include "parsernotificationserver.moc"

@@ -11,8 +11,8 @@
   This software is distributed without any warranty.
 */
 
-#include "../connection.h"
-#include "../parser.h"
+//#include "../connection.h"
+//#include "../parser.h"
 #include "../parsernotificationserver.h"
 #include "../client.h"
 #include "../buffer.h"
@@ -26,7 +26,7 @@
 
 namespace libimmsnp {
 
-class MsnTest : public QThread, ConnectionListener, RosterListener, PresenceListener, ChatListener {
+class MsnTest : public QThread, ConnectionListener {
 
 public:
 	MsnTest ();
@@ -35,23 +35,23 @@ public:
 	void onConnect();
 	void onDisconnect();
 	void run();
-	int getConnected() {return m_connected;};
-	int getChatId () {return m_chatid;};
-
-	void onNewContact(Contact* c);
-	void presenceChanged(QString c, PresenceStatus status, QString msnPersMsg, QString msnCapabilities); 
-	void personalMessage (QString c, QString msg);
-	void contactDisconnected(QString msnPassport);
-
-	void newChat (int chatId, QString msnPassport);
-	void chatLeavedTheRoom(int chatId, QString chatMsnPassport);
-	void chatIsTyping(int chatId, QString chatMsnPassport);
-	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
-	void chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg);
-
-	void sendTxtMsg (int chatCount, QString chatMsg);
-	void changeStatus (PresenceStatus newStatus);
-	void initNewChat (std::string chatFriend);
+//	int getConnected() {return m_connected;};
+//	int getChatId () {return m_chatid;};
+//
+//	void onNewContact(Contact* c);
+//	void presenceChanged(QString c, PresenceStatus status, QString msnPersMsg, QString msnCapabilities); 
+//	void personalMessage (QString c, QString msg);
+//	void contactDisconnected(QString msnPassport);
+//
+//	void newChat (int chatId, QString msnPassport);
+//	void chatLeavedTheRoom(int chatId, QString chatMsnPassport);
+//	void chatIsTyping(int chatId, QString chatMsnPassport);
+//	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
+//	void chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg);
+//
+//	void sendTxtMsg (int chatCount, QString chatMsg);
+//	void changeStatus (PresenceStatus newStatus);
+//	void initNewChat (std::string chatFriend);
 
 private:
 	std::string m_initialStatus;

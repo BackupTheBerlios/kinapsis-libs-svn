@@ -14,8 +14,7 @@
 #ifndef LIBIMMSNP_H__
 #define LIBIMMSNP_H__
 
-namespace libimmsnp
-{
+namespace libimmsnp {
 	enum ConnectionState {
 		StateDisconnected,  
 		StateConnecting,   
