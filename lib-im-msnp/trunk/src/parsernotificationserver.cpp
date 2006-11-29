@@ -54,7 +54,7 @@ void ParserNS::parseVer () {
 	QString tmp;
 	m_buf.data(tmp);
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
-		if (s.contains( "MSNP11" ) || s.contains("MSNP10")){
+		if (s.contains( "MSNP12" ) || s.contains("MSNP11") || s.contains("MSNP10")){
 			m_buf.advance (l);
 			m_buf.removeFromBegin();
 			QString a;
@@ -117,6 +117,7 @@ void ParserNS::parseXfr () {
 		
 		// Restart secuence of authentication.
 		VER v(m_client->getIdtr());
+		v.addProtocolSupported("MSNP12");
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		m_client->send(v);
@@ -313,7 +314,7 @@ void ParserNS::parseLsg (){
 		QStringList fields = QStringList::split(" ",s);
 		QStringList::iterator point = fields.begin();
 		Group g(fields[0],fields[1].replace("\r\n",""));
-		qDebug("||| NEW GROUP: name:" + g.getName() + " ID:" + g.getId());
+	//	qDebug("||| NEW GROUP: name:" + g.getName() + " ID:" + g.getId());
 	}
 	else m_hasCommand = false;
 
@@ -332,7 +333,8 @@ void ParserNS::parseLst (){
 		c.setNickName (fields[1].replace("F=","")); // TODO: remove replace
 		c.setId (fields[2].replace("C=",""));
 		c.setList (fields[3]);
-		qDebug("||| NEW CONTACT: name:" + c.getPassport() + " NickName:" + c.getNickName() + " ID:" + c.getId() + " List:" + c.getList());
+		m_prevContact = fields[0];
+		//qDebug("||| NEW CONTACT: name:" + c.getPassport() + " NickName:" + c.getNickName().ascii() + " ID:" + c.getId() + " List:" + c.getList());
 	}
 	else m_hasCommand = false;
 	if (m_contacts == 0) {
@@ -344,6 +346,7 @@ void ParserNS::parseLst (){
 		qDebug ("#################");
 		m_client->send (c);
                 // añado a lista de comprobacion 
+		m_hasCommand = false;
 	}
 }
 
@@ -435,24 +438,79 @@ void ParserNS::parseChl (){
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
+
 		char strChallengeOutTmp[32];
-		challenge (s.mid (6,20).latin1(),strChallengeOutTmp);
+		challenge (s.mid (0,20).latin1(),strChallengeOutTmp);
 		QString strChallengeOut (strChallengeOutTmp);
-		QString qry ("QRY " + QString ("%1").arg(m_idtr++) + " PROD0090YUAUV{2B 32/r/n" + strChallengeOut);
-                m_socket->send (qry);
+
+		QRY q (m_client->getIdtr());
+		q.addProductId("PROD0090YUAUV{2B");
+		q.addMd5(strChallengeOut);
+                m_client->send (q);
                 // añado a lista de comprobacion 
 	}
 	else m_hasCommand = false;
 }
 
-void ParserNS::parseIln (){
-	// ILN 9 AWY vaticano666@hotmail.com pedro 268435488
+void ParserNS::parseNln (){
+	// NLN trid statuscode account_name display_name clientid
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
                 // añado a lista de comprobacion 
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
+		QStringList fields = QStringList::split(" ",s);
+		QStringList::iterator point = fields.begin();
+		QString status = fields[0];
+		QString passport = fields[1];
+		QString displayName = fields[2];
+		QString capabilities = fields[3];
+		qDebug ("# State Changed. User:" + passport + " State:" + status + " Capabilies:" + capabilities);
+	}
+	else m_hasCommand = false;
+}
+
+void ParserNS::parseUbx (){
+	// 
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+                // añado a lista de comprobacion 
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		QStringList fields = QStringList::split(" ",s);
+		QStringList::iterator point = fields.begin();
+		int payload =fields[1].toInt();
+
+		if ((l = m_buf.getNChar (s,payload)) != -1){
+        	        // añado a lista de comprobacion 
+			m_buf.advance (l);
+			m_buf.removeFromBegin();
+		}
+		
+	}
+	else m_hasCommand = false;
+}
+
+void ParserNS::parseBpr (){
+	// 
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+	}
+	else m_hasCommand = false;
+}
+void ParserNS::parseFln (){
+	// 
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		qDebug (s);
 	}
 	else m_hasCommand = false;
 }
@@ -538,7 +596,7 @@ void ParserNS::parse (){
 		else if (cmd ==  "BPR"){
 				qDebug ("Parsing BPR");
 				// TODO : quitar de la lista de comprobacion
-				//parseBpr();
+				parseBpr();
 				//break;			
 }
 		else if (cmd ==  "CHG"){
@@ -551,16 +609,14 @@ void ParserNS::parse (){
 }
 		else if (cmd ==  "CHL"){
 				qDebug ("Parsing CHL");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				// TODO : quitar de la lista de comprobacion
+				m_buf.advance (1 + 1 + 1); // CHL[ 0 ].....
 				parseChl();
 				//break;			
 }
 		else if (cmd ==  "FLN"){
 				qDebug ("Parsing FLN");
 				// TODO : quitar de la lista de comprobacion
-				//parseFln();
+				parseFln();
 				//break;			
 }
 		else if (cmd ==  "GCF"){
@@ -568,7 +624,7 @@ void ParserNS::parse (){
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
-				//parseChl();
+				//parseGcf();
 				//break;			
 }
 		else if (cmd ==  "GTC"){
@@ -580,9 +636,9 @@ void ParserNS::parse (){
 		else if (cmd ==  "ILN"){
 				qDebug ("Parsing ILN");
 				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
+				m_buf.setPosition(3 + lIdtr + 1 );
 				// TODO : quitar de la lista de comprobacion
-				parseIln();
+				parseNln();
 				//break;			
 }
 		else if (cmd ==  "LSG"){
@@ -601,8 +657,9 @@ void ParserNS::parse (){
 }
 		else if (cmd ==  "NLN"){
 				qDebug ("Parsing NLN");
+				m_buf.setPosition(3);
 				// TODO : quitar de la lista de comprobacion
-				//parseNln();
+				parseNln();
 				//break;			
 }
 		else if (cmd ==  "OUT"){
@@ -631,6 +688,9 @@ void ParserNS::parse (){
 }
 		else if (cmd ==  "QRY"){
 				qDebug ("Parsing QRY");
+				QString s;
+				m_buf.data(s);
+				qDebug(s);
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr + 3); // QRY 11\r\n
 				m_buf.removeFromBegin();
@@ -689,6 +749,11 @@ void ParserNS::parse (){
 			parseSbs();
 			//break;			
 }
+		else if (cmd ==  "UBX") {
+			qDebug ("Parsing UBX");
+			parseUbx();
+			//break;			
+}
 		else {	// pueden venir errores 715 1\r\n
 			// quitar el primero 
 			// reañadir al buffer ppal
@@ -700,6 +765,13 @@ void ParserNS::parse (){
 				qDebug ("####################");
 				exit (-1);
 			}
+			if (cmd ==  "540") {
+				qDebug ("######################");
+				qDebug ("### Bad MD5 digest ###");
+				qDebug ("######################");
+				exit (-1);
+			}
+
 
 			QString error;
 			m_buf.data(error);
@@ -708,14 +780,10 @@ void ParserNS::parse (){
 		}
 	QString d;
 	int len = m_buf.data(d);
-	qDebug ("#### len:" + QString ("%1").arg(len) + " Data:" + d.replace('\n',"\\n").replace('\r',"\\r"));
-	qDebug ("//////////Saliendo del Parser");
-	m_isParsing = false;
+	printf ("#### Data:%s\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
 	}	
-
-//	QString d;
-//	m_buf.data(d);
-//	qDebug ("Buff vacio:" + d.replace('\n',"\\n").replace('\r',"\\r") + "#");
+//	qDebug ("//////////Getting Out of Parser");
+	m_isParsing = false;
 }
 }
 #include "parsernotificationserver.moc"

@@ -67,7 +67,7 @@ public:
        Group ();
        Group (QString groupName, QString groupId);
        void setName (QString name) {m_name = name;}
-       void setID (QString id) {m_id = id;}
+       void setId (QString id) {m_id = id;}
        QString getName () {return m_name;};
        QString getId () {return m_id;};
        virtual ~Group();

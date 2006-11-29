@@ -19,7 +19,7 @@ CHG::CHG(int idtr) : Command ("CHG", idtr) {}
 CHG::~CHG(){}
 QString CHG::makeCmd(){
 	// CHG 9 NLN 1073791084\r\n
-	// CHG trid statuscode clientid   msnobj
+	// CHG trid statuscode clientid msnobj
 	QString res;
 	res += beginCmd();
 	res += " " + m_statusCode + " " + m_clientId;

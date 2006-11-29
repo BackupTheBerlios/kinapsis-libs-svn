@@ -80,6 +80,7 @@ namespace libimmsnp {
 		m_conn->start();
 
 		VER v(1);
+		v.addProtocolSupported("MSNP12");
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		send(v);

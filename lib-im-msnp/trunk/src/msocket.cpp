@@ -109,7 +109,9 @@ int msocket::send (std::string buf){
 
 int msocket::send (QString buf){
 	int size;
+	//qDebug ("................Sending:" + QString("%1").arg(m_sockFd));
 	size = ::send (m_sockFd, buf.utf8().data(), buf.length(), 0);
+	//qDebug ("................Sended" + QString("%1").arg(m_sockFd));
 	QString tmpData = buf;
 	qDebug(">> Host: " + QString (m_host)+ " len: " + QString("%1").arg(size) + " data: " + QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r"));
 	return size;
@@ -121,7 +123,7 @@ int msocket::send (Buffer buf){
 	buf.data(data);
 	size = ::send (m_sockFd, data.utf8().data(), buf.len(), 0);
 	QString tmpData = data;
-	qDebug(">> data: " + tmpData.replace('\n',"\\n").replace('\r',"\\r"));
+	//qDebug(">> data: " + tmpData.replace('\n',"\\n").replace('\r',"\\r"));
 	return size;
 }
 
@@ -143,15 +145,18 @@ int msocket::recv (QString& buf){
 	int size = 0;
 	char data[MAX_MSG] ;
 
+	//qDebug ("................Receiving:" + QString("%1").arg(m_sockFd));
 	if ((size = ::recv (m_sockFd, data, MAX_MSG, 0)) == -1){
 		std::cout << "<< host: " << m_host << " << len: "<< size << " Error reciving  from socket\n";
 		return -1;
 	}
+	//qDebug ("................Received" + QString("%1").arg(m_sockFd));
 
 	buf += QString(data).mid(0,size);
 	QString tmpData = buf;
 	if (size >0)
-	qDebug ("<< Host:" + QString (m_host)+ " len: " + QString("%1").arg(size) + " data: " + QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r")); 
+	//qDebug ("<< Host:" + QString (m_host)+ " len: " + QString("%1").arg(size) + " data: " + QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r")); 
+	printf ("<< Datos:%s\n",QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r").latin1());
 
 	return size;
 }
@@ -167,7 +172,7 @@ int msocket::recv (Buffer& buf){
 	buf << QString (data);
 	buf.data(b);
 	QString tmpData = b;
-	qDebug ("<< data: " + tmpData.replace('\n',"\\n").replace('\r',"\\r")); 
+	//qDebug ("<< data: " + tmpData.replace('\n',"\\n").replace('\r',"\\r")); 
 
 	return size;
 }

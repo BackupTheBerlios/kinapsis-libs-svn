@@ -72,8 +72,25 @@ int Buffer::getTilChar (QString &s, QChar c){
 	s += *(it);
 	l ++;
 	return l;
-	
 }
+
+int Buffer::getNChar (QString &s, int len){
+	// c included
+
+	int l = 0;
+	BIterator it = m_it;
+
+	while (len-- !=0){
+		if (it == m_data.end())
+			return -1;
+		s += *(it);
+		l++;
+		it++;
+	}
+	return l;
+}
+
+
 int Buffer::getQString (QString &c, int len) {
 	if (len > this->len()){
 		for (int i=0; i < this->len(); i ++)

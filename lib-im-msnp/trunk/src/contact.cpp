@@ -82,6 +82,11 @@ void Contact::setList (QString list){
 
 // Now Group Class
 // LSG Family 01eccd16-9f8a-425f-a36d-cbb73af6461e\r\n
+
+Group::Group (){
+	m_name= "";
+	m_id = "";
+}
 Group::Group (QString groupName, QString groupId){
        m_name = groupName;
        m_id = groupId;

@@ -73,6 +73,19 @@ public:
 	virtual ~SYN();
 	QString makeCmd();
 };
+
+class QRY : public Command {
+//QRY trid idstring payload_length\r\nmd5digest
+public:
+	QRY (int idtr);
+	virtual ~QRY();
+	QString makeCmd();
+	void addProductId (QString);
+	void addMd5(QString);
+private:
+	QString m_md5;
+	QString m_productId;
+};
 }
 #endif //_LOGIN_H_
 

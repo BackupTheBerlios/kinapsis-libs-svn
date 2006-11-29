@@ -82,4 +82,20 @@ QString SYN::makeCmd(){
 	res += endCmd();
 	return res;
 }
+
+QRY::QRY (int idtr):Command ("QRY", idtr, "")  {}
+QRY::~QRY() {}
+QString QRY::makeCmd() {
+	QString res;
+	res += beginCmd();
+	res += " " + m_productId + " 32\r\n" + m_md5.mid(0,32);
+	res += endCmd();
+	return res;
+}
+void QRY::addProductId (QString productId) {
+	m_productId = productId;
+}
+void QRY::addMd5(QString md5){
+	m_md5 = md5; 
+}
 }

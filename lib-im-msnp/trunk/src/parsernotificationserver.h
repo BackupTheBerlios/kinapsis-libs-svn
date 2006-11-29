@@ -46,12 +46,14 @@ public:
 	void parsePrp();
 	void parseLsg();
 	void parseLst();
-	void parseBpr();
 	void parseChg();
 	void parseChl();
 	void parseQry();
-	void parseIln();
 	bool isParsing() {return m_isParsing;}
+	void parseNln();
+	void parseUbx();
+	void parseBpr();
+	void parseFln();
 	void parse ();
 
 private:
@@ -68,6 +70,7 @@ private:
 	msocket* m_socket;
 	bool m_isParsing;
 	bool m_hasCommand;
+	QString m_prevContact;
 
 
 signals:

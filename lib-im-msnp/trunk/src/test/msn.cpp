@@ -112,30 +112,5 @@ int main(void){
 	using namespace libimmsnp;
 	MsnTest cliente;
 	cliente.start();
-	
-//	
-////	while (not cliente.getConnected()) {std::cout << "";};
-////	cliente.changeStatus(PresenceIDL);
-////	cliente.initNewChat ("vaticano666@hotmail.com");
-//
-////	while (cliente.getChatId()) {std::cout << "";};
-////	cliente.sendTxtMsg (cliente.getChatId(), "Hola feo");
-//
-//
 	cliente.wait();
-//	msocket *s = new msocket("messenger.hotmail.com",1863);
-//	s->connect();
-//	Buffer b;
-//	using namespace std; 
-//	b << "VER 13 MSNP12 MSNP11 MSNP10 CVR0\r\n$!£$$!£$!·$";
-//	b.gotoBegin();
-//	ParserNS p("user","pass",s) ;
-//	p.feed (b);
-//
-//	QString a;
-//	b.data(a);
-//	qDebug(a);
-//
-//	p.parse();
-
 }
