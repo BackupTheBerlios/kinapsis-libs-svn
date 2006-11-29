@@ -249,7 +249,6 @@ namespace libimmsnp {
 	}
 //
 	void Client::newContactArrived (Contact* c) {
-		qDebug ("# CONTACT:" + c->getPassport() );
 //		QPtrList<Group> lsg = m_roster->getGroups();
 //		for (uint i = 0; i < lsg.count() ; ++i)
 //			if (lsg.at(i))
@@ -261,7 +260,6 @@ namespace libimmsnp {
 	}
 //
 	void Client::statusChanged (QString passport, QString status, QString displayName, QString capabilities ){
-		printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),status.latin1(),capabilities.latin1(),displayName.latin1());
 //		QPtrList<Contact> lsc = m_roster->getContacts();
 //		for (uint i = 0; i < lsc.count() ; ++i)
 //			if (lsc.at(i))
@@ -275,15 +273,14 @@ namespace libimmsnp {
 	}
 
 	void Client::personalMessage (QString passport, QString personalMsg){
-		if (personalMsg != "")
-			qDebug ("#Mensaje personal de " + passport + " #-->" + personalMsg );
 //		QPtrList<Contact> lsc = m_roster->getContacts();
 //		for (uint i = 0; i < lsc.count() ; ++i)
 //			if (lsc.at(i))
 //				if (lsc.at(i)->getMsnName() == msnPassport)
 //					lsc.at(i)->setPersMsg (persMsg);
 //
-		emit notifyPersonalMessage (passport, personalMsg);
+		if (personalMsg != "")
+			emit notifyPersonalMessage (passport, personalMsg);
 	}
 //
 //	void Client::chatRequest(QString hostPort, QString msnPassport, QString ticket, QString sessid){
