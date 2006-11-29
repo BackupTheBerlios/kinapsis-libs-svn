@@ -30,7 +30,7 @@ Q_OBJECT
 
 public:
 	ParserNS (QString, QString, Client*);
-	ParserNS (QString, QString, Client*, msocket*);
+	int hasData(){return m_buf.len();}
 	void feed (Buffer);
 	void feed (QString);
 	void parseVer();
@@ -51,13 +51,13 @@ public:
 	void parseChl();
 	void parseQry();
 	void parseIln();
+	bool isParsing() {return m_isParsing;}
 	void parse ();
 
 private:
 	int m_idtr;
 	QString m_ticket;
 	Buffer m_buf;
-	msocket* m_socket;
 	QString m_msnPassport;
 	QString m_msnPass;
 	int m_connectionSteps;
@@ -65,6 +65,10 @@ private:
 	int m_contacts;
 	QString m_initialStatus;
 	Client* m_client;
+	msocket* m_socket;
+	bool m_isParsing;
+	bool m_hasCommand;
+
 
 signals:
 	void mainSocket(msocket*);

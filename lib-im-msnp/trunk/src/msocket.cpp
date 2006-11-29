@@ -111,7 +111,7 @@ int msocket::send (QString buf){
 	int size;
 	size = ::send (m_sockFd, buf.utf8().data(), buf.length(), 0);
 	QString tmpData = buf;
-	qDebug(">> len: " + QString("%1").arg(size) + " data: " + QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r"));
+	qDebug(">> Host: " + QString (m_host)+ " len: " + QString("%1").arg(size) + " data: " + QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r"));
 	return size;
 }
 
@@ -151,7 +151,7 @@ int msocket::recv (QString& buf){
 	buf += QString(data).mid(0,size);
 	QString tmpData = buf;
 	if (size >0)
-	qDebug ("<< len: " + QString("%1").arg(size) + " data: " + tmpData.replace('\n',"\\n").replace('\r',"\\r")); 
+	qDebug ("<< Host:" + QString (m_host)+ " len: " + QString("%1").arg(size) + " data: " + QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r")); 
 
 	return size;
 }

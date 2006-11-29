@@ -39,41 +39,61 @@ namespace libimmsnp {
 		m_mainSocket = 0;
 		m_msnPassport = "";
 		m_msnPass = "";
-		m_idtr = 0;
+		m_idtr = 1;
+		m_threads.setAutoDelete(TRUE);
 //		m_roster = 0;
 //		m_chats.setAutoDelete(true);
 	}
 
 	int Client::getIdtr() {
-		return m_idtr;
+		return ++m_idtr;
 	}
 
 	void Client::send(Command& c) {
 	 	m_mainSocket->send (c.makeCmd());
 	}
 
+	void Client::makeConnection (QString ip, int port){
+		m_mainSocket = new msocket(ip, port);
+		m_mainSocket->connect();
+//		if (!m_conn->finished()) {
+//			m_conn->terminate();
+//			m_conn->wait();
+//			delete m_conn;
+//		}
+		m_conn = new Connection (m_mainSocket, m_parser);
+		m_threads.append (m_conn);
+		m_conn->start();
+	}
+
 	int Client::connect(QString msnPassport, QString msnPass, QString initialStatus, QString msnHost, int msnPort) {
+		m_parser = new ParserNS (msnPassport, msnPass, this);
+		m_msnPassport = msnPassport;
+		m_msnPass = msnPass;
+
+		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
+		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
+
 		m_mainSocket = new msocket("messenger.hotmail.com",1863);
 		m_mainSocket->connect();
-		m_parser = new ParserNS (msnPassport, msnPass,this, m_mainSocket);
+		m_conn = new Connection (m_mainSocket, m_parser);
+		m_conn->start();
 
 		VER v(1);
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		send(v);
-
-//		m_roster = new Roster();
-		//m_chatCount = 0;
-		m_msnPassport = msnPassport;
-		m_msnPass = msnPass;
-		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
-		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
-
-		m_conn = new Connection (m_mainSocket, m_parser);
-		m_conn->start();
+		m_threads.append(m_conn);
 		m_conn->wait();
+//		m_conn->wait();
+//		QThread* th;
+//		for (th = m_threads.first(); th ; th = m_threads.next() )	
+//			th->wait ();
+//			qDebug("Borrando");
+//			m_threads.remove(th);
+//
+//		qDebug ("ENDDD);
 
-		qDebug ("FINN");
 
 
 //		QObject::connect(m_conn, SIGNAL(disconnected()), this, SLOT(disconnected()));

@@ -34,6 +34,19 @@ public:
 	CVR (int idtr);
 	virtual ~CVR();
 	QString makeCmd();
+	void addLocaleId (QString ); //get it from http://www.html.dk/dokumentation/vbscript/HTML/vsmscLCID.htm
+	void addOs (QString osType,QString osVer);
+	void addArch (QString );
+	void addClient (QString clientName, QString clientVer);
+	void addPassport (QString );
+private:
+	QString m_locale;
+	QString m_osType;
+	QString m_osVer;
+	QString m_arch;
+	QString m_clientName;
+	QString m_clientVer;
+	QString m_passport;
 };
 
 class USR : public Command {
@@ -42,6 +55,22 @@ class USR : public Command {
 public:
 	USR (int idtr);
 	virtual ~USR();
+	void addTwnType (QString twnType);
+	void addTicket (QString ticket); 
+	void addPassport (QString );
+	QString makeCmd();
+
+private:
+	QString m_twnType;
+	QString m_ticket;
+	QString m_passport;
+
+};
+class SYN : public Command {
+// 
+public:
+	SYN (int idtr);
+	virtual ~SYN();
 	QString makeCmd();
 };
 }

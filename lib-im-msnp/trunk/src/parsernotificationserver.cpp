@@ -14,7 +14,10 @@
 #include "parsernotificationserver.h"
 #include "client.h"
 #include "login.h"
+#include "contact.h"
+#include "notificationServer.h"
 #include "md5.h"
+#include <qstringlist.h>
 
 namespace libimmsnp {
 ParserNS::ParserNS(QString msnPassport, QString msnPass, Client* c){
@@ -27,24 +30,14 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, Client* c){
 	m_contacts = 0;
 	m_initialStatus = "BSY";
 	m_client = c;
+	m_hasCommand = false;
 }
-ParserNS::ParserNS(QString msnPassport, QString msnPass,Client* c,msocket* s){
-	m_idtr = 2;
-	m_msnPassport = msnPassport;
-	m_msnPass = msnPass;
-	m_connectionSteps = 0;
-	m_socket = s;
-	m_groups = 0;
-	m_contacts = 0;
-	m_initialStatus = "BSY";
-	m_client = c;
-}
-
 void ParserNS::feed (Buffer b){
 	m_buf << b;
 }
 
 void ParserNS::feed (QString s){
+	m_hasCommand = true;
 	m_buf << s;
 }
 
@@ -62,11 +55,19 @@ void ParserNS::parseVer () {
 	m_buf.data(tmp);
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		if (s.contains( "MSNP11" ) || s.contains("MSNP10")){
-			QString cvr ("CVR " + QString ("%1").arg(m_idtr++) + " 0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs " + m_msnPassport + "\r\n" );
-			m_socket->send (cvr);
-			// añado a lista de comprobacion 
 			m_buf.advance (l);
 			m_buf.removeFromBegin();
+			QString a;
+			m_buf.data(a);
+			CVR c(m_client->getIdtr());
+			c.addLocaleId ("0x0409");
+                        c.addOs ("winnt", "5.1");
+                        c.addArch ("i386");
+                        c.addClient ("MSNMSGR", "7.5.0324");
+                        c.addPassport (m_msnPassport);
+
+			m_client->send(c);
+			// añado a lista de comprobacion 
 		}
 		else {
 			// return bad state
@@ -74,6 +75,7 @@ void ParserNS::parseVer () {
 			return;
 		}
 	}
+	else m_hasCommand = false;
 	m_buf.gotoBegin();
 //	this->parse ();
 }
@@ -84,53 +86,43 @@ void ParserNS::parseCvr () {
 	QString tmp;
 	m_buf.data(tmp);
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
-		QString usr ("USR " + QString ("%1").arg(m_idtr++) + " TWN I " + m_msnPassport + "\r\n");
-		m_socket->send (usr);
-		// añado a lista de comprobacion 
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
+
+		USR u(m_client->getIdtr());
+		u.addTwnType ("I");
+		u.addPassport (m_msnPassport);
+		m_client->send (u);
+		// añado a lista de comprobacion 
 	}
+	else m_hasCommand = false;
 	m_buf.gotoBegin();
 //	this->parse ();
 }
 
 void ParserNS::parseXfr () {
-	// XFR 2 NS 207.46.107.27:1863 0 207.46.28.93:1863\r\n
+	// XFR 3 NS 207.46.107.61:1863 0 207.46.28.93:1863\r\n
 	QString s;
 	int l;
 	QString tmp;
 	m_buf.data(tmp);
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
-		QString ip = s.mid(3, s.find(':')-3) ;	
-		int port = s.mid(s.find(':')+1,4).toInt() ;	
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+
+		QString ip   = s.mid (3, s.find (':') - 3);	
+		int     port = s.mid (s.find(':')+1, 4).toInt() ;	
+
+		m_client->makeConnection(ip, port);
 		
-		//qDebug("IP:" + ip + "#" + QString("%1").arg(port) + "#");
-		delete m_socket;
-		m_socket = new msocket(ip,port);
-		m_socket->connect();
-
-
 		// Restart secuence of authentication.
-
-		VER v(m_idtr++);
+		VER v(m_client->getIdtr());
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		m_client->send(v);
-//		QString msg ("VER " + QString ("%1").arg(m_idtr++) + " MSNP11 MSNP10 CVR0\r\n");
-//		 
-//		if (m_socket->send (msg) == 0) {
-//			return ;
-//		}
-		m_buf.advance (l);
-		m_buf.removeFromBegin();
-		qDebug ("### EMITO emit MainSocket(m_socket)");
-		emit mainSocket(m_socket);
 
 	}
-	m_buf.gotoBegin();
-	QString ss; 
-	m_buf.data(ss);
-//	this->parse ();
+	else m_hasCommand = false;
 }
 
 static size_t msnCurlWriteFn(void *ptr, size_t size, size_t nmemb, void *stream){
@@ -194,6 +186,8 @@ void ParserNS::parseUsr () {
 	m_buf.data(tmp);
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		if (s.contains ("TWN S")){
+			m_buf.advance (l);
+			m_buf.removeFromBegin();
 			m_ticket = s.mid (s.find ("lc"),s.length()-s.find ("lc")-2);
 			// TODO: if ticket = "" login failed
 			//qDebug (m_ticket);
@@ -205,18 +199,18 @@ void ParserNS::parseUsr () {
 
 			std::string url("https://");
 			url += tmpUrl.substr(iniUrl,finUrl);
-			//qDebug (QString(url));
 
 			std::string auth = std::string("Authorization: Passport1.4 OrgVerb=GET,OrgURL=http%3A%2F%2Fmessenger%2Emsn%2Ecom,sign-in=") + m_msnPassport.replace('@', "%40").replace('.', "%2E").latin1() + ",pwd=" +  m_msnPass.replace('@', "%40").replace('.', "%2E").latin1() + "," + m_ticket.latin1();
 
       			// Don't urlEncode the m_ticket, only the id and password.
  			m_ticket = QString (httpsReq (url, auth));
-			QString usr ("USR " + QString ("%1").arg(m_idtr++) + " TWN S " + m_ticket + "\r\n");
-			//qDebug (usr);
-			m_socket->send (usr);
+
+			USR u(m_client->getIdtr());
+			u.addTwnType ("S");
+			u.addTicket (m_ticket);
+			m_client->send (u);
+
 			// añado a lista de comprobacion 
-			m_buf.advance (l);
-			m_buf.removeFromBegin();
 		}
 		else if (s.contains ("OK ")){
 			qDebug ("!! USR OK");
@@ -229,6 +223,7 @@ void ParserNS::parseUsr () {
 	                m_buf.removeFromBegin();
 		}
 	}
+	else m_hasCommand = false;
 
 //	m_buf.gotoBegin();
 //	this->parse ();
@@ -240,29 +235,30 @@ void ParserNS::parseMsg (){
 	m_buf.data(a);
 	if (a.contains ("Content-Type: text/x-msmsgsprofile")){
 		int l = a.find ("\r\n\r\n") + 4;
-	
 		m_buf.gotoBegin();
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
-		QString syn ("SYN " + QString ("%1").arg(m_idtr++) + " 2005-04-23T18:57:44.8130000-07:00 2005-04-23T18:57:54.2070000-07:00\r\n");
-		m_socket->send (syn);
+
+		SYN s (m_client->getIdtr());
+		m_client->send (s);
 		// añado a lista de comprobacion 
 	}
+	else m_hasCommand = false;
 }
 
 void ParserNS::parseSyn () {
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
 		QString g = s.mid (s.findRev(" "), s.length () - s.findRev(" ") - 2 );
 		QString ctmp = s.mid (0, s.find (g + "\r\n"));
 		QString c = s.mid(ctmp.findRev(" "), ctmp.length () - ctmp.findRev(" "));
 		m_contacts = c.toInt();
 		m_groups = g.toInt();
-
-		m_buf.advance (l);
-		m_buf.removeFromBegin();
 	}
+	else m_hasCommand = false;
 }
 
 void ParserNS::parseGtc () {
@@ -276,6 +272,7 @@ void ParserNS::parseGtc () {
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 	}
+	else m_hasCommand = false;
 }
 void ParserNS::parseBlp () {
 	QString s;
@@ -288,45 +285,64 @@ void ParserNS::parseBlp () {
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 	}
+	else m_hasCommand = false;
 }
 
 void ParserNS::parsePrp () {
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
 		if (s.contains ("MFN"))
 			qDebug ("!!PRP My name is");
 			// TODO: emit signal sending my name
 		else if (s.contains ("PHH") || s.contains ("PHW")  || s.contains ("PHM") || s.contains ("MOB") || s.contains ("MBE") ||  s.contains ("WWE"))
 			qDebug ("!!PRP Telefonos");
-		m_buf.advance (l);
-		m_buf.removeFromBegin();
 	}
+	else m_hasCommand = false;
 }
 
 void ParserNS::parseLsg (){
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
-		m_groups--;
-		qDebug ("==== m_groups :" + QString("%1").arg(m_groups));
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
+		m_groups--;
+		QStringList fields = QStringList::split(" ",s);
+		QStringList::iterator point = fields.begin();
+		Group g(fields[0],fields[1].replace("\r\n",""));
+		qDebug("||| NEW GROUP: name:" + g.getName() + " ID:" + g.getId());
 	}
+	else m_hasCommand = false;
 
 }
 void ParserNS::parseLst (){
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
-		m_contacts--;
-		qDebug ("==== m_contacts :" + QString("%1").arg(m_contacts));
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
+		m_contacts--;
+		QStringList fields = QStringList::split(" ",s);
+		QStringList::iterator point = fields.begin();
+		Contact c;
+		c.setPassport (fields[0].replace("N=",""));
+		c.setNickName (fields[1].replace("F=","")); // TODO: remove replace
+		c.setId (fields[2].replace("C=",""));
+		c.setList (fields[3]);
+		qDebug("||| NEW CONTACT: name:" + c.getPassport() + " NickName:" + c.getNickName() + " ID:" + c.getId() + " List:" + c.getList());
 	}
+	else m_hasCommand = false;
 	if (m_contacts == 0) {
-		QString chg ("CHG " + QString ("%1").arg(m_idtr++) + " " +  m_initialStatus + " 1342558252" + "\r\n");
-		m_socket->send (chg);
+		CHG c (m_client->getIdtr());
+		c.addStatusCode ("HDN");
+		c.addClientId ("1342558252");
+		qDebug ("#################");
+		qDebug ("#Roster received#");
+		qDebug ("#################");
+		m_client->send (c);
                 // añado a lista de comprobacion 
 	}
 }
@@ -340,6 +356,7 @@ void ParserNS::parseSbs (){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 	}
+	else m_hasCommand = false;
 
 }
 
@@ -351,6 +368,7 @@ void ParserNS::parseChg (){
 		m_buf.removeFromBegin();
 		emit connected();
 	}
+	else m_hasCommand = false;
 }
 
 // This pieze of code  is based on code http://msnpiki.msnfanatic.com/extra/CHL_Cpp.zip
@@ -424,6 +442,7 @@ void ParserNS::parseChl (){
                 m_socket->send (qry);
                 // añado a lista de comprobacion 
 	}
+	else m_hasCommand = false;
 }
 
 void ParserNS::parseIln (){
@@ -435,9 +454,11 @@ void ParserNS::parseIln (){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 	}
+	else m_hasCommand = false;
 }
 
 void ParserNS::parse (){
+	m_isParsing = true;
 	QString cmd;
 	int idtr;
 	int lIdtr;
@@ -445,7 +466,7 @@ void ParserNS::parse (){
 	QString d1;
 	m_buf.data(d1);
 //	qDebug ("Buff vacioIni:" + d1.replace('\n',"\\n").replace('\r',"\\r") + "#");
-	while (m_buf.len()){
+	while (m_buf.len() && m_hasCommand){
 		/* We have more data in the buffer */
 		m_buf.gotoBegin();
 
@@ -461,8 +482,6 @@ void ParserNS::parse (){
 				// VER 1 MSNP12 MSNP11 MSNP10 CVR0\r\n
 				lIdtr = m_buf.getInt (idtr);;
 				m_buf.advance (1+lIdtr+1);
-				m_buf +=(1+lIdtr+1); // space int space
-
 				// TODO : quitar de la lista de comprobacion
 				parseVer();
 				//qDebug (cmd + ::QString("%1").arg(idtr));
@@ -568,12 +587,14 @@ void ParserNS::parse (){
 }
 		else if (cmd ==  "LSG"){
 				qDebug ("Parsing LSG");
+				m_buf.setPosition(3 + 1);
 				// TODO : quitar de la lista de comprobacion
 				parseLsg();
 				//break;			
 }
 		else if (cmd ==  "LST"){
 				qDebug ("Parsing LST");
+				m_buf.setPosition(3 + 1);
 				// TODO : quitar de la lista de comprobacion
 				parseLst();
 				//break;			
@@ -687,7 +708,9 @@ void ParserNS::parse (){
 		}
 	QString d;
 	int len = m_buf.data(d);
-	qDebug ("####" + d.replace('\n',"\\n").replace('\r',"\\r") + "#### len:" + QString ("%1").arg(len));
+	qDebug ("#### len:" + QString ("%1").arg(len) + " Data:" + d.replace('\n',"\\n").replace('\r',"\\r"));
+	qDebug ("//////////Saliendo del Parser");
+	m_isParsing = false;
 	}	
 
 //	QString d;

@@ -53,6 +53,7 @@ public:
 	void delConnectionListener (ConnectionListener* cl);
 	int getIdtr();
 	void send(Command& c);
+	void makeConnection (QString ip, int port);
 	
 //	void addRosterListener (RosterListener *rl);
 //	void delRosterListener (RosterListener *rl);
@@ -104,7 +105,7 @@ private:
 	QString m_msnPass;
 	int m_idtr;
 //	Roster* m_roster;
-//	QPtrList<Chat> m_chats;
+	QPtrList<QThread> m_threads;
 };
 }
 #endif // _CLIENT_H_

@@ -20,45 +20,54 @@
 
 namespace libimmsnp {
 
-class Contact : public QObject {
-Q_OBJECT
+class Contact {
 
 public:
 	Contact();
-	Contact(QString msnPassport, QString groupname, QString friendlyname, QString msnid, QString group);
+	Contact(QString passport, QString groupName, QString nickName, QString msnId, QString groupId);
 	
 	virtual ~Contact();
 	
-	void setMsnName(QString msnPassport);
-	void setGroupName(QString groupName);
-	void setFriendlyName(QString friendlyName);
-	void setMsnId(QString msnId);
-	void setGroupId (QString groupId);
-	void setStatus (PresenceStatus status);
-	void setPersMsg (QString persMsg);
-	void setCapabilities (QString msnCapabilities);
+	void setPassport(QString);
+	void setGroupName(QString);
+	void setNickName(QString);
+	void setId(QString);
+	void setGroupId (QString);
+	void setStatus (PresenceStatus);
+	void setDisplayName (QString);
+	void setPersMsg (QString);
+	void setCapabilities (QString);
+	void setList (QString list);
 
-	QString getMsnName(){return m_msnname;};
-	QString getGroupName(){return m_groupname;};
-	QString getFriendlyName(){return m_friendlyname;};
-	QString getMsnId(){return m_msnid;};
-	QString getGroupId(){return m_groupid;};
+	QString getPassport(){return m_passport;};
+	QString getGroupName(){return m_groupName;};
+	QString getNickName(){return m_nickName;};
+	QString getId(){return m_id;};
+	QString getGroupId(){return m_groupId;};
+	PresenceStatus getStatus() {return m_status;};
+	QString getCapabilities() {return m_capabilities;};
+	QString getList(){return m_list;};
+	
 
 private:
-	QString m_msnname;
-	QString m_groupname;
-	QString m_friendlyname;
-	QString m_msnid;
-	QString m_groupid;
-	PresenceStatus m_status;
-	QString m_persmsg;
-	QString m_capabilities;
+	QString	m_passport; 	
+	QString	m_groupName;  	
+	QString	m_nickName; 			
+	QString	m_id; 		
+	QString	m_groupId;		
+	PresenceStatus	m_status; 
+	QString	m_displayName;	
+	QString	m_persMsg;		
+	QString	m_capabilities ;	
+	QString m_list;
 };
 
 class Group {
 public:
        Group ();
        Group (QString groupName, QString groupId);
+       void setName (QString name) {m_name = name;}
+       void setID (QString id) {m_id = id;}
        QString getName () {return m_name;};
        QString getId () {return m_id;};
        virtual ~Group();

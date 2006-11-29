@@ -18,18 +18,30 @@
 namespace libimmsnp {
 
 Connection::Connection (msocket* s, ParserNS* p){
-	qDebug ("HOLAAA");
 	m_socket = s;
 	m_parser = p;
 }
 
 void Connection::run (){
-	qDebug ("HOLAAA2");
 	QString data;
-	while ((m_socket->recv(data)) != -1){
+	int size;
+	while ((size = (m_socket->recv(data))) != -1){
+		qDebug ("//////////Receiving");
+		//qDebug ("%1").arg(m_parser->hasData());
+		if (size == 0) {
+			qDebug ("Connection closed unexpectly. Host:" + QString (m_socket->getHost()));
+			this->exit();
+		}
+		//while (!m_parser->hasData()){}
+		qDebug ("//////////Filling the Parser");
 		m_parser->feed (data);
+		while (m_parser->isParsing()){qDebug ("////////////////////// PARSING");}
 		m_parser->parse();
+		qDebug ("//////////Out");
+		data = "";
 	}
+	qDebug("________________End of Run");
+	this->exit();
 }
 
 Connection::~Connection (){

@@ -27,8 +27,8 @@ MsnTest::MsnTest () {
 }
 
 void MsnTest::run (){
-        QString id ("vaticano666@hotmail.com");
-        QString pass ("iguanass");
+        QString id ("user@hotmail.com");
+        QString pass ("pass");
 	QString host ("messenger.hotmail.com");
 	test.connect(id,pass,m_initialStatus);
 }
