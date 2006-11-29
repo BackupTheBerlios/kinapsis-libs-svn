@@ -67,12 +67,16 @@ namespace libimmsnp {
 	}
 
 	int Client::connect(QString msnPassport, QString msnPass, QString initialStatus, QString msnHost, int msnPort) {
-		m_parser = new ParserNS (msnPassport, msnPass, this);
+		m_parser = new ParserNS (msnPassport, msnPass, initialStatus, this);
 		m_msnPassport = msnPassport;
 		m_msnPass = msnPass;
 
 		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
 		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
+		QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
+		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
+		QObject::connect(m_parser, SIGNAL(statusChanged (QString, QString, QString, QString)), this, SLOT(statusChanged(QString, QString, QString, QString)));
+		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 
 		m_mainSocket = new msocket("messenger.hotmail.com",1863);
 		m_mainSocket->connect();
@@ -86,24 +90,10 @@ namespace libimmsnp {
 		send(v);
 		m_threads.append(m_conn);
 		m_conn->wait();
-//		m_conn->wait();
-//		QThread* th;
-//		for (th = m_threads.first(); th ; th = m_threads.next() )	
-//			th->wait ();
-//			qDebug("Borrando");
-//			m_threads.remove(th);
-//
-//		qDebug ("ENDDD);
-
-
 
 //		QObject::connect(m_conn, SIGNAL(disconnected()), this, SLOT(disconnected()));
-//		QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
-//		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
-//		QObject::connect(m_parser, SIGNAL(statusChanged (QString, PresenceStatus, QString, QString)), this, SLOT(statusChanged(QString, PresenceStatus, QString, QString)));
-//		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
-//		QObject::connect(m_parser, SIGNAL(chatRequest (QString, QString, QString, QString)), this, SLOT(chatRequest(QString, QString, QString, QString)));
 //		QObject::connect(m_parser, SIGNAL(contactDisconnected (QString)),this, SLOT(contactDisconnected (QString)));
+//		QObject::connect(m_parser, SIGNAL(chatRequest (QString, QString, QString, QString)), this, SLOT(chatRequest(QString, QString, QString, QString)));
 //		QObject::connect(m_parser, SIGNAL(chatCreated (QString, QString)), this, SLOT(chatCreated(QString, QString)));
 
 		//m_conn->connect(initialStatus);
@@ -207,13 +197,13 @@ namespace libimmsnp {
 		QObject::disconnect (this, 0, cl, 0);
 	}
 
-//	void Client::addRosterListener (RosterListener *rl){
-//		QObject::connect (this, SIGNAL(notifyNewContact(Contact*)), rl, SLOT(onNewContactSlot(Contact*)));
-//	}
-//
-//	void Client::delRosterListener (RosterListener *rl){
-//		QObject::disconnect (this, 0, rl, 0);
-//	}
+	void Client::addRosterListener (RosterListener *rl){
+		QObject::connect (this, SIGNAL(notifyNewContact(Contact*)), rl, SLOT(onNewContactSlot(Contact*)));
+	}
+
+	void Client::delRosterListener (RosterListener *rl){
+		QObject::disconnect (this, 0, rl, 0);
+	}
 //
 //	void Client::addChatListener (ChatListener *chl){
 //		QObject::connect (this, SIGNAL(notifyNewChat (int, QString)), chl, SLOT(newChatSlot (int, QString)));
@@ -227,15 +217,15 @@ namespace libimmsnp {
 //		QObject::disconnect (this, 0, chl, 0);
 //	}
 //
-//	void Client::addPresenceListener(PresenceListener *pl) {
-//		QObject::connect(this, SIGNAL(notifyPresence(QString, PresenceStatus, QString, QString)), pl, SLOT(presenceChangedSlot(QString, PresenceStatus, QString, QString)));
-//		QObject::connect(this, SIGNAL(notifyPersonalMessage(QString, QString)), pl, SLOT(personalMessageSlot(QString, QString)));
+	void Client::addPresenceListener(PresenceListener *pl) {
+		QObject::connect(this, SIGNAL(notifyPresence(QString, QString, QString, QString)), pl, SLOT(presenceChangedSlot(QString, QString, QString, QString)));
+		QObject::connect(this, SIGNAL(notifyPersonalMessage(QString, QString)), pl, SLOT(personalMessageSlot(QString, QString)));
 //		QObject::connect(this, SIGNAL(notifyContactDisconnected (QString)), pl, SLOT(contactDisconnectedSlot(QString)));
-//	}
-//
-//	void Client::delPresenceListener (PresenceListener *pl){
-//		QObject::disconnect (this, 0, pl, 0);
-//	}
+	}
+
+	void Client::delPresenceListener (PresenceListener *pl){
+		QObject::disconnect (this, 0, pl, 0);
+	}
 
 
 	void Client::mainSocket(msocket* mainSocket){
@@ -253,24 +243,25 @@ namespace libimmsnp {
 		emit notifyDisconnect();
 	}
 
-//	void Client::newGroupArrived (Group* g) {
-//		qDebug("# GROUP: " + g->getName() + " " + g->getId());
+	void Client::newGroupArrived (Group* g) {
+		qDebug("# GROUP: " + g->getName() + " " + g->getId());
 //		m_roster->addGroup (g);
-//	}
+	}
 //
-//	void Client::newContactArrived (Contact* c) {
+	void Client::newContactArrived (Contact* c) {
+		qDebug ("# CONTACT:" + c->getPassport() );
 //		QPtrList<Group> lsg = m_roster->getGroups();
 //		for (uint i = 0; i < lsg.count() ; ++i)
 //			if (lsg.at(i))
 //				if (lsg.at(i)->getId () == c->getGroupId())
 //					c->setGroupName(lsg.at(i)->getName());
 //
-//		emit notifyNewContact(c);
+		emit notifyNewContact(c);
 //		m_roster->addContact(c);
-//	}
+	}
 //
-//	void Client::statusChanged (QString msnPassport, PresenceStatus status, QString msnPersMsg, QString msnCapabilities ){
-//
+	void Client::statusChanged (QString passport, QString status, QString displayName, QString capabilities ){
+		printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),status.latin1(),capabilities.latin1(),displayName.latin1());
 //		QPtrList<Contact> lsc = m_roster->getContacts();
 //		for (uint i = 0; i < lsc.count() ; ++i)
 //			if (lsc.at(i))
@@ -280,18 +271,20 @@ namespace libimmsnp {
 //					lsc.at(i)->setCapabilities (msnCapabilities);
 //				}
 //
-//		emit notifyPresence (msnPassport, status,  msnPersMsg, msnCapabilities);
-//	}
-//
-//	void Client::personalMessage (QString msnPassport, QString persMsg){
+		emit notifyPresence (passport, status, displayName, capabilities);
+	}
+
+	void Client::personalMessage (QString passport, QString personalMsg){
+		if (personalMsg != "")
+			qDebug ("#Mensaje personal de " + passport + " #-->" + personalMsg );
 //		QPtrList<Contact> lsc = m_roster->getContacts();
 //		for (uint i = 0; i < lsc.count() ; ++i)
 //			if (lsc.at(i))
 //				if (lsc.at(i)->getMsnName() == msnPassport)
 //					lsc.at(i)->setPersMsg (persMsg);
 //
-//		emit notifyPersonalMessage (msnPassport, persMsg);
-//	}
+		emit notifyPersonalMessage (passport, personalMsg);
+	}
 //
 //	void Client::chatRequest(QString hostPort, QString msnPassport, QString ticket, QString sessid){
 //

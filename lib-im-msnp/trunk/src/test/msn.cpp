@@ -18,8 +18,8 @@ namespace libimmsnp {
 Client test;
 MsnTest::MsnTest () {
 	test.addConnectionListener(this);
-//	test.addRosterListener(this);
-//	test.addPresenceListener(this);
+	test.addRosterListener(this);
+	test.addPresenceListener(this);
 //	test.addChatListener(this);
 	m_initialStatus = "HDN";
 	m_connected = 0;
@@ -45,26 +45,18 @@ void MsnTest::onDisconnect() {
 	qDebug("# DISCONNECTED\n\n\n");
 }
 
-//void MsnTest::onNewContact(Contact* c){
-//	qDebug("# CONTACT: " + c->getMsnName()+ " " + c->getFriendlyName() + " " + c->getMsnId() +  " " + c->getGroupName () + " " + c->getGroupId());
-//}
-//
-//void MsnTest::presenceChanged (QString c, PresenceStatus status, QString msnPersMsg, QString msnCapabilities){
-//	if (status == PresenceNLN) qDebug("# STATE CHANGE : " + c + " -> NLN " + msnPersMsg + " " + msnCapabilities); 
-//	if (status == PresenceBSY) qDebug("# STATE CHANGE : " + c + " -> BSY " + msnPersMsg + " " + msnCapabilities);
-//	if (status == PresenceIDL) qDebug("# STATE CHANGE : " + c + " -> IDL " + msnPersMsg + " " + msnCapabilities);    	
-//	if (status == PresenceBRB) qDebug("# STATE CHANGE : " + c + " -> BRB " + msnPersMsg + " " + msnCapabilities);    	
-//	if (status == PresenceAWY) qDebug("# STATE CHANGE : " + c + " -> AWY " + msnPersMsg + " " + msnCapabilities);    	
-//	if (status == PresencePHN) qDebug("# STATE CHANGE : " + c + " -> PHN " + msnPersMsg + " " + msnCapabilities);    	
-//	if (status == PresenceLUN) qDebug("# STATE CHANGE : " + c + " -> LUN " + msnPersMsg + " " + msnCapabilities);    	
-//	if (status == PresenceHDN) qDebug("# STATE CHANGE : " + c + " -> HDN " + msnPersMsg + " " + msnCapabilities);    	
-//	if (status == PresenceDIS) qDebug("# STATE CHANGE : " + c + " -> DIS " + msnPersMsg + " " + msnCapabilities);    	
-//} 
-//
-//void MsnTest::personalMessage(QString c, QString msg) {
-//	qDebug("##INITIAL MSG:" + c + " " + msg);
-//}
-//
+void MsnTest::onNewContact(Contact* c){
+	qDebug ("# CONTACT:" + c->getPassport());
+}
+
+void MsnTest::presenceChanged (QString passport, QString status, QString displayName, QString capabilities){
+	printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),status.latin1(), capabilities.latin1(), displayName.latin1());
+} 
+
+void MsnTest::personalMessage(QString passport, QString personalMsg) {
+	qDebug ("#Mensaje personal de " + passport + " #-->" + personalMsg );
+}
+
 //void MsnTest::contactDisconnected(QString msnPassport){
 //	qDebug ("## " + msnPassport + " HAS DISCONNECTED");
 //}

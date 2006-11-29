@@ -18,6 +18,7 @@
 #include "buffer.h"
 #include "msocket.h"
 #include "connection.h"
+#include "contact.h"
 #include <curl/curl.h>
 #include <qobject.h>
 
@@ -29,7 +30,7 @@ class ParserNS:public QObject {
 Q_OBJECT
 
 public:
-	ParserNS (QString, QString, Client*);
+	ParserNS (QString, QString, QString, Client*);
 	int hasData(){return m_buf.len();}
 	void feed (Buffer);
 	void feed (QString);
@@ -76,6 +77,10 @@ private:
 signals:
 	void mainSocket(msocket*);
 	void connected ();
+	void newGroupArrived (Group*);
+	void newContactArrived (Contact*);
+	void statusChanged (QString, QString, QString, QString); 
+	void personalMessage (QString, QString);
 
 };
 }

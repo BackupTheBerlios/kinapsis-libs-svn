@@ -14,13 +14,12 @@
 #include "parsernotificationserver.h"
 #include "client.h"
 #include "login.h"
-#include "contact.h"
 #include "notificationServer.h"
 #include "md5.h"
 #include <qstringlist.h>
 
 namespace libimmsnp {
-ParserNS::ParserNS(QString msnPassport, QString msnPass, Client* c){
+ParserNS::ParserNS(QString msnPassport, QString msnPass, QString initialStatus, Client* c){
 	m_idtr = 2;
 	m_msnPassport = msnPassport;
 	m_msnPass = msnPass;
@@ -28,7 +27,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, Client* c){
 	m_socket = 0;
 	m_groups = 0;
 	m_contacts = 0;
-	m_initialStatus = "BSY";
+	m_initialStatus = initialStatus;
 	m_client = c;
 	m_hasCommand = false;
 }
@@ -313,8 +312,8 @@ void ParserNS::parseLsg (){
 		m_groups--;
 		QStringList fields = QStringList::split(" ",s);
 		QStringList::iterator point = fields.begin();
-		Group g(fields[0],fields[1].replace("\r\n",""));
-	//	qDebug("||| NEW GROUP: name:" + g.getName() + " ID:" + g.getId());
+		Group* g = new Group(fields[0],fields[1].replace("\r\n",""));
+		emit newGroupArrived(g);
 	}
 	else m_hasCommand = false;
 
@@ -328,18 +327,18 @@ void ParserNS::parseLst (){
 		m_contacts--;
 		QStringList fields = QStringList::split(" ",s);
 		QStringList::iterator point = fields.begin();
-		Contact c;
-		c.setPassport (fields[0].replace("N=",""));
-		c.setNickName (fields[1].replace("F=","")); // TODO: remove replace
-		c.setId (fields[2].replace("C=",""));
-		c.setList (fields[3]);
+		Contact* c = new Contact;
+		c->setPassport (fields[0].replace("N=",""));
+		c->setNickName (fields[1].replace("F=","")); // TODO: remove replace
+		c->setId (fields[2].replace("C=",""));
+		c->setList (fields[3]);
 		m_prevContact = fields[0];
-		//qDebug("||| NEW CONTACT: name:" + c.getPassport() + " NickName:" + c.getNickName().ascii() + " ID:" + c.getId() + " List:" + c.getList());
+		emit newContactArrived (c); 
 	}
 	else m_hasCommand = false;
 	if (m_contacts == 0) {
 		CHG c (m_client->getIdtr());
-		c.addStatusCode ("HDN");
+		c.addStatusCode (m_initialStatus);
 		c.addClientId ("1342558252");
 		qDebug ("#################");
 		qDebug ("#Roster received#");
@@ -466,7 +465,7 @@ void ParserNS::parseNln (){
 		QString passport = fields[1];
 		QString displayName = fields[2];
 		QString capabilities = fields[3];
-		qDebug ("# State Changed. User:" + passport + " State:" + status + " Capabilies:" + capabilities);
+		emit statusChanged (passport, status, displayName, capabilities);
 	}
 	else m_hasCommand = false;
 }
@@ -476,18 +475,25 @@ void ParserNS::parseUbx (){
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
-                // añado a lista de comprobacion 
 		m_buf.advance (l);
-		m_buf.removeFromBegin();
 		QStringList fields = QStringList::split(" ",s);
 		QStringList::iterator point = fields.begin();
-		int payload =fields[1].toInt();
+		QString passport =  fields[0];
+		int payload = fields[1].toInt();
 
-		if ((l = m_buf.getNChar (s,payload)) != -1){
-        	        // añado a lista de comprobacion 
-			m_buf.advance (l);
+		QString pay;
+		int payl;
+		if ((payl = m_buf.getNChar (pay,payload)) == payload){
+			m_buf.advance (payl);
 			m_buf.removeFromBegin();
+			QString personalMsg = pay.mid(pay.find("<PSM>") + 5, pay.find("</PSM>") - pay.find("<PSM>") - 5);
+//			<CurrentMedia>\0Music\01\0{0} - {1}\0Bark at the Moon\0Ozzy Osbourne\0Bark at the Moon\0{BDF1E3EF-E88C-4FC1-9A08-EB6BBABAE75C}\0</CurrentMedia>
+			QString personalSong = pay.mid(pay.find("<CurrentMedia>") + 14, pay.find("</CurrentMedia>") - pay.find("<CurrentMedia>") - 14);
+			if (personalSong != "") 
+				qDebug ("## MUSIC --->" + personalSong + "#");
+			emit personalMessage(passport, personalMsg);
 		}
+		else m_hasCommand = false;
 		
 	}
 	else m_hasCommand = false;
@@ -510,7 +516,10 @@ void ParserNS::parseFln (){
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
-		qDebug (s);
+		QStringList fields = QStringList::split(" ",s);
+		QStringList::iterator point = fields.begin();
+		QString passport = fields[0].replace("\r\n","");
+		emit statusChanged (passport, "DIS","","");
 	}
 	else m_hasCommand = false;
 }
@@ -523,7 +532,6 @@ void ParserNS::parse (){
 
 	QString d1;
 	m_buf.data(d1);
-//	qDebug ("Buff vacioIni:" + d1.replace('\n',"\\n").replace('\r',"\\r") + "#");
 	while (m_buf.len() && m_hasCommand){
 		/* We have more data in the buffer */
 		m_buf.gotoBegin();
@@ -534,7 +542,6 @@ void ParserNS::parse (){
 		m_buf += 3; // The command
 
 		m_buf.setPosition(3);
-		//qDebug ("## cmd:" + cmd);
 		if (cmd == "VER"){
 				qDebug ("Parsing VER");
 				// VER 1 MSNP12 MSNP11 MSNP10 CVR0\r\n
@@ -542,9 +549,6 @@ void ParserNS::parse (){
 				m_buf.advance (1+lIdtr+1);
 				// TODO : quitar de la lista de comprobacion
 				parseVer();
-				//qDebug (cmd + ::QString("%1").arg(idtr));
-				//qDebug (cmd);
-				//break;			
 }
 		else if (cmd == "CVR"){
 				qDebug ("Parsing CVR");
@@ -554,7 +558,6 @@ void ParserNS::parse (){
 				parseCvr();
 				// TODO : quitar de la lista de comprobacion
 				//parseCvr();
-				//break;			
 }
 		else if (cmd == "USR"){
 				qDebug ("Parsing USR");
@@ -562,7 +565,6 @@ void ParserNS::parse (){
 				m_buf.advance (1+lIdtr+1);
 				// TODO : quitar de la lista de comprobacion
 				parseUsr();
-				//break;			
 }
 		else if (cmd == "XFR"){
 				qDebug ("Parsing XFR");
@@ -571,7 +573,6 @@ void ParserNS::parse (){
 				m_buf.advance (1+lIdtr+1);
 				parseXfr();
 				// TODO : quitar de la lista de comprobacion
-				//break;			
 }
 		else if (cmd ==  "ADC"){
 				qDebug ("Parsing ADC");
@@ -579,25 +580,21 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseAdc();
-				//break;			
 }
 		else if (cmd ==  "ADG"){
 				qDebug ("Parsing ADG");
 				// TODO : quitar de la lista de comprobacion
 				//parseAdg();
-				//break;			
 }
 		else if (cmd ==  "BLP"){
 				qDebug ("Parsing BLP");
 				// TODO : quitar de la lista de comprobacion
 				parseBlp();
-				//break;			
 }
 		else if (cmd ==  "BPR"){
 				qDebug ("Parsing BPR");
 				// TODO : quitar de la lista de comprobacion
 				parseBpr();
-				//break;			
 }
 		else if (cmd ==  "CHG"){
 				qDebug ("Parsing CHG");
@@ -605,19 +602,16 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				parseChg();
-				//break;			
 }
 		else if (cmd ==  "CHL"){
 				qDebug ("Parsing CHL");
 				m_buf.advance (1 + 1 + 1); // CHL[ 0 ].....
 				parseChl();
-				//break;			
 }
 		else if (cmd ==  "FLN"){
 				qDebug ("Parsing FLN");
 				// TODO : quitar de la lista de comprobacion
 				parseFln();
-				//break;			
 }
 		else if (cmd ==  "GCF"){
 				qDebug ("Parsing GCF");
@@ -625,13 +619,11 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseGcf();
-				//break;			
 }
 		else if (cmd ==  "GTC"){
 				qDebug ("Parsing GTC");
 				// TODO : quitar de la lista de comprobacion
 				parseGtc();
-				//break;			
 }
 		else if (cmd ==  "ILN"){
 				qDebug ("Parsing ILN");
@@ -639,52 +631,39 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr + 1 );
 				// TODO : quitar de la lista de comprobacion
 				parseNln();
-				//break;			
 }
 		else if (cmd ==  "LSG"){
 				qDebug ("Parsing LSG");
 				m_buf.setPosition(3 + 1);
 				// TODO : quitar de la lista de comprobacion
 				parseLsg();
-				//break;			
 }
 		else if (cmd ==  "LST"){
 				qDebug ("Parsing LST");
 				m_buf.setPosition(3 + 1);
 				// TODO : quitar de la lista de comprobacion
 				parseLst();
-				//break;			
 }
 		else if (cmd ==  "NLN"){
 				qDebug ("Parsing NLN");
 				m_buf.setPosition(3);
 				// TODO : quitar de la lista de comprobacion
 				parseNln();
-				//break;			
 }
 		else if (cmd ==  "OUT"){
 				qDebug ("Parsing OUT");
 				// TODO : quitar de la lista de comprobacion
 				//parseOut();
-				//break;			
 }
 		else if (cmd ==  "PNG"){
 				qDebug ("Parsing PNG");
 				// TODO : quitar de la lista de comprobacion
 				//parsePng();
-				//break;			
 }
 		else if (cmd ==  "PRP"){
 				qDebug ("Parsing PRP");
 				// TODO : quitar de la lista de comprobacion
 				parsePrp();
-				//break;			
-}
-		else if (cmd ==  "QNG"){
-				qDebug ("Parsing QNG");
-				// TODO : quitar de la lista de comprobacion
-				//parseQng();
-				//break;			
 }
 		else if (cmd ==  "QRY"){
 				qDebug ("Parsing QRY");
@@ -695,7 +674,6 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr + 3); // QRY 11\r\n
 				m_buf.removeFromBegin();
 				// TODO : quitar de la lista de comprobacion
-				//break;			
 }
 		else if (cmd ==  "SYN"){
 				//qDebug ("Parsing SYN");
@@ -703,7 +681,6 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				parseSyn();
-				//break;			
 }
 		else if (cmd ==  "REA"){ // Deprecated ??
 				qDebug ("Parsing REA");
@@ -711,13 +688,11 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseRea();
-				//break;			
 }
 		else if (cmd ==  "REG"){
 				qDebug ("Parsing REA");
 				// TODO : quitar de la lista de comprobacion
 				//parseReg();
-				//break;			
 }
 		else if (cmd ==  "REM"){
 				qDebug ("Parsing REM");
@@ -725,34 +700,28 @@ void ParserNS::parse (){
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseRem();
-				//break;			
 }
 		else if (cmd ==  "RMG"){
 				qDebug ("Parsing RMG");
 				// TODO : quitar de la lista de comprobacion
 				//parseRmg();
-				//break;			
 }
 		else if (cmd ==  "RNG") {
 			qDebug ("Parsing RNG");
 			// TODO : quitar de la lista de comprobacion
 			//parseRng();
-			//break;			
 }
 		else if (cmd ==  "MSG") {
 			qDebug ("Parsing MSG");
 			parseMsg();
-			//break;			
 }
 		else if (cmd ==  "SBS") {
 			qDebug ("Parsing SBS");
 			parseSbs();
-			//break;			
 }
 		else if (cmd ==  "UBX") {
 			qDebug ("Parsing UBX");
 			parseUbx();
-			//break;			
 }
 		else {	// pueden venir errores 715 1\r\n
 			// quitar el primero 
@@ -772,17 +741,21 @@ void ParserNS::parse (){
 				exit (-1);
 			}
 
-
 			QString error;
 			m_buf.data(error);
 			qDebug ("UNKNOW command: " + error.replace('\n',"\\n").replace('\r',"\\r"));
+			m_buf.gotoBegin();
+			QString bad;
+			m_buf.getQString (bad,1);	
+			printf ("%s",bad.latin1());
+			m_buf.advance(1);
+			m_buf.removeFromBegin();
 			break;			
 		}
 	QString d;
 	int len = m_buf.data(d);
 	printf ("#### Data:%s\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
 	}	
-//	qDebug ("//////////Getting Out of Parser");
 	m_isParsing = false;
 }
 }

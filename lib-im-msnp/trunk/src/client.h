@@ -16,8 +16,8 @@
 
 #include "libimmsnp.h"
 #include "parsernotificationserver.h"
-//#include "contact.h"
-//#include "commands.h"
+#include "contact.h"
+#include "contact.h"
 //#include "chat.h"
 //#include "roster.h"
 #include "connection.h"
@@ -25,8 +25,8 @@
 #include "msocket.h"
 #include "buffer.h"
 #include "command.h"
-//#include "rosterlistener.h"
-//#include "presencelistener.h"
+#include "rosterlistener.h"
+#include "presencelistener.h"
 //#include "chatlistener.h"
 
 #include <sstream>
@@ -55,11 +55,11 @@ public:
 	void send(Command& c);
 	void makeConnection (QString ip, int port);
 	
-//	void addRosterListener (RosterListener *rl);
-//	void delRosterListener (RosterListener *rl);
+	void addRosterListener (RosterListener *rl);
+	void delRosterListener (RosterListener *rl);
 //	
-//	void addPresenceListener(PresenceListener *pl);
-//	void delPresenceListener(PresenceListener *pl);
+	void addPresenceListener(PresenceListener *pl);
+	void delPresenceListener(PresenceListener *pl);
 //		
 //	void addChatListener(ChatListener *chl);
 //	void delChatListener(ChatListener *chl);
@@ -67,9 +67,9 @@ public:
 signals:
 	void notifyConnect();
 	void notifyDisconnect();
-//	void notifyNewContact(Contact*);
-//	void notifyPresence(QString, PresenceStatus, QString, QString);
-//	void notifyPersonalMessage(QString, QString);
+	void notifyNewContact(Contact*);
+	void notifyPresence(QString, QString, QString, QString);
+	void notifyPersonalMessage(QString, QString);
 //	void notifyContactDisconnected (QString);
 //
 //	void notifyNewChat (int, QString);
@@ -82,11 +82,11 @@ public slots:
 	void mainSocket(msocket* mainSocket);
 	void connected ();
 	void disconnected ();
-	
-//	void newGroupArrived (Group* g);
-//	void newContactArrived (Contact* c);
-//	void statusChanged(QString msnPassport, PresenceStatus status, QString msnPersMsg, QString msnCapabilities);
-//	void personalMessage (QString msnPassport, QString msg);
+	void newGroupArrived (Group* g);
+
+	void newContactArrived (Contact* c);
+	void statusChanged(QString passport, QString status, QString displayName, QString capabilities);
+	void personalMessage (QString passport, QString personalMsg);
 //	
 //	void chatRequest(QString hostPort, QString msnPassport, QString ticket, QString sessid);
 //	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);

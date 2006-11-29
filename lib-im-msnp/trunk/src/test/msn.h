@@ -26,7 +26,7 @@
 
 namespace libimmsnp {
 
-class MsnTest : public QThread, ConnectionListener {
+class MsnTest : public QThread, ConnectionListener, RosterListener, PresenceListener{
 
 public:
 	MsnTest ();
@@ -35,12 +35,12 @@ public:
 	void onConnect();
 	void onDisconnect();
 	void run();
-//	int getConnected() {return m_connected;};
+	int getConnected() {return m_connected;};
 //	int getChatId () {return m_chatid;};
 //
-//	void onNewContact(Contact* c);
-//	void presenceChanged(QString c, PresenceStatus status, QString msnPersMsg, QString msnCapabilities); 
-//	void personalMessage (QString c, QString msg);
+	void onNewContact(Contact* c);
+	void presenceChanged(QString c, QString status, QString msnPersMsg, QString msnCapabilities); 
+	void personalMessage (QString c, QString msg);
 //	void contactDisconnected(QString msnPassport);
 //
 //	void newChat (int chatId, QString msnPassport);
