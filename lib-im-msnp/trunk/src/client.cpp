@@ -35,15 +35,16 @@ namespace libimmsnp {
 	//
 
 
-	Client::Client(){
+	Client::Client(QString msnPassport, QString msnPass, QString initialStatus, QString msnHost, int msnPort){
 		m_parser = 0;
 		m_conn = 0;
 		m_mainSocket = 0;
-		m_msnPassport = "";
-		m_msnPass = "";
+		m_msnPassport = msnPassport;
+		m_msnPass = msnPass;
 		m_idtr = 1;
 		m_threads.setAutoDelete(TRUE);
 		m_roster = 0;
+		m_initialStatus = initialStatus;
 //		m_chats.setAutoDelete(true);
 	}
 
@@ -68,11 +69,9 @@ namespace libimmsnp {
 		m_conn->start();
 	}
 
-	int Client::connect(QString msnPassport, QString msnPass, QString initialStatus, QString msnHost, int msnPort) {
-		m_parser = new ParserNS (msnPassport, msnPass, initialStatus, this);
+	int Client::connect() {
+		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);
 		m_roster = new Roster ();
-		m_msnPassport = msnPassport;
-		m_msnPass = msnPass;
 
 		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
 		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));

@@ -39,8 +39,8 @@ class Client : public  QObject{
 Q_OBJECT
 	
 public:
-	Client();
-	int connect (QString msnPassport, QString msnPass, QString initialStatus, QString msnHost = "messenger.hotmail.com", int msnPort = 1863);
+	Client(QString msnPassport, QString msnPass, QString initialStatus, QString msnHost = "messenger.hotmail.com", int msnPort = 1863);
+	int connect ();
 	void run ();
 //	int sendTxtMsg (int chatCount, QString chatMsg);
 //	void changeStatus (PresenceStatus newStatus);
@@ -106,6 +106,7 @@ private:
 	QString m_msnPass;
 	int m_idtr;
 	Roster* m_roster;
+	QString m_initialStatus;
 	QPtrList<QThread> m_threads;
 };
 }
