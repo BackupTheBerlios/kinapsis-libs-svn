@@ -13,6 +13,8 @@
 
 #include "client.h"
 #include "login.h"
+#include "contact.h"
+#include "roster.h"
 #include "command.h"
 
 namespace libimmsnp {
@@ -41,7 +43,7 @@ namespace libimmsnp {
 		m_msnPass = "";
 		m_idtr = 1;
 		m_threads.setAutoDelete(TRUE);
-//		m_roster = 0;
+		m_roster = 0;
 //		m_chats.setAutoDelete(true);
 	}
 
@@ -68,6 +70,7 @@ namespace libimmsnp {
 
 	int Client::connect(QString msnPassport, QString msnPass, QString initialStatus, QString msnHost, int msnPort) {
 		m_parser = new ParserNS (msnPassport, msnPass, initialStatus, this);
+		m_roster = new Roster ();
 		m_msnPassport = msnPassport;
 		m_msnPass = msnPass;
 
@@ -77,6 +80,7 @@ namespace libimmsnp {
 		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
 		QObject::connect(m_parser, SIGNAL(statusChanged (QString, QString, QString, QString)), this, SLOT(statusChanged(QString, QString, QString, QString)));
 		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
+		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
 
 		m_mainSocket = new msocket("messenger.hotmail.com",1863);
 		m_mainSocket->connect();
@@ -199,6 +203,7 @@ namespace libimmsnp {
 
 	void Client::addRosterListener (RosterListener *rl){
 		QObject::connect (this, SIGNAL(notifyNewContact(Contact*)), rl, SLOT(onNewContactSlot(Contact*)));
+		QObject::connect (this, SIGNAL(notifyHasBlog(QString)), rl, SLOT(hasBlogSlot(QString)));
 	}
 
 	void Client::delRosterListener (RosterListener *rl){
@@ -245,31 +250,22 @@ namespace libimmsnp {
 
 	void Client::newGroupArrived (Group* g) {
 		qDebug("# GROUP: " + g->getName() + " " + g->getId());
-//		m_roster->addGroup (g);
+		m_roster->addGroup (g);
 	}
 //
-	void Client::newContactArrived (Contact* c) {
-//		QPtrList<Group> lsg = m_roster->getGroups();
-//		for (uint i = 0; i < lsg.count() ; ++i)
-//			if (lsg.at(i))
-//				if (lsg.at(i)->getId () == c->getGroupId())
-//					c->setGroupName(lsg.at(i)->getName());
-//
-		emit notifyNewContact(c);
-//		m_roster->addContact(c);
+	void Client::newContactArrived (Contact* contact) {
+		QPtrList<Group> lsg = m_roster->getGroups();
+		for (uint i = 0; i < lsg.count() ; ++i)
+			if (lsg.at(i))
+				if (lsg.at(i)->getId () == contact->getId())
+					contact->setGroupName(lsg.at(i)->getName());
+
+		m_roster->addContact(contact);
+		emit notifyNewContact(contact);
 	}
 //
 	void Client::statusChanged (QString passport, QString status, QString displayName, QString capabilities ){
-//		QPtrList<Contact> lsc = m_roster->getContacts();
-//		for (uint i = 0; i < lsc.count() ; ++i)
-//			if (lsc.at(i))
-//				if (lsc.at(i)->getMsnName() == msnPassport){
-//					lsc.at(i)->setStatus (status);
-//					lsc.at(i)->setPersMsg (msnPersMsg);
-//					lsc.at(i)->setCapabilities (msnCapabilities);
-//				}
-//
-		emit notifyPresence (passport, status, displayName, capabilities);
+		 emit notifyPresence (passport, status, displayName, capabilities);
 	}
 
 	void Client::personalMessage (QString passport, QString personalMsg){
@@ -281,6 +277,10 @@ namespace libimmsnp {
 //
 		if (personalMsg != "")
 			emit notifyPersonalMessage (passport, personalMsg);
+	}
+
+	void Client::hasBlog(QString passport) {
+		emit notifyHasBlog(passport);
 	}
 //
 //	void Client::chatRequest(QString hostPort, QString msnPassport, QString ticket, QString sessid){

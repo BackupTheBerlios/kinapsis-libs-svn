@@ -17,9 +17,7 @@
 #include "libimmsnp.h"
 #include "parsernotificationserver.h"
 #include "contact.h"
-#include "contact.h"
-//#include "chat.h"
-//#include "roster.h"
+#include "roster.h"
 #include "connection.h"
 #include "connectionlistener.h"
 #include "msocket.h"
@@ -28,6 +26,7 @@
 #include "rosterlistener.h"
 #include "presencelistener.h"
 //#include "chatlistener.h"
+//#include "chat.h"
 
 #include <sstream>
 #include <string>
@@ -47,13 +46,13 @@ public:
 //	void changeStatus (PresenceStatus newStatus);
 //	int initNewChat (std::string chatFriend);
 	virtual ~Client();
+	int getIdtr();
+	void send(Command& c);
+	void makeConnection (QString ip, int port);
 
 	// Listener's connections
 	void addConnectionListener (ConnectionListener* cl);
 	void delConnectionListener (ConnectionListener* cl);
-	int getIdtr();
-	void send(Command& c);
-	void makeConnection (QString ip, int port);
 	
 	void addRosterListener (RosterListener *rl);
 	void delRosterListener (RosterListener *rl);
@@ -70,6 +69,7 @@ signals:
 	void notifyNewContact(Contact*);
 	void notifyPresence(QString, QString, QString, QString);
 	void notifyPersonalMessage(QString, QString);
+	void notifyHasBlog(QString);
 //	void notifyContactDisconnected (QString);
 //
 //	void notifyNewChat (int, QString);
@@ -87,6 +87,7 @@ public slots:
 	void newContactArrived (Contact* c);
 	void statusChanged(QString passport, QString status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
+	void hasBlog (QString passport);
 //	
 //	void chatRequest(QString hostPort, QString msnPassport, QString ticket, QString sessid);
 //	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
@@ -104,7 +105,7 @@ private:
 	QString m_msnPassport;
 	QString m_msnPass;
 	int m_idtr;
-//	Roster* m_roster;
+	Roster* m_roster;
 	QPtrList<QThread> m_threads;
 };
 }

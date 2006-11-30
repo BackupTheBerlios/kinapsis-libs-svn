@@ -155,7 +155,7 @@ int msocket::recv (QString& buf){
 	buf += QString(data).mid(0,size);
 	QString tmpData = buf;
 	if (size >0)
-	//printf ("<< Datos:%s\n",QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r").latin1());
+	printf ("<< Datos:%s\n",QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r").latin1());
 
 	return size;
 }

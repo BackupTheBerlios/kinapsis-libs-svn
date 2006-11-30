@@ -16,6 +16,7 @@
 
 #include <qobject.h>
 #include "libimmsnp.h"
+#include "contact.h"
 
 namespace libimmsnp {
 

@@ -81,6 +81,7 @@ signals:
 	void newContactArrived (Contact*);
 	void statusChanged (QString, QString, QString, QString); 
 	void personalMessage (QString, QString);
+	void hasBlog (QString);
 
 };
 }

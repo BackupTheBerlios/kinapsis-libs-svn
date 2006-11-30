@@ -50,11 +50,15 @@ void MsnTest::onNewContact(Contact* c){
 }
 
 void MsnTest::presenceChanged (QString passport, QString status, QString displayName, QString capabilities){
-	printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),status.latin1(), capabilities.latin1(), displayName.latin1());
-} 
+       printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),status.latin1(), capabilities.latin1(), displayName.latin1());
+}
 
 void MsnTest::personalMessage(QString passport, QString personalMsg) {
 	qDebug ("#Mensaje personal de " + passport + " #-->" + personalMsg );
+}
+
+void MsnTest::hasBlog(QString passport){
+	qDebug ("# " + passport + " has a Blog at " );
 }
 
 //void MsnTest::contactDisconnected(QString msnPassport){

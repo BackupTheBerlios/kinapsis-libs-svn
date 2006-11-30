@@ -11,28 +11,40 @@
   This software is distributed without any warranty.
 */
 
-#ifndef _ROSTERLISTENER_H_
-#define _ROSTERLISTENER_H_
+#ifndef _ROSTER_H_
+#define _ROSTER_H_
 
-#include <qobject.h>
+#include "libimmsnp.h"
 #include "contact.h"
+#include <qptrlist.h>
+#include <qobject.h>
 
 namespace libimmsnp {
 
-class RosterListener : public QObject{
+class Roster :public QObject {
 Q_OBJECT
+
 public:
-	RosterListener();
-	virtual ~RosterListener();
+	Roster();
+	virtual ~Roster();
 
-	virtual void onNewContact(Contact *c) = 0;
-	virtual void hasBlog(QString passport) = 0;
+	void addContact(Contact* Contact);
+	bool delContact(Contact* Contact);
 
-public slots:
-	void onNewContactSlot(Contact *c);
-	void hasBlogSlot(QString passport);
+	void addGroup(Group* group);
+	bool delGroup(Group* group);
+	
+	unsigned int contactLen();
+	unsigned int groupLen();
+	
+	QPtrList<Contact>& getContacts();
+	QPtrList<Group>& getGroups();
+
+private:
+	QPtrList<Contact> m_contacts;
+	QPtrList<Group> m_groups;
 };
 
 }
 
-#endif // _ROSTERLISTENER_H_
+#endif // _ROSTER_H_

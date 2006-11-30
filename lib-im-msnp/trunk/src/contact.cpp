@@ -34,7 +34,7 @@ Contact::Contact(){
 	m_id = "";			// ADC 10 AL N=emily@passport.com F=Emily [C=8a99df6b-ae73-40bd-bdf7-05d0134be851]\r\n
                                         // LST N=emily@passport.com F=Emily [C=8a99df6b-ae73-40bd-bdf7-05d0134be851] 3 124153dc-a695-4f6c-93e8-8e07c9775251,...\r\n  = PresenceDIS; 
 	m_groupId = ""; 			//                                                                   
-	m_status= PresenceDIS;	// ILN 9 [BSY] emily@passport.com Emily 268435492
+	m_status= "";			// ILN 9 [BSY] emily@passport.com Emily 268435492
 	m_displayName = "";		// ILN 9 BSY emily@passport.com [Emily%20The%20best] 268435492 !!urlEncoded¡¡                                 
 	m_persMsg = ""; 		// UBX emily@passport.com 53\r\n[<Data><PSM></PSM><CurrentMedia></CurrentMedia></Data>]
 	m_capabilities = "";		// ILN 9 BSY emily@passport.com Emily [268435492]
@@ -63,12 +63,16 @@ void Contact::setGroupId(QString groupId) {
 	m_groupId = groupId;
 }
 
-void Contact::setStatus(PresenceStatus status) {
+void Contact::setStatus(QString status) {
 	m_status = status;
 }
 	
 void Contact::setPersMsg (QString persMsg){
 	m_persMsg = persMsg;
+}
+
+void Contact::setDisplayName (QString displayName){
+	m_displayName = displayName;
 }
 
 void Contact::setCapabilities (QString msnCapabilities){

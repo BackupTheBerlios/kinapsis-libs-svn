@@ -20,7 +20,7 @@ PresenceListener::PresenceListener() { }
 PresenceListener::~PresenceListener() { }
 
 void PresenceListener::presenceChangedSlot(QString c, QString status, QString msnPersMsg, QString msnCapabilities) {
-	this->presenceChanged(c, status, msnPersMsg, msnCapabilities);
+       	this->presenceChanged(c, status, msnPersMsg, msnCapabilities);
 }
 
 void PresenceListener::personalMessageSlot(QString c, QString msg) {

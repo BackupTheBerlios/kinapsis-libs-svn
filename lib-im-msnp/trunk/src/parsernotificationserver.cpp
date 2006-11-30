@@ -506,9 +506,8 @@ void ParserNS::parseBpr (){
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
-//		if s.contains("HSB")
-			
-		printf ("__________BPR:%s:\n",s.replace("\r\n","").latin1());
+		if (s.contains("HSB 1"))
+			emit hasBlog (m_prevContact);
 
 	}
 	else m_hasCommand = false;
@@ -727,6 +726,10 @@ void ParserNS::parse (){
 			qDebug ("Parsing UBX");
 			parseUbx();
 }
+		else if (cmd ==  "OUT") {
+			qDebug ("Disconnecting");
+			exit(-1);
+}
 		else {	// pueden venir errores 715 1\r\n
 			// quitar el primero 
 			// reañadir al buffer ppal
@@ -758,7 +761,7 @@ void ParserNS::parse (){
 		}
 	QString d;
 	int len = m_buf.data(d);
-//	printf ("#### Data:%s\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
+	printf ("#### Data:%s\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
 	}	
 	m_isParsing = false;
 }
