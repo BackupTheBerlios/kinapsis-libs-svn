@@ -9,7 +9,7 @@ libimmsnp_la_SOURCES = client.cpp msocket.cpp md5.cpp connectionlistener.cpp buf
 
 
 libimmsnpincludedir = $(includedir)/libimmsnp
-libimmsnpinclude_HEADERS = command.h connectionlistener.h libimmsnp.h presencelistener.h client.h contact.h rosterlistener.h parsernotificationserver.h connection.h msocket.h buffer.h
+libimmsnpinclude_HEADERS = command.h connectionlistener.h libimmsnp.h presencelistener.h client.h contact.h rosterlistener.h parsernotificationserver.h connection.h msocket.h buffer.h roster.h
 
 
 METASOURCES = AUTO
