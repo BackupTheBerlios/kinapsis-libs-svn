@@ -26,14 +26,14 @@ public:
 	PresenceListener();
 	virtual ~PresenceListener();
 
-	virtual void presenceChanged(QString c, QString status, QString msnPersMsg, QString msnCapabilities) = 0;
+	virtual void presenceChanged(QString c, State status, QString msnPersMsg, QString msnCapabilities) = 0;
 	virtual void personalMessage(QString c, QString msg) = 0;
 //	virtual void contactDisconnected(QString msnPassport) = 0;
 
 //	virtual void awayMessage(Contact c, QString message) = 0;
 
 public slots:
-	void presenceChangedSlot(QString c, QString status, QString msnPersMsg, QString msnCapabilities);
+	void presenceChangedSlot(QString c, State status, QString msnPersMsg, QString msnCapabilities);
 	void personalMessageSlot(QString c, QString msg);
 //	void contactDisconnectedSlot(QString msnPassport);
 

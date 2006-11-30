@@ -78,7 +78,7 @@ namespace libimmsnp {
 		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
 		QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
 		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
-		QObject::connect(m_parser, SIGNAL(statusChanged (QString, QString, QString, QString)), this, SLOT(statusChanged(QString, QString, QString, QString)));
+		QObject::connect(m_parser, SIGNAL(statusChanged (QString, State, QString, QString)), this, SLOT(statusChanged(QString, State, QString, QString)));
 		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
 
@@ -223,7 +223,7 @@ namespace libimmsnp {
 //	}
 //
 	void Client::addPresenceListener(PresenceListener *pl) {
-		QObject::connect(this, SIGNAL(notifyPresence(QString, QString, QString, QString)), pl, SLOT(presenceChangedSlot(QString, QString, QString, QString)));
+		QObject::connect(this, SIGNAL(notifyPresence(QString, State, QString, QString)), pl, SLOT(presenceChangedSlot(QString, State, QString, QString)));
 		QObject::connect(this, SIGNAL(notifyPersonalMessage(QString, QString)), pl, SLOT(personalMessageSlot(QString, QString)));
 //		QObject::connect(this, SIGNAL(notifyContactDisconnected (QString)), pl, SLOT(contactDisconnectedSlot(QString)));
 	}
@@ -264,7 +264,7 @@ namespace libimmsnp {
 		emit notifyNewContact(contact);
 	}
 //
-	void Client::statusChanged (QString passport, QString status, QString displayName, QString capabilities ){
+	void Client::statusChanged (QString passport, State status, QString displayName, QString capabilities ){
 		 emit notifyPresence (passport, status, displayName, capabilities);
 	}
 

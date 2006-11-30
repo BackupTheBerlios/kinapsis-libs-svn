@@ -465,7 +465,13 @@ void ParserNS::parseNln (){
 		QString passport = fields[1];
 		QString displayName = fields[2];
 		QString capabilities = fields[3].replace ("\r\n","");
-		emit statusChanged (passport, status, displayName, capabilities);
+		if (status == "NLN") emit statusChanged (passport, online, displayName, capabilities);
+		else if (status == "BSY") emit statusChanged (passport, dnd, displayName, capabilities);
+		else if (status == "IDL") emit statusChanged (passport, na, displayName, capabilities);
+		else if (status == "BRB") emit statusChanged (passport, away, displayName, capabilities);
+		else if (status == "AWY") emit statusChanged (passport, away, displayName, capabilities);
+		else if (status == "PHN") emit statusChanged (passport, away, displayName, capabilities);
+		else if (status == "LUN") emit statusChanged (passport, away, displayName, capabilities);
 	}
 	else m_hasCommand = false;
 }
@@ -522,7 +528,7 @@ void ParserNS::parseFln (){
 		QStringList fields = QStringList::split(" ",s);
 		QStringList::iterator point = fields.begin();
 		QString passport = fields[0].replace("\r\n","");
-		emit statusChanged (passport, "DIS","","");
+		emit statusChanged (passport,offline ,"","");
 	}
 	else m_hasCommand = false;
 }

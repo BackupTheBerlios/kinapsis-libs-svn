@@ -39,7 +39,7 @@ public:
 //	int getChatId () {return m_chatid;};
 //
 	void onNewContact(Contact* c);
-	void presenceChanged(QString c, QString status, QString msnPersMsg, QString msnCapabilities);
+	void presenceChanged(QString c, State status, QString msnPersMsg, QString msnCapabilities);
 	void personalMessage (QString c, QString msg);
 	void hasBlog(QString c);
 //	void contactDisconnected(QString msnPassport);

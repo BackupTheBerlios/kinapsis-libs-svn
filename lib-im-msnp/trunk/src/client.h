@@ -67,7 +67,7 @@ signals:
 	void notifyConnect();
 	void notifyDisconnect();
 	void notifyNewContact(Contact*);
-	void notifyPresence(QString, QString, QString, QString);
+	void notifyPresence(QString, State, QString, QString);
 	void notifyPersonalMessage(QString, QString);
 	void notifyHasBlog(QString);
 //	void notifyContactDisconnected (QString);
@@ -85,7 +85,7 @@ public slots:
 	void newGroupArrived (Group* g);
 
 	void newContactArrived (Contact* c);
-	void statusChanged(QString passport, QString status, QString displayName, QString capabilities);
+	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
 	void hasBlog (QString passport);
 //	

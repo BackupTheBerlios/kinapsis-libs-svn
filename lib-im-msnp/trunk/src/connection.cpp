@@ -25,22 +25,22 @@ Connection::Connection (msocket* s, ParserNS* p){
 void Connection::run (){
 	QString data;
 	int size;
+	qDebug("________________Start Run");
 	while ((size = (m_socket->recv(data))) != -1){
-		//qDebug ("//////////Receiving");
-		////qDebug ("%1").arg(m_parser->hasData());
+		qDebug ("//////////Receiving");
 		if (size == 0) {
 			//qDebug ("Connection closed unexpectly. Host:" + QString (m_socket->getHost()));
 			this->exit();
 		}
 		//while (!m_parser->hasData()){}
-		//qDebug ("//////////Filling the Parser");
+		qDebug ("//////////Filling the Parser");
 		m_parser->feed (data);
 		while (m_parser->isParsing()){}
 		m_parser->parse();
-		//qDebug ("//////////Out");
+		qDebug ("//////////Out");
 		data = "";
 	}
-	//qDebug("________________End of Run");
+	qDebug("________________End of Run");
 	this->exit();
 }
 

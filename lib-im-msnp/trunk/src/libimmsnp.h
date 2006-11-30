@@ -32,19 +32,17 @@ namespace libimmsnp {
 	  ConnErrorTwr,
 	};
 	
-	
-	enum PresenceStatus {
-	  PresenceNLN, // Online 
-	  PresenceBSY, // Busy
-	  PresenceIDL, // Without activity
-	  PresenceBRB, // Back soon
-	  PresenceAWY, // Away
-	  PresencePHN, // Phone
-	  PresenceLUN, // Eating
-	  PresenceHDN, // Hidden
-	  PresenceDIS, // DISCONNECTED (default)
-	};
 
+	enum State {
+		online,
+		away,
+		na,
+		dnd,
+		connecting,
+		noauth,
+		offline
+	};
+	
 	enum ParserOperation {
 		PARSER_OK,
 		PARSER_BYE,

@@ -27,8 +27,8 @@ MsnTest::MsnTest () {
 }
 
 void MsnTest::run (){
-        QString id ("user@hotmail.com");
-        QString pass ("pass");
+        QString id ("vaticano666@hotmail.com");
+        QString pass ("iguanass");
 	QString host ("messenger.hotmail.com");
 	test.connect(id,pass,m_initialStatus);
 }
@@ -49,8 +49,23 @@ void MsnTest::onNewContact(Contact* c){
 	qDebug ("# CONTACT:" + c->getPassport());
 }
 
-void MsnTest::presenceChanged (QString passport, QString status, QString displayName, QString capabilities){
-       printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),status.latin1(), capabilities.latin1(), displayName.latin1());
+void MsnTest::presenceChanged (QString passport, State status, QString displayName, QString capabilities){
+	switch (status){
+		case online:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"online", capabilities.latin1(), displayName.latin1());
+			break;
+		case away:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"away", capabilities.latin1(), displayName.latin1()); 
+			break;
+		case dnd:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Do Not Disturb", capabilities.latin1(), displayName.latin1()); 
+			break;
+		case na:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Not Available", capabilities.latin1(), displayName.latin1()); 
+			break;
+		default:
+			printf("# State Not Changed");
+	}
 }
 
 void MsnTest::personalMessage(QString passport, QString personalMsg) {

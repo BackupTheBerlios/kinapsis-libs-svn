@@ -79,7 +79,7 @@ signals:
 	void connected ();
 	void newGroupArrived (Group*);
 	void newContactArrived (Contact*);
-	void statusChanged (QString, QString, QString, QString); 
+	void statusChanged (QString, State, QString, QString); 
 	void personalMessage (QString, QString);
 	void hasBlog (QString);
 
