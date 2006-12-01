@@ -757,12 +757,6 @@ void ParserNS::parse (){
 			QString error;
 			m_buf.data(error);
 			qDebug ("UNKNOW command: " + error.replace('\n',"\\n").replace('\r',"\\r"));
-			m_buf.gotoBegin();
-			QString bad;
-			m_buf.getQString (bad,1);	
-			printf ("%s",bad.latin1());
-			m_buf.advance(1);
-			m_buf.removeFromBegin();
 			break;			
 		}
 	QString d;

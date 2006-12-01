@@ -59,13 +59,7 @@ namespace libimmsnp {
 	void Client::makeConnection (QString ip, int port){
 		m_mainSocket = new msocket(ip, port);
 		m_mainSocket->connect();
-//		if (!m_conn->finished()) {
-//			m_conn->terminate();
-//			m_conn->wait();
-//			delete m_conn;
-//		}
 		m_conn = new Connection (m_mainSocket, m_parser);
-		m_threads.append (m_conn);
 		m_conn->start();
 	}
 
@@ -91,8 +85,7 @@ namespace libimmsnp {
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		send(v);
-		m_threads.append(m_conn);
-		m_conn->wait();
+//		m_conn->wait();
 
 //		QObject::connect(m_conn, SIGNAL(disconnected()), this, SLOT(disconnected()));
 //		QObject::connect(m_parser, SIGNAL(contactDisconnected (QString)),this, SLOT(contactDisconnected (QString)));

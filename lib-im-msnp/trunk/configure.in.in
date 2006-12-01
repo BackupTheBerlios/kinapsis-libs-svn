@@ -1,35 +1,6 @@
 #MIN_CONFIG(3.2.0)
 
-AM_INIT_AUTOMAKE(kinapsis, 0.1)
+AM_INIT_AUTOMAKE(libimmsnp, 0.1)
 AC_C_BIGENDIAN
 AC_CHECK_KDEMAXPATHLEN
 
-dnl Checks for libraries.
-AC_LANG([C++])
-
-dnl Gloox
-AC_CHECK_HEADER([gloox/gloox.h],
-				[],
-				[AC_MSG_ERROR([*** gloox not found])])
-
-dnl liboscar
-AC_ARG_WITH(liboscar, AC_HELP_STRING([--with-liboscar=[DIR]],
-			[Support icq/aim (needs liboscar)]),
-			liboscar=$withval, liboscar=yes)
-if test "$liboscar" != "no"; then
-	if test "$liboscar" != "yes"; then
-		LDFLAGS="${LDFLAGS} -L$liboscar/lib"
-		CPPFLAGS="${CPPFLAGS} -I$liboscar/include"
-	fi
-	AC_CHECK_HEADER([liboscar/liboscar.h],
-					[liboscar=yes LIBS="${LIBS} -loscar"],
-					[liboscar=no])
-fi
-
-if test "$liboscar" != "no" ; then
-	AC_DEFINE(HAVE_LIBOSCAR, 1, [Define to 1 if you want icq/aim support.])
-else
-	AC_MSG_WARN([liboscar not found])
-fi
-AC_MSG_CHECKING([if liboscar should be used])
-AC_MSG_RESULT($liboscar)

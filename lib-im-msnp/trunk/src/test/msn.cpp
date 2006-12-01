@@ -15,22 +15,21 @@
 
 namespace libimmsnp {
 
-Client test;
+QString id ("user@hotmail.com");
+QString pass ("pass");
+Client test(id,pass,QString("HDN"));
+
 MsnTest::MsnTest () {
 	test.addConnectionListener(this);
 	test.addRosterListener(this);
 	test.addPresenceListener(this);
 //	test.addChatListener(this);
-	m_initialStatus = "HDN";
 	m_connected = 0;
-	m_chatid = 0;
+//	m_chatid = 0;
 }
 
 void MsnTest::run (){
-        QString id ("vaticano666@hotmail.com");
-        QString pass ("iguanass");
-	QString host ("messenger.hotmail.com");
-	test.connect(id,pass,m_initialStatus);
+	test.connect();
 }
 
 MsnTest::~MsnTest() {
@@ -62,6 +61,9 @@ void MsnTest::presenceChanged (QString passport, State status, QString displayNa
 			break;
 		case na:
 			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Not Available", capabilities.latin1(), displayName.latin1()); 
+			break;
+		case offline:
+			printf("# State Changed. User Disconnected:%s\n",passport.latin1()); 
 			break;
 		default:
 			printf("# State Not Changed");
@@ -123,5 +125,6 @@ int main(void){
 	using namespace libimmsnp;
 	MsnTest cliente;
 	cliente.start();
-	cliente.wait();
+	while (true) {}
+//	cliente.wait();
 }
