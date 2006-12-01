@@ -33,7 +33,7 @@ public:
 	void setNickName(QString);
 	void setId(QString);
 	void setGroupId (QString);
-	void setStatus (QString);
+	void setStatus (State);
 	void setDisplayName (QString);
 	void setPersMsg (QString);
 	void setCapabilities (QString);
@@ -44,7 +44,7 @@ public:
 	QString getNickName(){return m_nickName;};
 	QString getId(){return m_id;};
 	QString getGroupId(){return m_groupId;};
-	QString getStatus() {return m_status;};
+	State getStatus() {return m_status;};
 	QString getCapabilities() {return m_capabilities;};
 	QString getList(){return m_list;};
 	QString getDisplayName(){return m_displayName;};
@@ -56,7 +56,7 @@ private:
 	QString	m_nickName; 			
 	QString	m_id; 		
 	QString	m_groupId;		
-	QString	m_status; 
+	State	m_status; 
 	QString	m_displayName;	
 	QString	m_persMsg;		
 	QString	m_capabilities ;	

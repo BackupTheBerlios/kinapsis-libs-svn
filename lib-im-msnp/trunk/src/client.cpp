@@ -85,7 +85,7 @@ namespace libimmsnp {
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		send(v);
-//		m_conn->wait();
+		m_conn->wait();
 
 //		QObject::connect(m_conn, SIGNAL(disconnected()), this, SLOT(disconnected()));
 //		QObject::connect(m_parser, SIGNAL(contactDisconnected (QString)),this, SLOT(contactDisconnected (QString)));

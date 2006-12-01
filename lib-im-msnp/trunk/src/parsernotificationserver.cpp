@@ -190,7 +190,7 @@ void ParserNS::parseUsr () {
 			m_buf.removeFromBegin();
 			m_ticket = s.mid (s.find ("lc"),s.length()-s.find ("lc")-2);
 			// TODO: if ticket = "" login failed
-			//qDebug (m_ticket);
+			qDebug ("####TICKET " + m_ticket + "#");
 
 			// start Twenner
 			std::string tmpUrl = httpsReq ("https://nexus.passport.com/rdr/pprdr.asp", "");
