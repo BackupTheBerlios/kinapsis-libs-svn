@@ -29,14 +29,12 @@ void Connection::run (){
 	while ((size = (m_socket->recv(data))) != -1){
 		printf ("//////////Receiving%i\n",size);
 		if (size == 0) {
-			//qDebug ("Connection closed unexpectly. Host:" + QString (m_socket->getHost()));
+			qDebug ("Connection closed unexpectly. Host:" + QString (m_socket->getHost()));
 			this->exit();
 		}
-		//while (!m_parser->hasData()){}
 		qDebug ("//////////Filling the Parser");
 		m_parser->feed (data);
-		while (m_parser->isParsing()){}
-		m_parser->parse();
+		if (!m_parser->isParsing()){m_parser->parse();}
 		qDebug ("//////////Out");
 		data = "";
 	}
