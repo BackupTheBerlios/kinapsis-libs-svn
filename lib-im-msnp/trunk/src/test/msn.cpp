@@ -15,9 +15,9 @@
 
 namespace libimmsnp {
 
-QString id ("user@hotmail.com");
-QString pass ("pass");
-Client test(id,pass,QString("HDN"));
+QString id ("probando_msnpy@hotmail.com");
+QString pass ("gargolas");
+Client test(id,pass,QString("BSY"));
 
 MsnTest::MsnTest () {
 	test.addConnectionListener(this);
@@ -75,7 +75,8 @@ void MsnTest::personalMessage(QString passport, QString personalMsg) {
 }
 
 void MsnTest::hasBlog(QString passport){
-	qDebug ("# " + passport + " has a Blog at " );
+	QString page (passport.mid(0,passport.length() - passport.find("@")));
+	qDebug ("# " + passport + " has a Blog at " + page + ".spaces.msn.com");
 }
 
 //void MsnTest::contactDisconnected(QString msnPassport){

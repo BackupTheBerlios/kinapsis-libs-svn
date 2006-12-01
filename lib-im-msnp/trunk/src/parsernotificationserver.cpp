@@ -17,7 +17,6 @@
 #include "notificationServer.h"
 #include "md5.h"
 #include <qstringlist.h>
-#include <url.h>
 
 namespace libimmsnp {
 ParserNS::ParserNS(QString msnPassport, QString msnPass, QString initialStatus, Client* c){
