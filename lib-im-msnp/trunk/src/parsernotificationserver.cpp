@@ -121,6 +121,7 @@ void ParserNS::parseXfr () {
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		m_client->send(v);
+		m_client->startConnection();
 
 	}
 	else m_hasCommand = false;

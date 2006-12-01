@@ -59,9 +59,15 @@ namespace libimmsnp {
 	void Client::makeConnection (QString ip, int port){
 		m_mainSocket = new msocket(ip, port);
 		m_mainSocket->connect();
+	}
+
+	void Client::startConnection(){
+		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);
 		m_conn = new Connection (m_mainSocket, m_parser);
 		m_conn->start();
+		m_conn->wait();
 	}
+
 
 	int Client::connect() {
 		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);

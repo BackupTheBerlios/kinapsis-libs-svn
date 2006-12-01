@@ -49,6 +49,7 @@ public:
 	int getIdtr();
 	void send(Command& c);
 	void makeConnection (QString ip, int port);
+	void startConnection();
 
 	// Listener's connections
 	void addConnectionListener (ConnectionListener* cl);
