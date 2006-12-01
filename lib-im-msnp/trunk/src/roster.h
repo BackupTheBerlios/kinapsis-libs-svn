@@ -32,7 +32,7 @@ public:
 	bool delContact(Contact* Contact);
 
 	void addGroup(Group* group);
-	bool delGroup(Group* group);
+//	bool delGroup(Group* group);
 	
 	unsigned int contactLen();
 	unsigned int groupLen();

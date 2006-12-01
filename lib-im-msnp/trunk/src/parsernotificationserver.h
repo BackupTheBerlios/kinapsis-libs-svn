@@ -30,7 +30,7 @@ class ParserNS:public QObject {
 Q_OBJECT
 
 public:
-	ParserNS (QString, QString, QString, Client*);
+	ParserNS (QString, QString, State, Client*);
 	int hasData(){return m_buf.len();}
 	void feed (Buffer);
 	void feed (QString);
@@ -67,7 +67,7 @@ private:
 	int m_connectionSteps;
 	int m_groups;
 	int m_contacts;
-	QString m_initialStatus;
+	State m_initialStatus;
 	Client* m_client;
 	msocket* m_socket;
 	bool m_isParsing;

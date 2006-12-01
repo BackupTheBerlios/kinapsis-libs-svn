@@ -14,6 +14,7 @@
 #ifndef _NOTIFICATIONSERVER_H_
 #define _NOTIFICATIONSERVER_H_
 #include "command.h" 
+#include "libimmsnp.h"
 
 namespace libimmsnp {
 class CHG : public Command {
@@ -22,7 +23,7 @@ public:
 	CHG (int idtr);
 	virtual ~CHG();
 	QString makeCmd();
-	void addStatusCode (QString statusCode);
+	void addStatusCode (State statusCode);
 	void addClientId (QString clientId);
 	void addMsnObj (QString msnObj);
 private:

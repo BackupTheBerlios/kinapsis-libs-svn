@@ -31,14 +31,14 @@ Buffer& Buffer::operator << (QChar q){
 
 Buffer& Buffer::operator << (QString q){
 	
-	for (int i=0; i < q.length(); i ++)
+	for (uint i=0; i < q.length(); i ++)
 		m_data << q.at(i);
 	return *this;
 }
 
 Buffer& Buffer::operator << (Buffer b){
 	
-	for (int i=0; i < b.len(); i ++)
+	for (uint i=0; i < b.len(); i ++)
 		m_data << b.getCharInPosition(i);
 	return *this;
 }
@@ -74,10 +74,10 @@ int Buffer::getTilChar (QString &s, QChar c){
 	return l;
 }
 
-int Buffer::getNChar (QString &s, int len){
+int Buffer::getNChar (QString &s, uint len){
 	// c included
 
-	int l = 0;
+	uint l = 0;
 	BIterator it = m_it;
 
 	while (len-- !=0){
@@ -91,20 +91,20 @@ int Buffer::getNChar (QString &s, int len){
 }
 
 
-int Buffer::getQString (QString &c, int len) {
+int Buffer::getQString (QString &c, uint len) {
 	if (len > this->len()){
-		for (int i=0; i < this->len(); i ++)
+		for (uint i=0; i < this->len(); i ++)
 			c+= *(m_data.at(i));
 	}
 	else {
-		for (int i=0; i < len; i ++)
+		for (uint i=0; i < len; i ++)
 			c+= *(m_data.at(i));
 	}
 	return c.length();
 }
 int Buffer::getInt (int& idtr) {
 	// devuelve la longitud del buffer que ha leido hasta sacar el entero.
-	int l = 0;
+	uint l = 0;
 	BIterator it = m_it;
 	QChar c = *(it);
 	QString s;
@@ -128,7 +128,7 @@ int Buffer::getInt (int& idtr) {
 }
 
 unsigned int Buffer::data(QString& d) {
-	for (int i=0; i < this->len(); i ++)
+	for (uint i=0; i < this->len(); i ++)
 		d+= *(m_data.at(i));
 	return d.length();
 }
@@ -157,7 +157,7 @@ void Buffer::advance(int pos){
 }
 
 void Buffer::prepend(QString s){
-	for (int i=0; i < s.length(); i ++)
+	for (uint i=0; i < s.length(); i ++)
 		m_data.push_front(s.at(i));
 }
 

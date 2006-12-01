@@ -34,9 +34,9 @@ void Roster::addGroup (Group* group){
 	m_groups.append(group);
 }
 
-bool Roster::delGroup (Group* group){
-	// TODO : Choose to del all contacts in this group or move to default group
-}
+//bool Roster::delGroup (Group* group){
+//	// TODO : Choose to del all contacts in this group or move to default group
+//}
 
 unsigned int Roster::contactLen() {
 	return m_contacts.count();

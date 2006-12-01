@@ -17,6 +17,7 @@
 #include "../client.h"
 #include "../buffer.h"
 #include "../msocket.h"
+#include "../libimmsnp.h"
 
 #include <string>
 #include <iostream>

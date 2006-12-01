@@ -29,7 +29,7 @@ void Connection::run (){
 	while ((size = (m_socket->recv(data))) != -1){
 		printf ("//////////Receiving%i\n",size);
 		if (size == 0) {
-			qDebug ("Connection closed unexpectly. Host:" + QString (m_socket->getHost()));
+			printf ("Connection closed unexpectly. Host:%s\n",QString (m_socket->getHost()).latin1());
 			this->exit();
 		}
 		qDebug ("//////////Filling the Parser");

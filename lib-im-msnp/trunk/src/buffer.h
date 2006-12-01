@@ -32,8 +32,8 @@ public:
 	Buffer& operator<<(Buffer);
 	Buffer& operator>>(QChar &);
 	int getTilChar (QString&, QChar);
-	int getNChar (QString &s, int len);
-	int getQString (QString&, int);
+	int getNChar (QString &s, uint len);
+	int getQString (QString&, uint);
 	unsigned int data(QString&);
 
 	int getInt (int&);

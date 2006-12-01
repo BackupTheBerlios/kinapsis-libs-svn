@@ -19,7 +19,7 @@
 #include <qstringlist.h>
 
 namespace libimmsnp {
-ParserNS::ParserNS(QString msnPassport, QString msnPass, QString initialStatus, Client* c){
+ParserNS::ParserNS(QString msnPassport, QString msnPass, State initialStatus, Client* c){
 	m_idtr = 2;
 	m_msnPassport = msnPassport;
 	m_msnPass = msnPass;
@@ -156,7 +156,7 @@ std::string ParserNS::httpsReq (std::string url, std::string headers) {
 
 	std::string cookie; 
 
-	qDebug ("START htpps request to " + QString(url));
+	printf ("START htpps request to %s\n",QString(url).latin1());
 	curl = curl_easy_init();
 	if(curl) {
 		slist = curl_slist_append(slist, headers.c_str());
@@ -173,10 +173,10 @@ std::string ParserNS::httpsReq (std::string url, std::string headers) {
 		ret = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 		curl_slist_free_all(slist);
-		qDebug ("END https request to " + QString(url));
+		printf ("END htpps request to %s\n",QString(url).latin1());
 		return cookie;
 	}
-	qDebug ("ERROR making request to " + QString(url));
+	printf ("ERROR making request to %s\n",QString(url).latin1());
 	return "";
 }
 
@@ -192,7 +192,7 @@ void ParserNS::parseUsr () {
 			m_buf.removeFromBegin();
 			m_ticket = s.mid (s.find ("lc"),s.length()-s.find ("lc")-2);
 			// TODO: if ticket = "" login failed
-			qDebug ("####TICKET " + m_ticket + "#");
+			printf ("####TICKET %s#\n",m_ticket.latin1());
 
 			// start Twenner
 			std::string tmpUrl = httpsReq ("https://nexus.passport.com/rdr/pprdr.asp", "");
@@ -215,12 +215,12 @@ void ParserNS::parseUsr () {
 			// añado a lista de comprobacion 
 		}
 		else if (s.contains ("OK ")){
-			qDebug ("!! USR OK");
+			printf ("!! USR OK");
 	                m_buf.advance (l);
 	                m_buf.removeFromBegin();
 		}
 		else {
-			qDebug ("!! OTHER USR OK:" + s + "#");
+			printf ("!! OTHER USR OK:%s#\n",s.latin1());
 	                m_buf.advance (l);
 	                m_buf.removeFromBegin();
 		}
@@ -504,7 +504,7 @@ void ParserNS::parseUbx (){
 //			<CurrentMedia>\0Music\01\0{0} - {1}\0Bark at the Moon\0Ozzy Osbourne\0Bark at the Moon\0{BDF1E3EF-E88C-4FC1-9A08-EB6BBABAE75C}\0</CurrentMedia>
 			QString personalSong = pay.mid(pay.find("<CurrentMedia>") + 14, pay.find("</CurrentMedia>") - pay.find("<CurrentMedia>") - 14);
 			if (personalSong != "") 
-				qDebug ("## MUSIC --->" + personalSong + "#");
+				printf ("## MUSIC --->%s#\n",personalSong.latin1());
 			emit personalMessage(passport, personalMsg);
 		}
 		else m_hasCommand = false;
@@ -707,14 +707,13 @@ void ParserNS::parse (){
 				qDebug ("Parsing QRY");
 				QString s;
 				m_buf.data(s);
-				qDebug(s);
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr + 3); // QRY 11\r\n
 				m_buf.removeFromBegin();
 				// TODO : quitar de la lista de comprobacion
 }
 		else if (cmd ==  "SYN"){
-				//qDebug ("Parsing SYN");
+				qDebug ("Parsing SYN");
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
@@ -785,11 +784,11 @@ void ParserNS::parse (){
 
 			QString error;
 			m_buf.data(error);
-			qDebug ("UNKNOW command: " + error.replace('\n',"\\n").replace('\r',"\\r"));
+			printf ("UNKNOW command:%s\n",error.replace('\n',"\\n").replace('\r',"\\r").latin1());
 			break;			
 		}
 	QString d;
-	int len = m_buf.data(d);
+	m_buf.data(d);
 	printf ("#### Data:%s\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
 	}	
 	m_isParsing = false;

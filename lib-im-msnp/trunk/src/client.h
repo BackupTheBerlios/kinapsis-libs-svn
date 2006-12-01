@@ -25,8 +25,6 @@
 #include "command.h"
 #include "rosterlistener.h"
 #include "presencelistener.h"
-//#include "chatlistener.h"
-//#include "chat.h"
 
 #include <sstream>
 #include <string>
@@ -39,12 +37,10 @@ class Client : public  QObject{
 Q_OBJECT
 	
 public:
-	Client(QString msnPassport, QString msnPass, QString initialStatus, QString msnHost = "messenger.hotmail.com", int msnPort = 1863);
-	int connect ();
+	Client(QString msnPassport, QString msnPass, State initialStatus);
+	void connect ();
 	void run ();
-//	int sendTxtMsg (int chatCount, QString chatMsg);
-//	void changeStatus (PresenceStatus newStatus);
-//	int initNewChat (std::string chatFriend);
+	void changeStatus (State newStatus);
 	virtual ~Client();
 	int getIdtr();
 	void send(Command& c);
@@ -57,12 +53,9 @@ public:
 	
 	void addRosterListener (RosterListener *rl);
 	void delRosterListener (RosterListener *rl);
-//	
+
 	void addPresenceListener(PresenceListener *pl);
 	void delPresenceListener(PresenceListener *pl);
-//		
-//	void addChatListener(ChatListener *chl);
-//	void delChatListener(ChatListener *chl);
 	
 signals:
 	void notifyConnect();
@@ -71,13 +64,6 @@ signals:
 	void notifyPresence(QString, State, QString, QString);
 	void notifyPersonalMessage(QString, QString);
 	void notifyHasBlog(QString);
-//	void notifyContactDisconnected (QString);
-//
-//	void notifyNewChat (int, QString);
-//	void notifyChatLeavedTheRoom (int, QString);
-//	void notifyChatIsTyping(int, QString);
-//	void notifyChatInfo (int, QString, QString);
-//	void notifyChatArrivedMessage (int, QString, QString);
 
 public slots:
 	void mainSocket(msocket* mainSocket);
@@ -89,26 +75,16 @@ public slots:
 	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
 	void hasBlog (QString passport);
-//	
-//	void chatRequest(QString hostPort, QString msnPassport, QString ticket, QString sessid);
-//	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
-//	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
-//	void chatIsTyping(int chatId, QString chatMsnPassport);
-//	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
-//	void contactDisconnected (QString msnPassport);
-//	void chatCreated (QString hostPort, QString ticket);
 	
 private:
 	ParserNS* m_parser;
 	Connection* m_conn;
 	msocket* m_mainSocket;
-//	int m_chatCount;
 	QString m_msnPassport;
 	QString m_msnPass;
 	int m_idtr;
 	Roster* m_roster;
-	QString m_initialStatus;
-	QPtrList<QThread> m_threads;
+	State m_initialStatus;
 };
 }
 #endif // _CLIENT_H_

@@ -26,7 +26,25 @@ QString CHG::makeCmd(){
 	res += endCmd();
 	return res;
 }
-void CHG::addStatusCode (QString statusCode) {m_statusCode = statusCode;}
+void CHG::addStatusCode (State statusCode) {
+	switch(statusCode){
+		case away:
+			m_statusCode = "AWY";
+			break;
+		case na:
+			m_statusCode = "IDL";
+			break;
+		case dnd:
+			m_statusCode = "BSY";
+			break;
+		case online:
+			m_statusCode = "NLN";
+			break;
+		default:
+			m_statusCode = "HDN";
+			break;
+	}
+}
 void CHG::addClientId (QString clientId) {m_clientId = clientId;}
 void CHG::addMsnObj (QString msnObj) {m_msnObj = msnObj;}
 
