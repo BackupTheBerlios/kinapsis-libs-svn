@@ -535,6 +535,27 @@ void ParserNS::parseFln (){
 	else m_hasCommand = false;
 }
 
+void ParserNS::parseRng (){
+	// RNG 1815263688 207.46.27.86:1863 CKI 7133130.10838165 ranita@hotmail.com me%20And%20All
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		s = s.replace("\r\n","");
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		QStringList fields = QStringList::split(" ",s);
+		QStringList::iterator point = fields.begin();
+		QString ticket = fields[0];
+		QString ipPort = fields[1];
+		QString type = fields[2];
+		QString key = fields[3];
+		QString passport = fields[4];
+		QString personalMsg = fields[4];
+		printf ("### Calling:" + passport + " From:" + ipPort );
+	}
+	else m_hasCommand = false;
+}
+
 void ParserNS::parse (){
 	m_isParsing = true;
 	QString cmd;
@@ -720,7 +741,7 @@ void ParserNS::parse (){
 		else if (cmd ==  "RNG") {
 			qDebug ("Parsing RNG");
 			// TODO : quitar de la lista de comprobacion
-			//parseRng();
+			parseRng();
 }
 		else if (cmd ==  "MSG") {
 			qDebug ("Parsing MSG");

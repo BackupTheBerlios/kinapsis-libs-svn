@@ -55,6 +55,7 @@ public:
 	void parseUbx();
 	void parseBpr();
 	void parseFln();
+	void parseRng();
 	void parse ();
 
 private:

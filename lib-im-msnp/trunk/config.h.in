@@ -18,9 +18,6 @@
 /* Define if you have libjpeg */
 #undef HAVE_LIBJPEG
 
-/* Define to 1 if you want icq/aim support. */
-#undef HAVE_LIBOSCAR
-
 /* Define if you have libpng */
 #undef HAVE_LIBPNG
 
