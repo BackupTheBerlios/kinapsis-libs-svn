@@ -321,6 +321,11 @@ void ParserNS::parseLsg (){
 
 }
 void ParserNS::parseLst (){
+	// LST N=alice@hotmail.com F=alice C=167266c7-15bf-440e-9940-1e3223e4f1a4 11 1 409a87ab-ab83-4dc1-a577-de97e948bc57\r\n
+	// FL = your contacts list
+	// RL = contacts that hae you in their contact list
+	//
+	// BL = contacts you have blocked
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
@@ -455,6 +460,7 @@ void ParserNS::parseChl (){
 
 void ParserNS::parseNln (){
 	// NLN trid statuscode account_name display_name clientid
+	// ILN 9 NLN alice@hotmail.com Me%20and%20you 1342558244 %3C....\r\n
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
@@ -465,7 +471,7 @@ void ParserNS::parseNln (){
 		QStringList::iterator point = fields.begin();
 		QString status = fields[0];
 		QString passport = fields[1];
-		QString displayName = fields[2];
+		QString displayName = fields[2].replace("%20"," ");
 		QString capabilities = fields[3].replace ("\r\n","");
 		if (status == "NLN") emit statusChanged (passport, online, displayName, capabilities);
 		else if (status == "BSY") emit statusChanged (passport, dnd, displayName, capabilities);

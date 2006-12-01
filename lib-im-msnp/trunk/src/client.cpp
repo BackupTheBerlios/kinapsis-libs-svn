@@ -63,9 +63,16 @@ namespace libimmsnp {
 
 	void Client::startConnection(){
 		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);
+		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
+		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
+		QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
+		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
+		QObject::connect(m_parser, SIGNAL(statusChanged (QString, State, QString, QString)), this, SLOT(statusChanged(QString, State, QString, QString)));
+		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
+		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
 		m_conn = new Connection (m_mainSocket, m_parser);
 		m_conn->start();
-		m_conn->wait();
+//		m_conn->wait();
 	}
 
 
@@ -92,7 +99,6 @@ namespace libimmsnp {
 		v.addProtocolSupported("MSNP10");
 		send(v);
 		m_conn->wait();
-
 //		QObject::connect(m_conn, SIGNAL(disconnected()), this, SLOT(disconnected()));
 //		QObject::connect(m_parser, SIGNAL(contactDisconnected (QString)),this, SLOT(contactDisconnected (QString)));
 //		QObject::connect(m_parser, SIGNAL(chatRequest (QString, QString, QString, QString)), this, SLOT(chatRequest(QString, QString, QString, QString)));
