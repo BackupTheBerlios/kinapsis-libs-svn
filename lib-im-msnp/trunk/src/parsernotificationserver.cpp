@@ -17,6 +17,7 @@
 #include "notificationServer.h"
 #include "md5.h"
 #include <qstringlist.h>
+#include <url.h>
 
 namespace libimmsnp {
 ParserNS::ParserNS(QString msnPassport, QString msnPass, QString initialStatus, Client* c){
@@ -30,6 +31,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, QString initialStatus, 
 	m_initialStatus = initialStatus;
 	m_client = c;
 	m_hasCommand = false;
+	m_isParsing = false;
 }
 void ParserNS::feed (Buffer b){
 	m_buf << b;
@@ -329,7 +331,7 @@ void ParserNS::parseLst (){
 		QStringList::iterator point = fields.begin();
 		Contact* c = new Contact;
 		c->setPassport (fields[0].replace("N=",""));
-		c->setNickName (fields[1].replace("F=","")); // TODO: remove replace
+		c->setNickName (fields[1].replace("F=","").replace("%20"," ")); // TODO: remove replace
 		c->setId (fields[2].replace("C=",""));
 		c->setList (fields[3]);
 		m_prevContact = fields[0];
