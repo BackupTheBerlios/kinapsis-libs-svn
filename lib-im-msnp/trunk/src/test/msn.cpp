@@ -115,6 +115,10 @@ void MsnTest::hasBlog(QString passport){
 void MsnTest::changeStatus (State newStatus){
 	test.changeStatus (newStatus);
 }
+
+void MsnTest::changeNick (QString nick){
+	test.changeNick (nick);
+}
 //
 //void MsnTest::initNewChat (std::string chatFriend){
 //	test.initNewChat (chatFriend);
@@ -127,9 +131,8 @@ int main(void){
 	MsnTest cliente;
 	cliente.start();
 	while (!cliente.getConnected()) {}
-	cliente.changeStatus(dnd);
-	cliente.changeStatus(away);
-	cliente.changeStatus(na);
+	//cliente.changeStatus(dnd);
+	cliente.changeNick(QString("Cambiando_nick"));
 	while (1) {}
 
 //	cliente.wait();

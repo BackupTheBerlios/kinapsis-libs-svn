@@ -40,12 +40,14 @@ public:
 	Client(QString msnPassport, QString msnPass, State initialStatus);
 	void connect ();
 	void run ();
-	void changeStatus (State newStatus);
 	virtual ~Client();
 	int getIdtr();
 	void send(Command& c);
 	void makeConnection (QString ip, int port);
 	void startConnection();
+
+	void changeStatus (State newStatus);
+	void changeNick(QString nick);
 
 	// Listener's connections
 	void addConnectionListener (ConnectionListener* cl);

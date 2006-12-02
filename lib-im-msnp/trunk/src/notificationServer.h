@@ -31,6 +31,18 @@ private:
 	QString m_clientId;
 	QString m_msnObj;
 };
+
+class PRP : public Command {
+// PRP idtr nick\r\n 
+public:
+	PRP (int idtr);
+	virtual ~PRP();
+	QString makeCmd();
+	void addNick (QString nick);
+private:
+	QString m_nick;
+};
+
 }
 #endif //_NOTIFICATIONSERVER_H_
 

@@ -53,6 +53,7 @@ public:
 //
 //	void sendTxtMsg (int chatCount, QString chatMsg);
 	void changeStatus (State newStatus);
+	void changeNick (QString nick);
 //	void initNewChat (std::string chatFriend);
 
 private:

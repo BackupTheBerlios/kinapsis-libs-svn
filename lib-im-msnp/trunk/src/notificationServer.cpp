@@ -48,4 +48,17 @@ void CHG::addStatusCode (State statusCode) {
 void CHG::addClientId (QString clientId) {m_clientId = clientId;}
 void CHG::addMsnObj (QString msnObj) {m_msnObj = msnObj;}
 
+
+PRP::PRP(int idtr) : Command ("PRP", idtr) {}
+PRP::~PRP(){}
+QString PRP::makeCmd(){
+	// PRP idtr nick\r\n
+	QString res;
+	res += beginCmd();
+	res += " MFN " + m_nick;
+	res += endCmd();
+	return res;
+}
+void PRP::addNick (QString nick){m_nick = nick;}
+
 }

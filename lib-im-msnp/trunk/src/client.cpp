@@ -83,6 +83,12 @@ namespace libimmsnp {
 		send (cmd);
 
 	}
+	void Client::changeNick(QString nick) {
+		// PRP idtr nick\r\n
+		PRP prp (getIdtr());
+		prp.addNick(nick);
+		send (prp);
+	}
 
 	Client::~Client(){
 		delete m_parser;
