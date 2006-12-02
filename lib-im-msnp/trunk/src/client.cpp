@@ -75,6 +75,7 @@ namespace libimmsnp {
 	}
 
 	void Client::changeStatus (State status){
+		printf(":::::::::::::::::::::Status Changed\n");
 		std::ostringstream msgStatus;
 		CHG cmd (getIdtr());
 		cmd.addStatusCode(status);

@@ -52,7 +52,7 @@ public:
 //	void chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg);
 //
 //	void sendTxtMsg (int chatCount, QString chatMsg);
-//	void changeStatus (PresenceStatus newStatus);
+	void changeStatus (State newStatus);
 //	void initNewChat (std::string chatFriend);
 
 private:

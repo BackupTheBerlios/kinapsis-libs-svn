@@ -112,9 +112,9 @@ void MsnTest::hasBlog(QString passport){
 //	test.sendTxtMsg(chatCount, chatMsg);
 //}
 //
-//void MsnTest::changeStatus (PresenceStatus newStatus){
-//	test.changeStatus (newStatus);
-//}
+void MsnTest::changeStatus (State newStatus){
+	test.changeStatus (newStatus);
+}
 //
 //void MsnTest::initNewChat (std::string chatFriend){
 //	test.initNewChat (chatFriend);
@@ -126,6 +126,11 @@ int main(void){
 	using namespace libimmsnp;
 	MsnTest cliente;
 	cliente.start();
-	while (true) {}
+	while (!cliente.getConnected()) {}
+	cliente.changeStatus(dnd);
+	cliente.changeStatus(away);
+	cliente.changeStatus(na);
+	while (1) {}
+
 //	cliente.wait();
 }
