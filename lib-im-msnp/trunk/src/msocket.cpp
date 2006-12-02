@@ -178,7 +178,7 @@ int msocket::recv (Buffer& buf){
 
 msocket::~msocket () {
 	close(m_sockFd);
-	//std::cout << "Socket Closed with: " << m_host << ":" << m_port << "\n";
+	std::cout << "Socket Closed with: " << m_host << ":" << m_port << "\n";
 }
 
 msocket& msocket::operator= (const msocket &s){

@@ -17,9 +17,10 @@
 
 namespace libimmsnp {
 
-Connection::Connection (msocket* s, ParserNS* p){
+Connection::Connection (msocket* s, ParserNS* p, int iter){
 	m_socket = s;
 	m_parser = p;
+	m_iterations = iter;
 }
 
 void Connection::run (){
@@ -27,13 +28,25 @@ void Connection::run (){
 	int size;
 	qDebug("________________Start Run");
 	while ((size = (m_socket->recv(data))) != -1){
-		printf ("//////////Receiving%i\n",size);
+		printf ("//////////Receiving:%i\n",size);
 		if (size == 0) {
 			printf ("Connection closed unexpectly. Host:%s\n",QString (m_socket->getHost()).latin1());
-			this->exit();
+			break;
 		}
 		qDebug ("//////////Filling the Parser");
 		m_parser->feed (data);
+
+		if (m_iterations > 0) {
+			m_iterations--;
+			printf("///itera:%i\n",m_iterations);
+		}
+
+		if (m_iterations == 0) {
+			delete m_socket;
+			m_parser->parse();
+			break;
+		}
+
 		if (!m_parser->isParsing()){m_parser->parse();}
 		qDebug ("//////////Out");
 		data = "";
@@ -43,5 +56,7 @@ void Connection::run (){
 }
 
 Connection::~Connection (){
+	delete m_parser;
+	qDebug("::D::Connection Deleted");
 }
 }

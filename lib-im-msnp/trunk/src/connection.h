@@ -24,13 +24,14 @@ class ParserNS;
 class Connection : public QThread {
 
 public:
-	Connection (msocket*, ParserNS*);
+	Connection (msocket*, ParserNS*, int iter = -1);
 	~Connection ();
 
 	void run ();
 private:
 	msocket* m_socket;
 	ParserNS* m_parser;
+	int m_iterations;
 };
 }
 #endif // _CONNECTION_H_

@@ -109,7 +109,6 @@ void ParserNS::parseXfr () {
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
-
 		QString ip   = s.mid (3, s.find (':') - 3);	
 		int     port = s.mid (s.find(':')+1, 4).toInt() ;	
 

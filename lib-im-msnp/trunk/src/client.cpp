@@ -40,11 +40,13 @@ namespace libimmsnp {
 	}
 
 	void Client::makeConnection (QString ip, int port){
+		qDebug ("Terminando conexion");
 		m_mainSocket = new msocket(ip, port);
 		m_mainSocket->connect();
 	}
 
 	void Client::startConnection(){
+		delete m_conn;
 		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);
 		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
 		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
@@ -63,7 +65,7 @@ namespace libimmsnp {
 		m_roster = new Roster ();
 		m_mainSocket = new msocket("messenger.hotmail.com",1863);
 		m_mainSocket->connect();
-		m_conn = new Connection (m_mainSocket, m_parser);
+		m_conn = new Connection (m_mainSocket, m_parser,3);
 		m_conn->start();
 
 		VER v(1);
@@ -72,6 +74,7 @@ namespace libimmsnp {
 		v.addProtocolSupported("MSNP10");
 		send(v);
 		m_conn->wait();
+
 	}
 
 	void Client::changeStatus (State status){
@@ -93,6 +96,11 @@ namespace libimmsnp {
 	Client::~Client(){
 		delete m_parser;
 		delete m_mainSocket;
+		if (!m_conn->finished()) {
+			m_conn->terminate();
+			m_conn->wait();
+	        }
+
 	}
 
 	void Client::addConnectionListener (ConnectionListener* cl){
