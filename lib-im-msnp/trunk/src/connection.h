@@ -16,12 +16,11 @@
 
 #include "libimmsnp.h"
 #include "msocket.h"
-#include <qthread.h>
 namespace libimmsnp {
 
 class ParserNS;
 
-class Connection : public QThread {
+class Connection {
 
 public:
 	Connection (msocket*, ParserNS*, int iter = -1);

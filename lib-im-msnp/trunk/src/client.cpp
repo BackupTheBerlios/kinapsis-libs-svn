@@ -56,7 +56,7 @@ namespace libimmsnp {
 		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
 		m_conn = new Connection (m_mainSocket, m_parser);
-		m_conn->start();
+		m_conn->run();
 	}
 
 
@@ -66,14 +66,13 @@ namespace libimmsnp {
 		m_mainSocket = new msocket("messenger.hotmail.com",1863);
 		m_mainSocket->connect();
 		m_conn = new Connection (m_mainSocket, m_parser,3);
-		m_conn->start();
 
 		VER v(1);
 		v.addProtocolSupported("MSNP12");
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		send(v);
-		m_conn->wait();
+		m_conn->run();
 
 	}
 
@@ -96,10 +95,10 @@ namespace libimmsnp {
 	Client::~Client(){
 		delete m_parser;
 		delete m_mainSocket;
-		if (!m_conn->finished()) {
-			m_conn->terminate();
-			m_conn->wait();
-	        }
+//		if (!m_conn->finished()) {
+//			m_conn->terminate();
+//			m_conn->wait();
+//	        }
 
 	}
 
@@ -135,8 +134,8 @@ namespace libimmsnp {
 	void Client::mainSocket(msocket* mainSocket){
 		m_mainSocket = mainSocket;
 		m_conn = new Connection (m_mainSocket, m_parser);
-		m_conn->start();
-		m_conn->wait();
+		//m_conn->start();
+		//m_conn->wait();
 	}
 
 	void Client::connected() {

@@ -23,7 +23,6 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, State initialStatus, Cl
 	m_idtr = 2;
 	m_msnPassport = msnPassport;
 	m_msnPass = msnPass;
-	m_connectionSteps = 0;
 	m_socket = 0;
 	m_groups = 0;
 	m_contacts = 0;

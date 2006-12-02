@@ -52,7 +52,7 @@ void Connection::run (){
 		data = "";
 	}
 	qDebug("________________End of Run");
-	this->exit();
+	//exit();
 }
 
 Connection::~Connection (){
