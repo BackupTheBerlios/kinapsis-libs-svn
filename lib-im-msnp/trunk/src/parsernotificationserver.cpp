@@ -154,7 +154,7 @@ std::string ParserNS::httpsReq (std::string url, std::string headers) {
 
 	std::string cookie; 
 
-	printf ("START htpps request to %s\n",QString(url).latin1());
+	printf ("MSN::Log::ParserNS ## Start htpps request to %s\n",QString(url).latin1());
 	curl = curl_easy_init();
 	if(curl) {
 		slist = curl_slist_append(slist, headers.c_str());
@@ -171,10 +171,10 @@ std::string ParserNS::httpsReq (std::string url, std::string headers) {
 		ret = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 		curl_slist_free_all(slist);
-		printf ("END htpps request to %s\n",QString(url).latin1());
+		printf ("MSN::Log::ParserNS ## End htpps request to %s\n",QString(url).latin1());
 		return cookie;
 	}
-	printf ("ERROR making request to %s\n",QString(url).latin1());
+	printf ("MSN::ERROR::ParserNS ## Making request to %s\n",QString(url).latin1());
 	return "";
 }
 
@@ -205,7 +205,7 @@ void ParserNS::parseUsr () {
 			if (m_ticket == ""){
 				emit disconnected (ConnAuthenticationFailed);
 			}
-			printf ("####TICKET %s#\n",m_ticket.latin1());
+			printf ("MSN::Log::ParserNS ## Ticket %s#\n",m_ticket.latin1());
 			USR u(m_client->getIdtr());
 			u.addTwnType ("S");
 			u.addTicket (m_ticket);
@@ -214,12 +214,12 @@ void ParserNS::parseUsr () {
 			// añado a lista de comprobacion 
 		}
 		else if (s.contains ("OK ")){
-			printf ("!! USR OK");
+			printf ("MSN::Log::ParserNS ## USR OK\n");
 	                m_buf.advance (l);
 	                m_buf.removeFromBegin();
 		}
 		else {
-			printf ("!! OTHER USR OK:%s#\n",s.latin1());
+			printf ("MSN::Log::ParserNS ## Other USR OK:%s#\n",s.latin1());
 	                m_buf.advance (l);
 	                m_buf.removeFromBegin();
 		}
@@ -267,9 +267,9 @@ void ParserNS::parseGtc () {
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		if (s.contains ("A"))
-			qDebug ("!!GTC OK");
+			printf ("MSN::Log::ParserNS ## GTC OK\n");
 		else if (s.contains ("N"))
-			qDebug ("!!GTC Not OK");
+			printf ("MSN::Log::ParserNS ## GTC Not OK\n");
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 	}
@@ -280,9 +280,9 @@ void ParserNS::parseBlp () {
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		if (s.contains ("AL"))
-			qDebug ("!!BLP Chat YES");
+			printf ("MSN::Log::ParserNS ## BLP Chat YES\n");
 		else if (s.contains ("BL"))
-			qDebug ("!!BLP Chat NO");
+			printf ("MSN::Log::ParserNS ## BLP Chat NO\n");
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 	}
@@ -296,10 +296,10 @@ void ParserNS::parsePrp () {
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 		if (s.contains ("MFN"))
-			qDebug ("!!PRP My name is");
+			printf ("MSN::Log::ParserNS ## !!PRP My name is\n");
 			// TODO: emit signal sending my name
 		else if (s.contains ("PHH") || s.contains ("PHW")  || s.contains ("PHM") || s.contains ("MOB") || s.contains ("MBE") ||  s.contains ("WWE"))
-			qDebug ("!!PRP Telefonos");
+			printf ("MSN::Log::ParserNS ## !!PRP Telefonos\n");
 	}
 	else m_hasCommand = false;
 }
@@ -346,9 +346,7 @@ void ParserNS::parseLst (){
 		CHG c (m_client->getIdtr());
 		c.addStatusCode (m_initialStatus);
 		c.addCapabilities ("1342558252");
-		qDebug ("#################");
-		qDebug ("#Roster received#");
-		qDebug ("#################");
+		printf ("MSN::Log::ParserNS ## Roster received#\n");
 		m_client->send (c);
                 // añado a lista de comprobacion 
 		m_hasCommand = false;
@@ -503,7 +501,7 @@ void ParserNS::parseUbx (){
 //			<CurrentMedia>\0Music\01\0{0} - {1}\0Bark at the Moon\0Ozzy Osbourne\0Bark at the Moon\0{BDF1E3EF-E88C-4FC1-9A08-EB6BBABAE75C}\0</CurrentMedia>
 			QString personalSong = pay.mid(pay.find("<CurrentMedia>") + 14, pay.find("</CurrentMedia>") - pay.find("<CurrentMedia>") - 14);
 			if (personalSong != "") 
-				printf ("## MUSIC --->%s#\n",personalSong.latin1());
+				printf ("MSN::Log::ParserNS ## Music::%s\n",personalSong.latin1());
 			emit personalMessage(passport, personalMsg);
 		}
 		else m_hasCommand = false;
@@ -569,7 +567,7 @@ void ParserNS::parseRng (){
 		QString key = fields[3];
 		QString passport = fields[4];
 		QString personalMsg = fields[4];
-		printf ("### Calling:" + passport + " From:" + ipPort );
+		printf ("MSN::Log::ParserNS ## Calling:" + passport + " From:" + ipPort );
 	}
 	else m_hasCommand = false;
 }
@@ -593,7 +591,7 @@ void ParserNS::parse (){
 
 		m_buf.setPosition(3);
 		if (cmd == "VER"){
-				qDebug ("Parsing VER");
+				printf ("MSN::Log::ParserNS ## Parsing VER\n");
 				// VER 1 MSNP12 MSNP11 MSNP10 CVR0\r\n
 				lIdtr = m_buf.getInt (idtr);;
 				m_buf.advance (1+lIdtr+1);
@@ -601,7 +599,7 @@ void ParserNS::parse (){
 				parseVer();
 }
 		else if (cmd == "CVR"){
-				qDebug ("Parsing CVR");
+				printf ("MSN::Log::ParserNS ## Parsing CVR\n");
 				// CVR 2 0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs probando_msnpy@hotmail.com\r\n
 				lIdtr = m_buf.getInt (idtr);;
 				m_buf.setPosition(3 + lIdtr);
@@ -610,14 +608,14 @@ void ParserNS::parse (){
 				//parseCvr();
 }
 		else if (cmd == "USR"){
-				qDebug ("Parsing USR");
+				printf ("MSN::Log::ParserNS ## Parsing USR\n");
 				lIdtr = m_buf.getInt (idtr);;
 				m_buf.advance (1+lIdtr+1);
 				// TODO : quitar de la lista de comprobacion
 				parseUsr();
 }
 		else if (cmd == "XFR"){
-				qDebug ("Parsing XFR");
+				printf ("MSN::Log::ParserNS ## Parsing XFR\n");
 				// XFR 2 NS 207.46.107.27:1863 0 207.46.28.93:1863\r\n
 				lIdtr = m_buf.getInt (idtr);;
 				m_buf.advance (1+lIdtr+1);
@@ -625,98 +623,98 @@ void ParserNS::parse (){
 				// TODO : quitar de la lista de comprobacion
 }
 		else if (cmd ==  "ADC"){
-				qDebug ("Parsing ADC");
+				printf ("MSN::Log::ParserNS ## Parsing ADC\n");
 				lIdtr = m_buf.getInt (idtr);;
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseAdc();
 }
 		else if (cmd ==  "ADG"){
-				qDebug ("Parsing ADG");
+				printf ("MSN::Log::ParserNS ## Parsing ADG\n");
 				// TODO : quitar de la lista de comprobacion
 				//parseAdg();
 }
 		else if (cmd ==  "BLP"){
-				qDebug ("Parsing BLP");
+				printf ("MSN::Log::ParserNS ## Parsing BLP\n");
 				// TODO : quitar de la lista de comprobacion
 				parseBlp();
 }
 		else if (cmd ==  "BPR"){
-				qDebug ("Parsing BPR");
+				printf ("MSN::Log::ParserNS ## Parsing BPR\n");
 				// TODO : quitar de la lista de comprobacion
 				parseBpr();
 }
 		else if (cmd ==  "CHG"){
-				qDebug ("Parsing CHG");
+				printf ("MSN::Log::ParserNS ## Parsing CHG\n");
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				parseChg();
 }
 		else if (cmd ==  "CHL"){
-				qDebug ("Parsing CHL");
+				printf ("MSN::Log::ParserNS ## Parsing CHL\n");
 				m_buf.advance (1 + 1 + 1); // CHL[ 0 ].....
 				parseChl();
 }
 		else if (cmd ==  "FLN"){
-				qDebug ("Parsing FLN");
+				printf ("MSN::Log::ParserNS ## Parsing FLN\n");
 				// TODO : quitar de la lista de comprobacion
 				parseFln();
 }
 		else if (cmd ==  "GCF"){
-				qDebug ("Parsing GCF");
+				printf ("MSN::Log::ParserNS ## Parsing GCF\n");
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseGcf();
 }
 		else if (cmd ==  "GTC"){
-				qDebug ("Parsing GTC");
+				printf ("MSN::Log::ParserNS ## Parsing GTC\n");
 				// TODO : quitar de la lista de comprobacion
 				parseGtc();
 }
 		else if (cmd ==  "ILN"){
-				qDebug ("Parsing ILN");
+				printf ("MSN::Log::ParserNS ## Parsing ILN\n");
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr + 1 );
 				// TODO : quitar de la lista de comprobacion
 				parseNln();
 }
 		else if (cmd ==  "LSG"){
-				qDebug ("Parsing LSG");
+				printf ("MSN::Log::ParserNS ## Parsing LSG\n");
 				m_buf.setPosition(3 + 1);
 				// TODO : quitar de la lista de comprobacion
 				parseLsg();
 }
 		else if (cmd ==  "LST"){
-				qDebug ("Parsing LST");
+				printf ("MSN::Log::ParserNS ## Parsing LST\n");
 				m_buf.setPosition(3 + 1);
 				// TODO : quitar de la lista de comprobacion
 				parseLst();
 }
 		else if (cmd ==  "NLN"){
-				qDebug ("Parsing NLN");
+				printf ("MSN::Log::ParserNS ## Parsing NLN\n");
 				m_buf.setPosition(3);
 				// TODO : quitar de la lista de comprobacion
 				parseNln();
 }
 		else if (cmd ==  "OUT"){
-				qDebug ("Parsing OUT");
+				printf ("MSN::Log::ParserNS ## Parsing OUT\n");
 				// TODO : quitar de la lista de comprobacion
 				parseOut();
 }
 		else if (cmd ==  "PNG"){
-				qDebug ("Parsing PNG");
+				printf ("MSN::Log::ParserNS ## Parsing PNG\n");
 				// TODO : quitar de la lista de comprobacion
 				//parsePng();
 }
 		else if (cmd ==  "PRP"){
-				qDebug ("Parsing PRP");
+				printf ("MSN::Log::ParserNS ## Parsing PRP\n");
 				// TODO : quitar de la lista de comprobacion
 				parsePrp();
 }
 		else if (cmd ==  "QRY"){
-				qDebug ("Parsing QRY");
+				printf ("MSN::Log::ParserNS ## Parsing QRY\n");
 				QString s;
 				m_buf.data(s);
 				lIdtr = m_buf.getInt (idtr);
@@ -725,55 +723,55 @@ void ParserNS::parse (){
 				// TODO : quitar de la lista de comprobacion
 }
 		else if (cmd ==  "SYN"){
-				qDebug ("Parsing SYN");
+				printf ("MSN::Log::ParserNS ## Parsing SYN\n");
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				parseSyn();
 }
 		else if (cmd ==  "REA"){ // Deprecated ??
-				qDebug ("Parsing REA");
+				printf ("MSN::Log::ParserNS ## Parsing REA\n");
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseRea();
 }
 		else if (cmd ==  "REG"){
-				qDebug ("Parsing REA");
+				printf ("MSN::Log::ParserNS ## Parsing REA\n");
 				// TODO : quitar de la lista de comprobacion
 				//parseReg();
 }
 		else if (cmd ==  "REM"){
-				qDebug ("Parsing REM");
+				printf ("MSN::Log::ParserNS ## Parsing REM\n");
 				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseRem();
 }
 		else if (cmd ==  "RMG"){
-				qDebug ("Parsing RMG");
+				printf ("MSN::Log::ParserNS ## Parsing RMG\n");
 				// TODO : quitar de la lista de comprobacion
 				//parseRmg();
 }
 		else if (cmd ==  "RNG") {
-			qDebug ("Parsing RNG");
+			printf ("MSN::Log::ParserNS ## Parsing RNG\n");
 			// TODO : quitar de la lista de comprobacion
 			parseRng();
 }
 		else if (cmd ==  "MSG") {
-			qDebug ("Parsing MSG");
+			printf ("MSN::Log::ParserNS ## Parsing MSG\n");
 			parseMsg();
 }
 		else if (cmd ==  "SBS") {
-			qDebug ("Parsing SBS");
+			printf ("MSN::Log::ParserNS ## Parsing SBS\n");
 			parseSbs();
 }
 		else if (cmd ==  "UBX") {
-			qDebug ("Parsing UBX");
+			printf ("MSN::Log::ParserNS ## Parsing UBX\n");
 			parseUbx();
 }
 		else if (cmd ==  "OUT") {
-			qDebug ("Disconnecting");
+			printf ("MSN::Log::ParserNS ## Disconnecting\n");
 			exit(-1);
 }
 		else {	// pueden venir errores 715 1\r\n
@@ -782,26 +780,22 @@ void ParserNS::parse (){
 			//
 			// Errors:
 			if (cmd ==  "715") {
-				qDebug ("####################");
-				qDebug ("### Not expected ###");
-				qDebug ("####################");
-				exit (-1);
+				printf ("MSN::ERROR::ParserNS ## Not expected\n");
+				emit disconnected (ConnNotExpected);
 			}
 			if (cmd ==  "540") {
-				qDebug ("######################");
-				qDebug ("### Bad MD5 digest ###");
-				qDebug ("######################");
-				exit (-1);
+				printf ("MSN::ERROR::ParserNS ## Bad MD5 digest\n");
+				emit disconnected (ConnBadMd5Digest);
 			}
 
 			QString error;
 			m_buf.data(error);
-			printf ("UNKNOW command:%s\n",error.replace('\n',"\\n").replace('\r',"\\r").latin1());
+			printf ("MSN::ERROR::ParserNS ## Unknow Command: %s\n",error.replace('\n',"\\n").replace('\r',"\\r").latin1());
 			break;			
 		}
 	QString d;
 	m_buf.data(d);
-	printf ("#### Data:%s\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
+	printf ("MSN::Log::ParserNS ## Buffer Data<%s>\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
 	}	
 	m_isParsing = false;
 }

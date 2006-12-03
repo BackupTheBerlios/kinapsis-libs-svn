@@ -34,12 +34,13 @@ public:
 	~MsnTest();
 
 	void onConnect();
-	void onDisconnect();
+	void onDisconnect(ConnectionError);
 	void run();
 	int getConnected() {return m_connected;};
 //	int getChatId () {return m_chatid;};
 //
 	void onNewContact(Contact* c);
+	void onNewGroup(Group*);
 	void presenceChanged(QString c, State status, QString msnPersMsg, QString msnCapabilities);
 	void personalMessage (QString c, QString msg);
 	void hasBlog(QString c);

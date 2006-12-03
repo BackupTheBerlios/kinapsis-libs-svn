@@ -17,7 +17,6 @@
 #include <arpa/inet.h>       // For inet_addr()
 #include <unistd.h>          // For close(), dup()
 #include <netinet/in.h>      // For sockaddr_in
-#include <iostream> 	     // For cout cin
 
 #include "msocket.h"
 namespace libimmsnp {
@@ -94,7 +93,7 @@ int msocket::connect () {
 	// Port
 	m_SockAddr.sin_port = htons( m_port );
 	::connect ( m_sockFd , (struct sockaddr *) &m_SockAddr , sizeof(struct sockaddr));
-	printf ("Connected with host: %s in port:%i\n",m_host.c_str(),m_port);
+	printf ("MSN::Log::Socket ## Connected with host: %s in port:%i\n",m_host.c_str(),m_port);
 	return 0;
 }
 
@@ -102,7 +101,7 @@ int msocket::send (QString buf){
 	int size;
 	size = ::send (m_sockFd, buf.utf8().data(), buf.length(), 0);
 	QString tmpData = buf;
-	printf(">> Host:%s len:%i data%s\n",m_host.c_str(), size, QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r").latin1());
+	printf("MSN::Log::Socket ##  >>> Host:%s len:%i data%s\n",m_host.c_str(), size, QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r").latin1());
 	return size;
 }
 
@@ -112,21 +111,22 @@ int msocket::recv (QString& buf){
 	char data[MAX_MSG] ;
 
 	if ((size = ::recv (m_sockFd, data, MAX_MSG, 0)) == -1){
-		printf ("<< host: %s len: %i Error reciving  from socket\n",m_host, size);
+		printf ("MSN::Log::Socket ##  <<< host: %s len: %i Error reciving  from socket\n",m_host, size);
+		emit disconnected (ConnSocketError);
 		return -1;
 	}
 
 	buf += QString(data).mid(0,size);
 	QString tmpData = buf;
 	if (size >0)
-	printf ("<< Datos:%s\n",QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r").latin1());
+	printf ("MSN::Log::Socket ##  <<< Host:%s len:%i Data:%s\n",m_host.c_str(), size,QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r").latin1());
 
 	return size;
 }
 
 msocket::~msocket () {
 	close(m_sockFd);
-	printf ("Socket closed with host: %s:%i\n",m_host.c_str(),m_port);
+	printf ("MSN::Log::Socket ## Socket closed with host: %s:%i\n",m_host.c_str(),m_port);
 }
 
 msocket& msocket::operator= (const msocket &s){
@@ -140,3 +140,4 @@ msocket& msocket::operator= (const msocket &s){
 	return (*this);
 }
 }
+#include "msocket.moc"

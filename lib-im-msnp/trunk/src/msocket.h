@@ -26,46 +26,49 @@
 
 
 namespace libimmsnp {
-class msocket {
-	public:
-		//constructors
-		msocket (std::string host, int port);
-		msocket (std::string hostPort);
-		msocket ();
-		//Copy constructors
-		msocket(const msocket&);
+class msocket :public QObject{
+Q_OBJECT
+public:
+	//constructors
+	msocket (std::string host, int port);
+	msocket (std::string hostPort);
+	msocket ();
+	//Copy constructors
+	msocket(const msocket&);
 
-		// set port
-		int setPort (int);
+	// set port
+	int setPort (int);
 
-		//set host
-		int setHost (std::string host);
-		
-		std::string getHost(){return m_host;};
-		int getPort(){return m_port;};
-		// Start the connection
-		int connect ();
+	//set host
+	int setHost (std::string host);
+	
+	std::string getHost(){return m_host;};
+	int getPort(){return m_port;};
+	// Start the connection
+	int connect ();
 
-		// send the buffer's content
-		int send (QString buf);
-		
-		// recive into buffer
-		int recv (QString&);
+	// send the buffer's content
+	int send (QString buf);
+	
+	// recive into buffer
+	int recv (QString&);
 
-		//operator =
-		msocket& operator= (const msocket&);
+	//operator =
+	msocket& operator= (const msocket&);
 
-		
-		// destructor
-		~msocket ();
+	
+	// destructor
+	~msocket ();
 
-	protected:
-		int m_port ;
-		std::string m_host ;
-		int m_sockFd ;
-		struct sockaddr_in m_SockAddr;
-		char* m_buf;
-		const static int m_bufsize = 20000;
+protected:
+	int m_port ;
+	std::string m_host ;
+	int m_sockFd ;
+	struct sockaddr_in m_SockAddr;
+	char* m_buf;
+	const static int m_bufsize = 20000;
+signals:
+void disconnected(ConnectionError);
 
 };
 }

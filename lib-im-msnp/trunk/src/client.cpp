@@ -73,6 +73,7 @@ namespace libimmsnp {
 		m_roster = new Roster ();
 		m_mainSocket = new msocket("messenger.hotmail.com",1863);
 		m_mainSocket->connect();
+		QObject::connect(m_mainSocket, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
 		m_conn = new Connection (m_mainSocket, m_parser,3);
 
 		VER v(getIdtr());
@@ -85,7 +86,7 @@ namespace libimmsnp {
 
 	void Client::changeStatus (State status){
 		// CHG idtr status capabilities\r\n
-		printf("::Cmd::Status Changed\n");
+		printf("MSN::Log::Client ## Status Changed\n");
 		std::ostringstream msgStatus;
 		CHG cmd (getIdtr());
 		cmd.addStatusCode(status);
@@ -95,6 +96,7 @@ namespace libimmsnp {
 
 	void Client::changeNick(QString nick) {
 		// PRP idtr nick\r\n
+		printf("MSN::Log::Client ## Nick Changed\n");
 		PRP prp (getIdtr());
 		prp.addNick(nick);
 		send (prp);
@@ -143,7 +145,6 @@ namespace libimmsnp {
 	}
 
 	void Client::newGroupArrived (Group* group) {
-		printf("# GROUP: %s %s\n",group->getName().latin1(),group->getId().latin1());
 		emit notifyNewGroup(group);
 		m_roster->addGroup(group);
 	}

@@ -23,22 +23,21 @@ Connection::Connection (msocket* s, ParserNS* p, int iter){
 	m_iterations = iter;
 }
 
-void Connection::run (){
+void Connection:: run (){
 	QString data;
 	int size;
-	qDebug("________________Start Run");
+	printf("MSN::Log::Connection ## Start Run\n");
 	while ((size = (m_socket->recv(data))) != -1){
-		printf ("//////////Receiving:%i\n",size);
+		printf ("MSN::Log::Connection ## Receiving: %i\n",size);
 		if (size == 0) {
-			printf ("Connection closed unexpectly. Host:%s\n",QString (m_socket->getHost()).latin1());
+			printf ("MSN::Log::Connection ## Connection closed unexpectly. Host:%s\n",QString (m_socket->getHost()).latin1());
 			break;
 		}
-		qDebug ("//////////Filling the Parser");
 		m_parser->feed (data);
 
 		if (m_iterations > 0) {
 			m_iterations--;
-			printf("///itera:%i\n",m_iterations);
+			printf("MSN::Log::Connection ## itera:%i\n",m_iterations);
 		}
 
 		if (m_iterations == 0) {
@@ -48,15 +47,14 @@ void Connection::run (){
 		}
 
 		if (!m_parser->isParsing()){m_parser->parse();}
-		qDebug ("//////////Out");
 		data = "";
 	}
-	qDebug("________________End of Run");
+	printf("MSN::Log::Connection ## Start Run\n");
 	//exit();
 }
 
 Connection::~Connection (){
 	delete m_parser;
-	qDebug("::D::Connection Deleted");
+	printf("MSN::Log::Connection ## Connection Deleted");
 }
 }

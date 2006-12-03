@@ -17,7 +17,7 @@ namespace libimmsnp {
 
 QString id ("probando_msnpy@hotmail.com");
 QString pass ("gargolas");
-Client test(id,pass,away);
+Client test(id,pass,STATUS_HDN);
 
 MsnTest::MsnTest () {
 	test.addConnectionListener(this);
@@ -37,41 +37,52 @@ MsnTest::~MsnTest() {
 
 void MsnTest::onConnect()  {
 	m_connected = 1;
-	qDebug("# CONNECTED\n\n\n");
+	printf("# CONNECTED\n\n\n");
 }
 
-void MsnTest::onDisconnect() {
-	qDebug("# DISCONNECTED\n\n\n");
+void MsnTest::onDisconnect(ConnectionError) {
+	printf("# DISCONNECTED\n\n\n");
 }
 
 void MsnTest::onNewContact(Contact* c){
-	qDebug ("# CONTACT:" + c->getPassport());
+	printf ("# CONTACT:%s\n",c->getPassport().latin1());
+}
+
+void MsnTest::onNewGroup(Group* g){
+	printf ("# GROUP:%s\n",g->getName().latin1());
 }
 
 void MsnTest::presenceChanged (QString passport, State status, QString displayName, QString capabilities){
 	switch (status){
-		case online:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"online", capabilities.latin1(), displayName.latin1());
+		case STATUS_NLN:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Online", capabilities.latin1(), displayName.latin1());
 			break;
-		case away:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"away", capabilities.latin1(), displayName.latin1()); 
-			break;
-		case dnd:
+		case STATUS_BSY:
 			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Do Not Disturb", capabilities.latin1(), displayName.latin1()); 
 			break;
-		case na:
+		case STATUS_IDL:
 			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Not Available", capabilities.latin1(), displayName.latin1()); 
 			break;
-		case offline:
-			printf("# State Changed. User Disconnected:%s\n",passport.latin1()); 
+		case STATUS_BRB:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Back early", capabilities.latin1(), displayName.latin1()); 
+			break;
+		case STATUS_AWY:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Away", capabilities.latin1(), displayName.latin1()); 
+			break;
+		case STATUS_PHN:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"At phone", capabilities.latin1(), displayName.latin1()); 
+			break;
+		case STATUS_LUN:
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Eating", capabilities.latin1(), displayName.latin1()); 
 			break;
 		default:
-			printf("# State Not Changed");
+			printf("# State Changed. User Disconnected:%s\n",passport.latin1()); 
+			break;
 	}
 }
 
 void MsnTest::personalMessage(QString passport, QString personalMsg) {
-	qDebug ("#Mensaje personal de " + passport + " #-->" + personalMsg );
+	printf ("#Mensaje personal de %s #--> %s\n",passport.latin1(), personalMsg.latin1() );
 }
 
 void MsnTest::hasBlog(QString passport){
@@ -79,10 +90,6 @@ void MsnTest::hasBlog(QString passport){
 	qDebug ("# " + passport + " has a Blog at " + page + ".spaces.msn.com");
 }
 
-//void MsnTest::contactDisconnected(QString msnPassport){
-//	qDebug ("## " + msnPassport + " HAS DISCONNECTED");
-//}
-//
 //void MsnTest::chatLeavedTheRoom(int chatId, QString chatMsnPassport){
 //	QString tmp;
 //	qDebug ("## " + chatMsnPassport + " has left the room: " + tmp.setNum(chatId) );
