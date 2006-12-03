@@ -203,7 +203,7 @@ void ParserNS::parseUsr () {
       			// Don't urlEncode the m_ticket, only the id and password.
  			m_ticket = QString (httpsReq (url, auth));
 			if (m_ticket == ""){
-				emit error(ERROR_BAD_PASSWORD);
+				emit disconnected (ConnAuthenticationFailed);
 			}
 			printf ("####TICKET %s#\n",m_ticket.latin1());
 			USR u(m_client->getIdtr());
@@ -548,7 +548,7 @@ void ParserNS::parseOut (){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 		if (s.contains("OTH")){
-			emit disconnected ();
+			emit disconnected (ConnAtOtherPlace);
 		}
 	}
 	else m_hasCommand = false;

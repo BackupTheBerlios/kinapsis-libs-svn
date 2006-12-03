@@ -15,14 +15,12 @@
 #define LIBIMMSNP_H__
 
 namespace libimmsnp {
-	enum ConnectionState {
-		StateDisconnected,  
-		StateConnecting,   
-		StateConnected    
-	};
 	
-	enum Error {
-		ERROR_BAD_PASSWORD
+	enum ConnectionError {
+		ConnNoError,
+		ConnUserDisconnected,
+		ConnAuthenticationFailed,
+		ConnAtOtherPlace,		// Connected at other place with the same account
 	};
 
 	enum State {

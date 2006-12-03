@@ -40,6 +40,14 @@ namespace libimmsnp {
 	 	m_mainSocket->send (c.makeCmd());
 	}
 
+	void Client::disconnect(){
+		delete m_conn;
+		delete m_parser;
+		delete m_mainSocket;
+		delete m_roster;
+		emit notifyDisconnect(ConnUserDisconnected);
+	}
+
 	void Client::makeConnection (QString ip, int port){
 		m_mainSocket = new msocket(ip, port);
 		m_mainSocket->connect();
@@ -49,13 +57,12 @@ namespace libimmsnp {
 		delete m_conn;
 		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);
 		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
-		QObject::connect(m_parser, SIGNAL(disconnected()), this, SLOT(disconnected()));
+		QObject::connect(m_parser, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
 		QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
 		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
 		QObject::connect(m_parser, SIGNAL(statusChanged (QString, State, QString, QString)), this, SLOT(statusChanged(QString, State, QString, QString)));
 		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
-		QObject::connect(m_parser, SIGNAL(error(Error)), this, SLOT(error(Error)));
 		m_conn = new Connection (m_mainSocket, m_parser);
 		m_conn->run();
 	}
@@ -100,7 +107,7 @@ namespace libimmsnp {
 
 	void Client::addConnectionListener (ConnectionListener* cl){
 		QObject::connect (this, SIGNAL(notifyConnect()), cl, SLOT(connectSlot()));
-		QObject::connect (this, SIGNAL(notifyDisconnect()), cl, SLOT(disconnectSlot()));
+		QObject::connect (this, SIGNAL(notifyDisconnect(ConnectionError)), cl, SLOT(disconnectSlot(ConnectionError)));
 	}
 
 	void Client::delConnectionListener (ConnectionListener* cl){
@@ -131,8 +138,8 @@ namespace libimmsnp {
 		emit notifyConnect();
 	}
 
-	void Client::disconnected() {
-		emit notifyDisconnect();
+	void Client::disconnected(ConnectionError e) {
+		emit notifyDisconnect(e);
 	}
 
 	void Client::newGroupArrived (Group* group) {
@@ -160,8 +167,5 @@ namespace libimmsnp {
 		emit notifyHasBlog(passport);
 	}
 
-	void Client::error (Error cause){
-		printf("An error ocurred\n");
-	}
 }
 #include "client.moc"

@@ -15,6 +15,7 @@
 #define _CONNECTIONLISTENER_H_
 
 #include <qobject.h>
+#include "libimmsnp.h"
 
 namespace libimmsnp {
 
@@ -25,11 +26,11 @@ public:
 	virtual ~ConnectionListener();
 
 	virtual void onConnect() = 0;
-	virtual void onDisconnect() = 0;
+	virtual void onDisconnect(ConnectionError e) = 0;
 
 public slots:
 	void connectSlot();
-	void disconnectSlot();
+	void disconnectSlot(ConnectionError e);
 };
 
 

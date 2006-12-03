@@ -43,6 +43,7 @@ public:
 	virtual ~Client();
 	int getIdtr();
 	void send(Command& c);
+	void disconnect();
 	void makeConnection (QString ip, int port);
 	void startConnection();
 
@@ -61,7 +62,7 @@ public:
 	
 signals:
 	void notifyConnect();
-	void notifyDisconnect();
+	void notifyDisconnect(ConnectionError e);
 	void notifyNewContact(Contact*);
 	void notifyNewGroup(Group*);
 	void notifyPresence(QString, State, QString, QString);
@@ -70,14 +71,13 @@ signals:
 
 public slots:
 	void connected ();
-	void disconnected ();
+	void disconnected (ConnectionError e);
 	void newGroupArrived (Group* g);
 
 	void newContactArrived (Contact* c);
 	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
 	void hasBlog (QString passport);
-	void error (Error cause);
 	
 private:
 	ParserNS* m_parser;

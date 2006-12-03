@@ -23,8 +23,8 @@ void ConnectionListener::connectSlot(){
 	this->onConnect();
 }
 
-void ConnectionListener::disconnectSlot(){
-	this->onDisconnect();
+void ConnectionListener::disconnectSlot(ConnectionError e){
+	this->onDisconnect(e);
 }
 
 

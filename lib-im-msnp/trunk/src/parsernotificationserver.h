@@ -84,8 +84,7 @@ signals:
 	void statusChanged (QString, State, QString, QString); 
 	void personalMessage (QString, QString);
 	void hasBlog (QString);
-	void error (Error);
-	void disconnected();
+	void disconnected(ConnectionError);
 
 };
 }
