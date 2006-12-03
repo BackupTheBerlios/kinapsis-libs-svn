@@ -68,7 +68,6 @@ signals:
 	void notifyHasBlog(QString);
 
 public slots:
-	void mainSocket(msocket* mainSocket);
 	void connected ();
 	void disconnected ();
 	void newGroupArrived (Group* g);
@@ -77,6 +76,7 @@ public slots:
 	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
 	void hasBlog (QString passport);
+	void error (Error cause);
 	
 private:
 	ParserNS* m_parser;

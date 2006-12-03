@@ -98,45 +98,13 @@ int msocket::connect () {
 	return 0;
 }
 
-int msocket::send (std::string buf){
-	int size;
-	size = ::send (m_sockFd, buf.c_str(), buf.length(), 0);
-	std::string tmp = buf;
-	replace (tmp,"\r","\\r");
-	//std::cout << ">>> host: " << m_host << " len: "<< size << " data: " << replace (tmp,"\n","\\n") << "\n";
-	return size;
-}
-
 int msocket::send (QString buf){
 	int size;
 	//qDebug ("................Sending:" + QString("%1").arg(m_sockFd));
 	size = ::send (m_sockFd, buf.utf8().data(), buf.length(), 0);
 	//qDebug ("................Sended" + QString("%1").arg(m_sockFd));
 	QString tmpData = buf;
-	qDebug(">> Host: " + QString (m_host)+ " len: " + QString("%1").arg(size) + " data: " + QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r"));
-	return size;
-}
-
-int msocket::send (Buffer buf){
-	int size;
-	QString data;
-	buf.data(data);
-	size = ::send (m_sockFd, data.utf8().data(), buf.len(), 0);
-	QString tmpData = data;
-	//qDebug(">> data: " + tmpData.replace('\n',"\\n").replace('\r',"\\r"));
-	return size;
-}
-
-int msocket::recv (std::string& buf){
-	const int MAX_MSG = 2000;
-	int size = 0;
-	if ((size = ::recv (m_sockFd, m_buf, MAX_MSG, 0)) == -1){
-		std::cout << "<< host: " << m_host << " << len: "<< size << " Error reciving  from socket\n";
-	}
-	buf.assign( m_buf,  size );
-	std::string tmp = buf;
-	replace (tmp,"\r","\\r");
-	//std::cout << "<<< host: " << m_host << " len: "<< size << " data: " << replace (tmp,"\n","\\n") << "\n";
+	printf(">> Host:%s len:%i data%s\n",m_host.c_str(), size, QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r").latin1());
 	return size;
 }
 
@@ -156,22 +124,6 @@ int msocket::recv (QString& buf){
 	QString tmpData = buf;
 	if (size >0)
 	printf ("<< Datos:%s\n",QString(data).mid(0,size).replace('\n',"\\n").replace('\r',"\\r").latin1());
-
-	return size;
-}
- 
-int msocket::recv (Buffer& buf){
-	const int MAX_MSG = 2000;
-	int size = 0;
-	char data[MAX_MSG] ;
-	if ((size = ::recv (m_sockFd, data, MAX_MSG, 0)) == -1){
-		//std::cout << "<< host: " << m_host << " << len: "<< size << " Error reciving  from socket\n";
-	}
-	QString b;
-	buf << QString (data);
-	buf.data(b);
-	QString tmpData = b;
-	//qDebug ("<< data: " + tmpData.replace('\n',"\\n").replace('\r',"\\r")); 
 
 	return size;
 }

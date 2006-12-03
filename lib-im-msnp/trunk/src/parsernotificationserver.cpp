@@ -189,8 +189,6 @@ void ParserNS::parseUsr () {
 			m_buf.advance (l);
 			m_buf.removeFromBegin();
 			m_ticket = s.mid (s.find ("lc"),s.length()-s.find ("lc")-2);
-			// TODO: if ticket = "" login failed
-			printf ("####TICKET %s#\n",m_ticket.latin1());
 
 			// start Twenner
 			std::string tmpUrl = httpsReq ("https://nexus.passport.com/rdr/pprdr.asp", "");
@@ -204,7 +202,10 @@ void ParserNS::parseUsr () {
 
       			// Don't urlEncode the m_ticket, only the id and password.
  			m_ticket = QString (httpsReq (url, auth));
-
+			if (m_ticket == ""){
+				emit error(ERROR_BAD_PASSWORD);
+			}
+			printf ("####TICKET %s#\n",m_ticket.latin1());
 			USR u(m_client->getIdtr());
 			u.addTwnType ("S");
 			u.addTicket (m_ticket);
@@ -471,13 +472,13 @@ void ParserNS::parseNln (){
 		QString passport = fields[1];
 		QString displayName = fields[2].replace("%20"," ");
 		QString capabilities = fields[3].replace ("\r\n","");
-		if (status == "NLN") emit statusChanged (passport, online, displayName, capabilities);
-		else if (status == "BSY") emit statusChanged (passport, dnd, displayName, capabilities);
-		else if (status == "IDL") emit statusChanged (passport, na, displayName, capabilities);
-		else if (status == "BRB") emit statusChanged (passport, away, displayName, capabilities);
-		else if (status == "AWY") emit statusChanged (passport, away, displayName, capabilities);
-		else if (status == "PHN") emit statusChanged (passport, away, displayName, capabilities);
-		else if (status == "LUN") emit statusChanged (passport, away, displayName, capabilities);
+		if (status == "NLN") emit statusChanged (passport, STATUS_NLN, displayName, capabilities);
+		else if (status == "BSY") emit statusChanged (passport, STATUS_BSY, displayName, capabilities);
+		else if (status == "IDL") emit statusChanged (passport, STATUS_IDL, displayName, capabilities);
+		else if (status == "BRB") emit statusChanged (passport, STATUS_BRB, displayName, capabilities);
+		else if (status == "AWY") emit statusChanged (passport, STATUS_AWY, displayName, capabilities);
+		else if (status == "PHN") emit statusChanged (passport, STATUS_PHN, displayName, capabilities);
+		else if (status == "LUN") emit statusChanged (passport, STATUS_LUN, displayName, capabilities);
 	}
 	else m_hasCommand = false;
 }
@@ -534,11 +535,24 @@ void ParserNS::parseFln (){
 		QStringList fields = QStringList::split(" ",s);
 		QStringList::iterator point = fields.begin();
 		QString passport = fields[0].replace("\r\n","");
-		emit statusChanged (passport,offline ,"","");
+		emit statusChanged (passport,STATUS_OFF ,"","");
 	}
 	else m_hasCommand = false;
 }
 
+void ParserNS::parseOut (){
+	// OUT OTH\r\n
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		if (s.contains("OTH")){
+			emit disconnected ();
+		}
+	}
+	else m_hasCommand = false;
+}
 void ParserNS::parseRng (){
 	// RNG 1815263688 207.46.27.86:1863 CKI 7133130.10838165 ranita@hotmail.com me%20And%20All
 	QString s;
@@ -689,7 +703,7 @@ void ParserNS::parse (){
 		else if (cmd ==  "OUT"){
 				qDebug ("Parsing OUT");
 				// TODO : quitar de la lista de comprobacion
-				//parseOut();
+				parseOut();
 }
 		else if (cmd ==  "PNG"){
 				qDebug ("Parsing PNG");

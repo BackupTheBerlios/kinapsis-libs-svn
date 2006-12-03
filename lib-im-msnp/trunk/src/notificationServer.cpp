@@ -28,17 +28,29 @@ QString CHG::makeCmd(){
 }
 void CHG::addStatusCode (State statusCode) {
 	switch(statusCode){
-		case away:
-			m_statusCode = "AWY";
+		case STATUS_NLN:
+			m_statusCode = "NLN";
 			break;
-		case na:
-			m_statusCode = "IDL";
-			break;
-		case dnd:
+		case STATUS_BSY:
 			m_statusCode = "BSY";
 			break;
-		case online:
-			m_statusCode = "NLN";
+		case STATUS_IDL:
+			m_statusCode = "IDL";
+			break;
+		case STATUS_BRB:
+			m_statusCode = "BRB";
+			break;
+		case STATUS_AWY:
+			m_statusCode = "AWY";
+			break;
+		case STATUS_PHN:
+			m_statusCode = "PHN";
+			break;
+		case STATUS_LUN:
+			m_statusCode = "LUN";
+			break;
+		case STATUS_HDN:
+			m_statusCode = "HDN";
 			break;
 		default:
 			m_statusCode = "HDN";

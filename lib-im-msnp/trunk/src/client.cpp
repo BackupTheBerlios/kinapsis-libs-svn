@@ -16,6 +16,7 @@
 #include "contact.h"
 #include "roster.h"
 #include "command.h"
+#include "libimmsnp.h"
 #include "notificationServer.h"
 
 namespace libimmsnp {
@@ -32,7 +33,7 @@ namespace libimmsnp {
 	}
 
 	int Client::getIdtr() {
-		return ++m_idtr;
+		return m_idtr++;
 	}
 
 	void Client::send(Command& c) {
@@ -48,13 +49,14 @@ namespace libimmsnp {
 	void Client::startConnection(){
 		delete m_conn;
 		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);
-		QObject::connect(m_parser, SIGNAL(mainSocket(msocket*)), this, SLOT(mainSocket(msocket*)));
 		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
+		QObject::connect(m_parser, SIGNAL(disconnected()), this, SLOT(disconnected()));
 		QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
 		QObject::connect(m_parser, SIGNAL(newContactArrived(Contact*)), this, SLOT(newContactArrived(Contact*)));
 		QObject::connect(m_parser, SIGNAL(statusChanged (QString, State, QString, QString)), this, SLOT(statusChanged(QString, State, QString, QString)));
 		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
+		QObject::connect(m_parser, SIGNAL(error(Error)), this, SLOT(error(Error)));
 		m_conn = new Connection (m_mainSocket, m_parser);
 		m_conn->run();
 	}
@@ -67,7 +69,7 @@ namespace libimmsnp {
 		m_mainSocket->connect();
 		m_conn = new Connection (m_mainSocket, m_parser,3);
 
-		VER v(1);
+		VER v(getIdtr());
 		v.addProtocolSupported("MSNP12");
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
@@ -95,11 +97,6 @@ namespace libimmsnp {
 	Client::~Client(){
 		delete m_parser;
 		delete m_mainSocket;
-//		if (!m_conn->finished()) {
-//			m_conn->terminate();
-//			m_conn->wait();
-//	        }
-
 	}
 
 	void Client::addConnectionListener (ConnectionListener* cl){
@@ -128,14 +125,6 @@ namespace libimmsnp {
 
 	void Client::delPresenceListener (PresenceListener *pl){
 		QObject::disconnect (this, 0, pl, 0);
-	}
-
-
-	void Client::mainSocket(msocket* mainSocket){
-		m_mainSocket = mainSocket;
-		m_conn = new Connection (m_mainSocket, m_parser);
-		//m_conn->start();
-		//m_conn->wait();
 	}
 
 	void Client::connected() {
@@ -179,6 +168,10 @@ namespace libimmsnp {
 
 	void Client::hasBlog(QString passport) {
 		emit notifyHasBlog(passport);
+	}
+
+	void Client::error (Error cause){
+		printf("An error ocurred\n");
 	}
 }
 #include "client.moc"

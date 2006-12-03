@@ -47,14 +47,10 @@ class msocket {
 		int connect ();
 
 		// send the buffer's content
-		int send (std::string);
 		int send (QString buf);
-		int send (Buffer buf);
 		
 		// recive into buffer
-		int recv (std::string&);
 		int recv (QString&);
-		int recv (Buffer& );
 
 		//operator =
 		msocket& operator= (const msocket&);

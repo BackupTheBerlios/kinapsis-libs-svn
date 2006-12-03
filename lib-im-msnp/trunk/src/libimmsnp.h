@@ -21,26 +21,20 @@ namespace libimmsnp {
 		StateConnected    
 	};
 	
-
-	enum ConnectionError {
-	  ConnNoError,
-	  ConnAuthenticationFailed,
-	  ConnErrorVER,
-	  ConnErrorCVR,
-	  ConnErrorUSR,
-	  ConnErrorXFR,
-	  ConnErrorTwr,
+	enum Error {
+		ERROR_BAD_PASSWORD
 	};
-	
 
 	enum State {
-		online,
-		away,
-		na,
-		dnd,
-		connecting,
-		noauth,
-		offline
+		STATUS_NLN,
+		STATUS_BSY,
+		STATUS_IDL,
+		STATUS_BRB,
+		STATUS_AWY,
+		STATUS_PHN,
+		STATUS_LUN,
+		STATUS_HDN,
+		STATUS_OFF
 	};
 	
 	enum ParserOperation {
