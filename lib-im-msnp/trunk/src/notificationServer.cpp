@@ -22,7 +22,7 @@ QString CHG::makeCmd(){
 	// CHG trid statuscode clientid msnobj
 	QString res;
 	res += beginCmd();
-	res += " " + m_statusCode + " " + m_clientId;
+	res += " " + m_statusCode + " " + m_capabilities;
 	res += endCmd();
 	return res;
 }
@@ -57,7 +57,7 @@ void CHG::addStatusCode (State statusCode) {
 			break;
 	}
 }
-void CHG::addClientId (QString clientId) {m_clientId = clientId;}
+void CHG::addCapabilities (QString capabilities) {m_capabilities = capabilities;}
 void CHG::addMsnObj (QString msnObj) {m_msnObj = msnObj;}
 
 

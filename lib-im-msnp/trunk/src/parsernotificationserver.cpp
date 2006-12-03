@@ -345,7 +345,7 @@ void ParserNS::parseLst (){
 	if (m_contacts == 0) {
 		CHG c (m_client->getIdtr());
 		c.addStatusCode (m_initialStatus);
-		c.addClientId ("1342558252");
+		c.addCapabilities ("1342558252");
 		qDebug ("#################");
 		qDebug ("#Roster received#");
 		qDebug ("#################");

@@ -41,7 +41,6 @@ namespace libimmsnp {
 	}
 
 	void Client::makeConnection (QString ip, int port){
-		qDebug ("Terminando conexion");
 		m_mainSocket = new msocket(ip, port);
 		m_mainSocket->connect();
 	}
@@ -75,18 +74,18 @@ namespace libimmsnp {
 		v.addProtocolSupported("MSNP10");
 		send(v);
 		m_conn->run();
-
 	}
 
 	void Client::changeStatus (State status){
-		printf(":::::::::::::::::::::Status Changed\n");
+		// CHG idtr status capabilities\r\n
+		printf("::Cmd::Status Changed\n");
 		std::ostringstream msgStatus;
 		CHG cmd (getIdtr());
 		cmd.addStatusCode(status);
-		cmd.addClientId ("1342558252");
+		cmd.addCapabilities ("1342558252");
 		send (cmd);
-
 	}
+
 	void Client::changeNick(QString nick) {
 		// PRP idtr nick\r\n
 		PRP prp (getIdtr());
@@ -110,6 +109,7 @@ namespace libimmsnp {
 
 	void Client::addRosterListener (RosterListener *rl){
 		QObject::connect (this, SIGNAL(notifyNewContact(Contact*)), rl, SLOT(onNewContactSlot(Contact*)));
+		QObject::connect (this, SIGNAL(notifyNewGroup(Group*)), rl, SLOT(onNewGroupSlot(Group*)));
 		QObject::connect (this, SIGNAL(notifyHasBlog(QString)), rl, SLOT(hasBlogSlot(QString)));
 	}
 
@@ -135,19 +135,12 @@ namespace libimmsnp {
 		emit notifyDisconnect();
 	}
 
-	void Client::newGroupArrived (Group* g) {
-		printf("# GROUP: %s %s\n",g->getName().latin1(),g->getId().latin1());
-		m_roster->addGroup (g);
+	void Client::newGroupArrived (Group* group) {
+		printf("# GROUP: %s %s\n",group->getName().latin1(),group->getId().latin1());
+		emit notifyNewGroup(group);
 	}
 
 	void Client::newContactArrived (Contact* contact) {
-		QPtrList<Group> lsg = m_roster->getGroups();
-		for (uint i = 0; i < lsg.count() ; ++i)
-			if (lsg.at(i))
-				if (lsg.at(i)->getId () == contact->getId())
-					contact->setGroupName(lsg.at(i)->getName());
-
-		m_roster->addContact(contact);
 		emit notifyNewContact(contact);
 	}
 
@@ -156,12 +149,6 @@ namespace libimmsnp {
 	}
 
 	void Client::personalMessage (QString passport, QString personalMsg){
-//		QPtrList<Contact> lsc = m_roster->getContacts();
-//		for (uint i = 0; i < lsc.count() ; ++i)
-//			if (lsc.at(i))
-//				if (lsc.at(i)->getMsnName() == msnPassport)
-//					lsc.at(i)->setPersMsg (persMsg);
-//
 		if (personalMsg != "")
 			emit notifyPersonalMessage (passport, personalMsg);
 	}

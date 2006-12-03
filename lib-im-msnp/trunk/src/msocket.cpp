@@ -94,15 +94,13 @@ int msocket::connect () {
 	// Port
 	m_SockAddr.sin_port = htons( m_port );
 	::connect ( m_sockFd , (struct sockaddr *) &m_SockAddr , sizeof(struct sockaddr));
-	std::cout << "Connected with host: " << m_host << " in port: " << m_port << "\n";
+	printf ("Connected with host: %s in port:%i\n",m_host.c_str(),m_port);
 	return 0;
 }
 
 int msocket::send (QString buf){
 	int size;
-	//qDebug ("................Sending:" + QString("%1").arg(m_sockFd));
 	size = ::send (m_sockFd, buf.utf8().data(), buf.length(), 0);
-	//qDebug ("................Sended" + QString("%1").arg(m_sockFd));
 	QString tmpData = buf;
 	printf(">> Host:%s len:%i data%s\n",m_host.c_str(), size, QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r").latin1());
 	return size;
@@ -113,12 +111,10 @@ int msocket::recv (QString& buf){
 	int size = 0;
 	char data[MAX_MSG] ;
 
-	//qDebug ("................Receiving:" + QString("%1").arg(m_sockFd));
 	if ((size = ::recv (m_sockFd, data, MAX_MSG, 0)) == -1){
-		std::cout << "<< host: " << m_host << " << len: "<< size << " Error reciving  from socket\n";
+		printf ("<< host: %s len: %i Error reciving  from socket\n",m_host, size);
 		return -1;
 	}
-	//qDebug ("................Received" + QString("%1").arg(m_sockFd));
 
 	buf += QString(data).mid(0,size);
 	QString tmpData = buf;
@@ -130,7 +126,7 @@ int msocket::recv (QString& buf){
 
 msocket::~msocket () {
 	close(m_sockFd);
-	std::cout << "Socket Closed with: " << m_host << ":" << m_port << "\n";
+	printf ("Socket closed with host: %s:%i\n",m_host.c_str(),m_port);
 }
 
 msocket& msocket::operator= (const msocket &s){

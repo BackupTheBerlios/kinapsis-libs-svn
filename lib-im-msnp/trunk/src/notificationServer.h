@@ -24,11 +24,11 @@ public:
 	virtual ~CHG();
 	QString makeCmd();
 	void addStatusCode (State statusCode);
-	void addClientId (QString clientId);
+	void addCapabilities (QString capabilities);
 	void addMsnObj (QString msnObj);
 private:
 	QString m_statusCode;
-	QString m_clientId;
+	QString m_capabilities;
 	QString m_msnObj;
 };
 

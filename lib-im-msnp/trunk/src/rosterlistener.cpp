@@ -23,6 +23,10 @@ void RosterListener::onNewContactSlot(Contact *c){
 	this->onNewContact(c);
 }
 
+void RosterListener::onNewGroupSlot(Group *c){
+	this->onNewGroup(c);
+}
+
 void RosterListener::hasBlogSlot(QString passport){
 	this->hasBlog(passport);
 }

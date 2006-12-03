@@ -63,6 +63,7 @@ signals:
 	void notifyConnect();
 	void notifyDisconnect();
 	void notifyNewContact(Contact*);
+	void notifyNewGroup(Group*);
 	void notifyPresence(QString, State, QString, QString);
 	void notifyPersonalMessage(QString, QString);
 	void notifyHasBlog(QString);
