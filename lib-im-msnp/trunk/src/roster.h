@@ -16,33 +16,30 @@
 
 #include "libimmsnp.h"
 #include "contact.h"
-#include <qptrlist.h>
-#include <qobject.h>
+#include <qmap.h>
 
 namespace libimmsnp {
 
-class Roster :public QObject {
-Q_OBJECT
+class Roster {
 
 public:
 	Roster();
 	virtual ~Roster();
-
-	void addContact(Contact* Contact);
-	bool delContact(Contact* Contact);
+	void addContact(Contact* contact);
+	bool delContact(QString contact);
 
 	void addGroup(Group* group);
-//	bool delGroup(Group* group);
+	bool delGroup(QString group);
 	
 	unsigned int contactLen();
 	unsigned int groupLen();
+	QString getGroupName(QString id);	
 	
-	QPtrList<Contact>& getContacts();
-	QPtrList<Group>& getGroups();
-
 private:
-	QPtrList<Contact> m_contacts;
-	QPtrList<Group> m_groups;
+	typedef QMap<QString, Contact> ContactMap;
+	typedef QMap<QString, Group> GroupMap;
+	ContactMap m_contacts;
+	GroupMap m_groups;
 };
 
 }

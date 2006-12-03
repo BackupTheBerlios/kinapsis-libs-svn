@@ -16,43 +16,38 @@
 namespace libimmsnp {
 
 Roster::Roster() { 
-	m_contacts.setAutoDelete(true);
-	m_groups.setAutoDelete(true);
 }
 
 Roster::~Roster() { }
 
-void Roster::addContact(Contact* contact) {
-	m_contacts.append(contact);
+void Roster::addContact(Contact* c) {
+	m_contacts[c->getPassport()] = Contact ();
+	if (c->getPassport()) m_contacts[c->getPassport()].setPassport (c->getPassport());
+	if (c->getNickName()) m_contacts[c->getPassport()].setNickName (c->getNickName());
+	if (c->getId()) m_contacts[c->getPassport()].setId (c->getId());
+}
+bool Roster::delContact(QString c) {
+	m_contacts.remove(c);
 }
 
-bool Roster::delContact(Contact* contact) {
-	return m_contacts.remove(contact);
+void Roster::addGroup (Group* g){
+	m_groups[g->getId()] = Group (g->getName(), g->getId());
 }
 
-void Roster::addGroup (Group* group){
-	m_groups.append(group);
+bool Roster::delGroup (QString g){
+	m_groups.remove(g);
+	// TODO : Choose to del all contacts in this group or move to default group
 }
-
-//bool Roster::delGroup (Group* group){
-//	// TODO : Choose to del all contacts in this group or move to default group
-//}
 
 unsigned int Roster::contactLen() {
-	return m_contacts.count();
+	return m_contacts.size();
 }
 
 unsigned int Roster::groupLen() {
-	return m_groups.count();
+	return m_groups.size();
 }
-
-QPtrList<Contact>& Roster::getContacts() {
-	return m_contacts;
-}
-
-QPtrList<Group>& Roster::getGroups(){
-	return m_groups;
+QString Roster::getGroupName(QString id) {
+	return m_groups["id"].getName();
 }
 
 }
-#include "roster.moc"

@@ -138,14 +138,17 @@ namespace libimmsnp {
 	void Client::newGroupArrived (Group* group) {
 		printf("# GROUP: %s %s\n",group->getName().latin1(),group->getId().latin1());
 		emit notifyNewGroup(group);
+		m_roster->addGroup(group);
 	}
 
 	void Client::newContactArrived (Contact* contact) {
 		emit notifyNewContact(contact);
+		m_roster->addContact(contact);
 	}
 
 	void Client::statusChanged (QString passport, State status, QString displayName, QString capabilities ){
 		 emit notifyPresence (passport, status, displayName, capabilities);
+
 	}
 
 	void Client::personalMessage (QString passport, QString personalMsg){
