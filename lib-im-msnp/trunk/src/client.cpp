@@ -150,6 +150,11 @@ namespace libimmsnp {
 	}
 
 	void Client::newContactArrived (Contact* contact) {
+		if (contact->getGroupId() != "") {
+			QString g = m_roster->getGroupName(contact->getGroupId());
+			contact->setGroupName(g);
+			printf ("MSN::Log::Client ## Contact: %s Group:%s\n", contact->getPassport().latin1(), contact->getGroupName().latin1());
+		}
 		emit notifyNewContact(contact);
 		m_roster->addContact(contact);
 	}

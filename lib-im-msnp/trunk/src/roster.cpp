@@ -47,7 +47,7 @@ unsigned int Roster::groupLen() {
 	return m_groups.size();
 }
 QString Roster::getGroupName(QString id) {
-	return m_groups["id"].getName();
+	return m_groups[id].getName();
 }
 
 }

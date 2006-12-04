@@ -55,6 +55,6 @@ void Connection:: run (){
 
 Connection::~Connection (){
 	delete m_parser;
-	printf("MSN::Log::Connection ## Connection Deleted");
+	printf("MSN::Log::Connection ## Connection Deleted\n");
 }
 }

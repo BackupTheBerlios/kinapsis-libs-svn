@@ -321,6 +321,7 @@ void ParserNS::parseLsg (){
 }
 void ParserNS::parseLst (){
 	// LST N=alice@hotmail.com F=alice C=167266c7-15bf-440e-9940-1e3223e4f1a4 11 1 409a87ab-ab83-4dc1-a577-de97e948bc57\r\n
+	// LST N=encarta@conversagent.com 4 1\r\n
 	// FL = your contacts list
 	// RL = contacts that hae you in their contact list
 	//
@@ -332,12 +333,21 @@ void ParserNS::parseLst (){
 		m_buf.removeFromBegin();
 		m_contacts--;
 		QStringList fields = QStringList::split(" ",s);
-		QStringList::iterator point = fields.begin();
 		Contact* c = new Contact;
 		c->setPassport (fields[0].replace("N=",""));
-		c->setNickName (fields[1].replace("F=","").replace("%20"," ")); // TODO: remove replace
-		c->setId (fields[2].replace("C=",""));
-		c->setList (fields[3]);
+		if (fields.count() > 3){
+			c->setNickName (fields[1].replace("F=","").replace("%20"," ")); // TODO: remove replace
+			c->setId (fields[2].replace("C=",""));
+			c->setList (fields[3]);
+			if (fields[5]) {
+				QStringList groups = QStringList::split(",",fields[5].replace("\r\n",""));
+				QString oneGroup = groups[0];
+				c->setGroupId(oneGroup);
+			}
+		}
+		else{
+			c->setList (fields[2]);
+		}
 		m_prevContact = fields[0];
 		emit newContactArrived (c); 
 	}
