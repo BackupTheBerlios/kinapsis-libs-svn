@@ -17,7 +17,7 @@ namespace libimmsnp {
 
 QString id ("probando_msnpy@hotmail.com");
 QString pass ("gargolas");
-Client test(id,pass,STATUS_HDN);
+Client test(id,pass,STATUS_NLN);
 
 MsnTest::MsnTest () {
 	test.addConnectionListener(this);

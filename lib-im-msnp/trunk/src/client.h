@@ -16,6 +16,7 @@
 
 #include "libimmsnp.h"
 #include "parsernotificationserver.h"
+#include "parserswichboardserver.h"
 #include "contact.h"
 #include "roster.h"
 #include "connection.h"
@@ -23,6 +24,7 @@
 #include "msocket.h"
 #include "buffer.h"
 #include "command.h"
+#include "chat.h"
 #include "rosterlistener.h"
 #include "presencelistener.h"
 
@@ -32,6 +34,7 @@
 #include <qptrlist.h>
 
 namespace libimmsnp {
+class Chat;
 class Client : public  QObject{
 	
 Q_OBJECT
@@ -78,6 +81,8 @@ public slots:
 	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
 	void hasBlog (QString passport);
+
+	void chatRequest(QString ipPort, QString passport, QString ticket, QString sessionId);
 	
 private:
 	ParserNS* m_parser;
@@ -88,6 +93,8 @@ private:
 	int m_idtr;
 	Roster* m_roster;
 	State m_initialStatus;
+	int m_chatCount;
+	QPtrList<Chat> m_chatList;
 };
 }
 #endif // _CLIENT_H_

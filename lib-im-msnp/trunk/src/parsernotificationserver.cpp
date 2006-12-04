@@ -20,7 +20,7 @@
 
 namespace libimmsnp {
 ParserNS::ParserNS(QString msnPassport, QString msnPass, State initialStatus, Client* c){
-	m_idtr = 2;
+	m_idtr = 1;
 	m_msnPassport = msnPassport;
 	m_msnPass = msnPass;
 	m_socket = 0;
@@ -541,7 +541,6 @@ void ParserNS::parseFln (){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 		QStringList fields = QStringList::split(" ",s);
-		QStringList::iterator point = fields.begin();
 		QString passport = fields[0].replace("\r\n","");
 		emit statusChanged (passport,STATUS_OFF ,"","");
 	}
@@ -571,13 +570,13 @@ void ParserNS::parseRng (){
 		m_buf.removeFromBegin();
 		QStringList fields = QStringList::split(" ",s);
 		QStringList::iterator point = fields.begin();
-		QString ticket = fields[0];
+		QString sessionId = fields[0];
 		QString ipPort = fields[1];
-		QString type = fields[2];
-		QString key = fields[3];
+		QString authType = fields[2];
+		QString ticket = fields[3];
 		QString passport = fields[4];
 		QString personalMsg = fields[4];
-		printf ("MSN::Log::ParserNS ## Calling:" + passport + " From:" + ipPort );
+		emit chatRequest (ipPort, passport, ticket, sessionId);
 	}
 	else m_hasCommand = false;
 }
@@ -603,7 +602,7 @@ void ParserNS::parse (){
 		if (cmd == "VER"){
 				printf ("MSN::Log::ParserNS ## Parsing VER\n");
 				// VER 1 MSNP12 MSNP11 MSNP10 CVR0\r\n
-				lIdtr = m_buf.getInt (idtr);;
+				lIdtr = m_buf.getInt (idtr);
 				m_buf.advance (1+lIdtr+1);
 				// TODO : quitar de la lista de comprobacion
 				parseVer();
@@ -611,7 +610,7 @@ void ParserNS::parse (){
 		else if (cmd == "CVR"){
 				printf ("MSN::Log::ParserNS ## Parsing CVR\n");
 				// CVR 2 0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs probando_msnpy@hotmail.com\r\n
-				lIdtr = m_buf.getInt (idtr);;
+				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				parseCvr();
 				// TODO : quitar de la lista de comprobacion
@@ -619,7 +618,7 @@ void ParserNS::parse (){
 }
 		else if (cmd == "USR"){
 				printf ("MSN::Log::ParserNS ## Parsing USR\n");
-				lIdtr = m_buf.getInt (idtr);;
+				lIdtr = m_buf.getInt (idtr);
 				m_buf.advance (1+lIdtr+1);
 				// TODO : quitar de la lista de comprobacion
 				parseUsr();
@@ -627,14 +626,14 @@ void ParserNS::parse (){
 		else if (cmd == "XFR"){
 				printf ("MSN::Log::ParserNS ## Parsing XFR\n");
 				// XFR 2 NS 207.46.107.27:1863 0 207.46.28.93:1863\r\n
-				lIdtr = m_buf.getInt (idtr);;
+				lIdtr = m_buf.getInt (idtr);
 				m_buf.advance (1+lIdtr+1);
 				parseXfr();
 				// TODO : quitar de la lista de comprobacion
 }
 		else if (cmd ==  "ADC"){
 				printf ("MSN::Log::ParserNS ## Parsing ADC\n");
-				lIdtr = m_buf.getInt (idtr);;
+				lIdtr = m_buf.getInt (idtr);
 				m_buf.setPosition(3 + lIdtr);
 				// TODO : quitar de la lista de comprobacion
 				//parseAdc();

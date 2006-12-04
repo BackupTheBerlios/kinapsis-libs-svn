@@ -18,6 +18,8 @@
 #include "command.h"
 #include "libimmsnp.h"
 #include "notificationServer.h"
+#include "swichboardserver.h"
+#include "parserswichboardserver.h"
 
 namespace libimmsnp {
 
@@ -30,6 +32,7 @@ namespace libimmsnp {
 		m_idtr = 1;
 		m_roster = 0;
 		m_initialStatus = initialStatus;
+		m_chatList.setAutoDelete(true);
 	}
 
 	int Client::getIdtr() {
@@ -63,6 +66,7 @@ namespace libimmsnp {
 		QObject::connect(m_parser, SIGNAL(statusChanged (QString, State, QString, QString)), this, SLOT(statusChanged(QString, State, QString, QString)));
 		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
+		QObject::connect(m_parser, SIGNAL(chatRequest (QString, QString, QString, QString)), this, SLOT(chatRequest(QString, QString, QString, QString)));
 		m_conn = new Connection (m_mainSocket, m_parser);
 		m_conn->run();
 	}
@@ -171,6 +175,31 @@ namespace libimmsnp {
 
 	void Client::hasBlog(QString passport) {
 		emit notifyHasBlog(passport);
+	}
+
+	void Client::chatRequest(QString ipPort, QString passport, QString ticket, QString sessionId){
+		printf ("MSN::Log::ParserNS ## Calling:%s From: %s\n",passport.latin1(),ipPort.latin1());
+		msocket* sock = new msocket (ipPort.latin1());
+		sock->connect();
+
+		ANS ans(1);
+		ans.addPassport (m_msnPassport);
+		ans.addTicket (ticket);
+		ans.addSessId (sessionId);
+		sock->send(ans.makeCmd());
+		QString m;
+		sock->recv(m);
+		ParserSB* chatParser = new ParserSB (sock, this);
+		Chat* oneChat = new Chat (chatParser, m_chatCount, sock);
+		oneChat->Start();
+		m_chatList.append (oneChat);
+//		sleep(1); // if I don't wait it doesn't work
+//		emit (notifyNewChat (m_chatCount, msnPassport));
+//
+//		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
+//		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
+//		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
+//		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
 	}
 
 }
