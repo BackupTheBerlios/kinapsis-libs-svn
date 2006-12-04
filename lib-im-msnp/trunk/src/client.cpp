@@ -30,6 +30,7 @@ namespace libimmsnp {
 		m_msnPassport = msnPassport;
 		m_msnPass = msnPass;
 		m_idtr = 1;
+		m_chatCount = 0;
 		m_roster = 0;
 		m_initialStatus = initialStatus;
 		m_chatList.setAutoDelete(true);
@@ -140,6 +141,18 @@ namespace libimmsnp {
 		QObject::disconnect (this, 0, pl, 0);
 	}
 
+	void Client::addChatListener (ChatListener *chl){
+		QObject::connect (this, SIGNAL(notifyNewChat (int, QString)), chl, SLOT(newChatSlot (int, QString)));
+	//	QObject::connect (this, SIGNAL(notifyChatLeavedTheRoom(int, QString)), chl, SLOT(chatLeavedTheRoomSlot(int, QString)));
+		QObject::connect (this, SIGNAL(notifyChatIsTyping(int, QString)), chl, SLOT(chatIsTypingSlot(int, QString)));
+		QObject::connect (this, SIGNAL(notifyChatInfo (int, QString, QString)), chl, SLOT(chatInfoSlot(int, QString, QString)));
+		QObject::connect (this, SIGNAL(notifyChatArrivedMessage (int, QString, QString)),chl, SLOT(chatArrivedMessageSlot(int, QString, QString)));
+	}
+
+	void Client::delChatListener (ChatListener *chl){
+		QObject::disconnect (this, 0, chl, 0);
+	}
+
 	void Client::connected() {
 		emit notifyConnect();
 	}
@@ -177,6 +190,18 @@ namespace libimmsnp {
 		emit notifyHasBlog(passport);
 	}
 
+	void Client::chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg) {
+		emit notifyChatArrivedMessage (chatId, msnPassport, chatMsg);
+	}
+
+	void Client::chatInfo (int chatId, QString chatMsnClient, QString chatIsLogging) {
+		emit notifyChatInfo (chatId, chatMsnClient, chatIsLogging);
+	}
+
+	void Client::chatIsTyping (int chatId, QString chatMsnPassport){
+		emit notifyChatIsTyping (chatId, chatMsnPassport);
+	}
+
 	void Client::chatRequest(QString ipPort, QString passport, QString ticket, QString sessionId){
 		printf ("MSN::Log::ParserNS ## Calling:%s From: %s\n",passport.latin1(),ipPort.latin1());
 		msocket* sock = new msocket (ipPort.latin1());
@@ -189,16 +214,16 @@ namespace libimmsnp {
 		sock->send(ans.makeCmd());
 		QString m;
 		sock->recv(m);
-		ParserSB* chatParser = new ParserSB (sock, this);
+		ParserSB* chatParser = new ParserSB (sock, this, ++m_chatCount);
 		Chat* oneChat = new Chat (chatParser, m_chatCount, sock);
 		oneChat->Start();
 		m_chatList.append (oneChat);
 //		sleep(1); // if I don't wait it doesn't work
-//		emit (notifyNewChat (m_chatCount, msnPassport));
+		emit (notifyNewChat (m_chatCount, passport));
 //
-//		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
-//		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
-//		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
+		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
+		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
+		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 //		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
 	}
 

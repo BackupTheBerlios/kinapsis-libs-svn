@@ -15,12 +15,13 @@
 #include <qstringlist.h>
 
 namespace libimmsnp {
-ParserSB::ParserSB(msocket* s,Client* c){
+ParserSB::ParserSB(msocket* s,Client* c, int chatId){
 	m_idtr = 0;
 	m_socket = s;
 	m_client = c;
 	m_hasCommand = false;
 	m_isParsing = false;
+	m_chatId = chatId;
 }
 
 void ParserSB::feed (QString s){
@@ -49,22 +50,47 @@ void ParserSB::parseAns (){
 }
 
 void ParserSB::parseMsg (){
-	//MSG vaticano666@hotmail.com Cambiando_nick 139\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nUser-Agent: Gaim/1.5.0\r\nX-MMS-IM-Format: FN=arial; EF=; CO=000000; PF=0\r\n\r\nholaMSG vaticano666@hotmail.com Cambiando_nick 96\r\nMIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: Gaim/1.5.0\r\nChat-Logging: Y\r\n
+	// MSG xxxxxxxxxxx@hotmail.com Cambiando_nick 142\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nUser-Agent: Gaim/1.5.0\r\nX-MMS-IM-Format: FN=arial; EF=; CO=000000; PF=0\r\n\r\nbuenass
+	// MSG xxxxxxxxxxx@hotmail.com Cambiando_nick 96\r\nMIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: Gaim/1.5.0\r\nChat-Logging: Y\r\n
+	// MSG xxxxxxxxxxx@hotmail.com Cambiando_nick 96\r\nMIME-Version: 1.0\r\nContent-Type: text/x-msmsgscontrol\r\nTypingUser: xxxxxxxxxxx@hotmail.com\r\n\r\n\r\n
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
 		QStringList fields = QStringList::split(" ",s);
 		QString passport = fields[0];
-		QString nickCaller = fields[1];
+		QString callerNick = fields[1];
 		int payload = fields[2].replace("\r\n","").toInt();
-		printf ("Msg form%s nick:%s payload:%i\n",passport.latin1(),nickCaller.latin1(),payload);
-		printf ("###IniData:%s\n",s.replace("\r\n","\\r\\n").latin1());
 		QString dataPayload;
 		if ((m_buf.getNChar (dataPayload,payload)) == payload){
 			m_buf.advance (payload);
 			m_buf.removeFromBegin();
-			printf ("MSG Data:%s\n", dataPayload.replace("\r\n","\\r\\n").latin1());
+
+			if (dataPayload.contains("text/plain")) {
+				// MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nUser-Agent: Gaim/1.5.0\r\nX-MMS-IM-Format: FN=arial; EF=; CO=000000; PF=0\r\n\r\nHello
+				QString data = dataPayload.mid (dataPayload.find("\r\n\r\n") + 4, dataPayload.length());
+				QStringList msg = QStringList::split ("\r\n", dataPayload);
+				QString mime = msg[0].mid (14, msg[0].length()) ;
+				QString content = msg[1].mid (14, msg[1].find(";",14));
+				QString charset = msg[1].mid (msg[1].findRev("=") + 1, msg[1].length());
+				QString userAgent = msg[2].mid (12, msg[2].length());
+				QString format = msg[3].mid(17, msg[3].length());
+//				qDebug ("mime:" + mime + "content:" +content + "charset:" + charset + "userAgent:" + userAgent + "format:" + format + "DATA:" + data.replace("\r\n","\\r\\n") + "#");
+				emit chatArrivedMessage (m_chatId, passport, data);
+			}
+
+			else if (dataPayload.contains("text/x-clientcaps")) {
+				// MIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: Gaim/1.5.0\r\nChat-Logging: Y\r\n
+				QStringList msg = QStringList::split ("\r\n", dataPayload);
+
+				QString chatMsnClient = msg[2].mid (13, msg[3].length());
+				QString chatIsLogging = msg[3].mid (14, 1);
+				emit chatInfo (m_chatId, chatMsnClient, chatIsLogging );
+			}
+			else if (dataPayload.contains("text/x-msmsgscontrol")) {
+				// MIME-Version: 1.0\r\nContent-Type: text/x-msmsgscontrol\r\nTypingUser: xxxxxxxx@hotmail.com\r\n\r\n\r\n
+				emit chatIsTyping (m_chatId, passport);
+			}
 		}
 		else m_hasCommand = false;
 	}
@@ -146,3 +172,4 @@ void ParserSB::parse (){
 }
 
 }
+#include "parserswichboardserver.moc"

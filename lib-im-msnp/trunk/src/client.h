@@ -27,6 +27,7 @@
 #include "chat.h"
 #include "rosterlistener.h"
 #include "presencelistener.h"
+#include "chatlistener.h"
 
 #include <sstream>
 #include <string>
@@ -35,6 +36,7 @@
 
 namespace libimmsnp {
 class Chat;
+class ChatListener;
 class Client : public  QObject{
 	
 Q_OBJECT
@@ -63,6 +65,9 @@ public:
 	void addPresenceListener(PresenceListener *pl);
 	void delPresenceListener(PresenceListener *pl);
 	
+	void addChatListener(ChatListener *chl);
+	void delChatListener(ChatListener *chl);
+
 signals:
 	void notifyConnect();
 	void notifyDisconnect(ConnectionError e);
@@ -71,6 +76,13 @@ signals:
 	void notifyPresence(QString, State, QString, QString);
 	void notifyPersonalMessage(QString, QString);
 	void notifyHasBlog(QString);
+
+	void notifyNewChat (int, QString);
+//	void notifyChatLeavedTheRoom (int, QString);
+	void notifyChatIsTyping(int, QString);
+	void notifyChatInfo (int, QString, QString);
+	void notifyChatArrivedMessage (int, QString, QString);
+
 
 public slots:
 	void connected ();
@@ -83,6 +95,12 @@ public slots:
 	void hasBlog (QString passport);
 
 	void chatRequest(QString ipPort, QString passport, QString ticket, QString sessionId);
+	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
+	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
+	void chatIsTyping(int chatId, QString chatMsnPassport);
+//	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
+//	void contactDisconnected (QString msnPassport);
+//	void chatCreated (QString hostPort, QString ticket);
 	
 private:
 	ParserNS* m_parser;

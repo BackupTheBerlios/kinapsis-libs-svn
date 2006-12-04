@@ -11,8 +11,8 @@
   This software is distributed without any warranty.
 */
 
-#ifndef _PARSERSWICHBOARDSERVER_H_
-#define _PARSERSWICHBOARDSERVER_H_
+#ifndef _PARSERSB_H_
+#define _PARSERSB_H_
 
 #include "libimmsnp.h"
 #include "buffer.h"
@@ -26,10 +26,10 @@
 namespace libimmsnp {
 
 
-class ParserSB {
-
+class ParserSB :public QObject {
+Q_OBJECT
 public:
-	ParserSB(msocket*, Client*);
+	ParserSB(msocket*, Client*, int);
 	int hasData(){return m_buf.len();}
 	void feed(QString);
 	bool isParsing() {return m_isParsing;}
@@ -45,10 +45,14 @@ private:
 	msocket* m_socket;
 	bool m_isParsing;
 	bool m_hasCommand;
+	int m_chatId;
 
 signals:
+       void chatArrivedMessage (int, QString, QString);
+       void chatInfo (int, QString, QString);
+       void chatIsTyping (int, QString);
 
 };
 }
 	
-#endif // _PARSERSWICHBOARDSERVER_H_
+#endif // _PARSERSB_H_

@@ -23,9 +23,9 @@ MsnTest::MsnTest () {
 	test.addConnectionListener(this);
 	test.addRosterListener(this);
 	test.addPresenceListener(this);
-//	test.addChatListener(this);
+	test.addChatListener(this);
 	m_connected = 0;
-//	m_chatid = 0;
+	m_chatid = 0;
 }
 
 void MsnTest::run (){
@@ -95,26 +95,26 @@ void MsnTest::hasBlog(QString passport){
 //	qDebug ("## " + chatMsnPassport + " has left the room: " + tmp.setNum(chatId) );
 //}
 //
-//void MsnTest::chatIsTyping(int chatId, QString chatMsnPassport){
-//	QString tmp;
-//	qDebug ("## Typing user: "+ chatMsnPassport + " in chat number: " + tmp.setNum(chatId));
-//}
-//
-//void MsnTest::chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging){
-//	QString tmp;
-//	qDebug ("## CLientName: " + chatMsnClient + " " + "Is Logging: " + chatIsLogging + " in chat number: " + tmp.setNum(chatId));
-//}
-//
-//void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg){
-//	QString tmp;
-//	qDebug ("## MESSAGE: `" + chatMsg + "' from chat number: " + tmp.setNum(chatId) + " written by: " + chatMsnPassport);
-//}
-//
-//void MsnTest::newChat (int chatId, QString msnPassport){
-//	QString tmp;
-//        qDebug ("## NEW CHAT, begin with: " + msnPassport +  " in chat number: " + tmp.setNum(chatId));
-//	m_chatid = chatId;
-//}
+void MsnTest::chatIsTyping(int chatId, QString chatMsnPassport){
+	QString tmp;
+	qDebug ("## Typing user: "+ chatMsnPassport + " in chat number: " + tmp.setNum(chatId));
+}
+
+void MsnTest::chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging){
+	QString tmp;
+	qDebug ("## CLientName: " + chatMsnClient + " " + "Is Logging: " + chatIsLogging + " in chat number: " + tmp.setNum(chatId));
+}
+
+void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg){
+	QString tmp;
+	qDebug ("## MESSAGE: `" + chatMsg + "' from chat number: " + tmp.setNum(chatId) + " written by: " + chatMsnPassport);
+}
+
+void MsnTest::newChat (int chatId, QString msnPassport){
+	QString tmp;
+        qDebug ("## NEW CHAT, begin with: " + msnPassport +  " in chat number: " + tmp.setNum(chatId));
+	m_chatid = chatId;
+}
 //void MsnTest::sendTxtMsg (int chatCount, QString chatMsg) {
 //	test.sendTxtMsg(chatCount, chatMsg);
 //}
