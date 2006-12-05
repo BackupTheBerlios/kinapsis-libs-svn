@@ -98,7 +98,7 @@ void ParserSB::parseMsg (){
 }
 
 void ParserSB::parseBye (){
-	// BYE vaticano666@hotmail.com 1\r\n
+	// BYE xxxxxxxxxxx@hotmail.com 1\r\n
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
@@ -112,7 +112,7 @@ void ParserSB::parseBye (){
 }
 
 void ParserSB::parseAck (){
-	// BYE vaticano666@hotmail.com 1\r\n
+	// ACK 1\r\n
 	QString s;
 	int l;
 	int idtr;
@@ -122,6 +122,20 @@ void ParserSB::parseAck (){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 		printf ("MSG Received # %i\n",idtr);
+	}
+	else m_hasCommand = false;
+}
+
+void ParserSB::parseJoi (){
+	// JOI xxxxxxxxxxxxxxxx@hotmail.com Cambiando_nick 268435488\r\n 
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		QStringList fields = QStringList::split(" ",s);
+		QString passport = fields[0];
+		printf ("User %s Conected and ready for Chat\n",passport.latin1());
 	}
 	else m_hasCommand = false;
 }
@@ -166,6 +180,13 @@ void ParserSB::parse (){
 				m_buf.advance (1);
 				// TODO : quitar de la lista de comprobacion
 				parseMsg();
+		}
+		else if (cmd == "JOI"){
+				printf ("MSN::Log::ParserSB ## Parsing JOI\n");
+				// MSG passport nick 139\r\n
+				m_buf.advance (1);
+				// TODO : quitar de la lista de comprobacion
+				parseJoi();
 		}
 		else if (cmd == "ACK"){
 				//BYE passport\r\n

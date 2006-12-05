@@ -40,4 +40,31 @@ QString MSG::makeCmd(){
 	return res;
 }
 void MSG::addMsg (QString msg) {m_msg = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\n" + msg;}
+
+USRchat::USRchat(int idtr) : Command ("USR", idtr) {}
+USRchat::~USRchat(){}
+QString USRchat::makeCmd(){
+	//USR 1 example@passport.com 17262740.1050826919.32308\r\n
+	QString res;
+	res += beginCmd();
+	res += " " + m_passport + " " + m_ticket;
+	res += endCmd();
+	return res;
+}
+void USRchat::addPassport (QString passport) {m_passport = passport;}
+void USRchat::addTicket (QString ticket) {m_ticket = ticket;}
+
+
+CAL::CAL(int idtr) : Command ("CAL", idtr) {}
+CAL::~CAL(){}
+QString CAL::makeCmd(){
+	//CAL 1 example@passport.com\r\n
+	QString res;
+	res += beginCmd();
+	res += " " + m_passport;
+	res += endCmd();
+	return res;
+}
+void CAL::addPassport (QString passport) {m_passport = passport;}
+
 }

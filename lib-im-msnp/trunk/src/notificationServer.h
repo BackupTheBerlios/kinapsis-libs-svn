@@ -43,6 +43,14 @@ private:
 	QString m_nick;
 };
 
+class XFR : public Command {
+// XFR 15 SB\r\n 
+public:
+	XFR (int idtr);
+	virtual ~XFR();
+	QString makeCmd();
+};
+
 }
 #endif //_NOTIFICATIONSERVER_H_
 

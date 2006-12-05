@@ -86,6 +86,7 @@ signals:
 	void hasBlog (QString);
 	void disconnected(ConnectionError);
 	void chatRequest (QString, QString, QString, QString);
+	void initChatSB (QString, QString);
 
 };
 }

@@ -52,6 +52,7 @@ public:
 	void makeConnection (QString ip, int port);
 	void startConnection();
 	void sendChat(int chatId, QString msg);
+	void initChat(QString destPassport);
 
 	void changeStatus (State newStatus);
 	void changeNick(QString nick);
@@ -102,6 +103,8 @@ public slots:
 //	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
 //	void contactDisconnected (QString msnPassport);
 //	void chatCreated (QString hostPort, QString ticket);
+//
+	void initChatSB(QString, QString);
 	
 private:
 	typedef QMap<int, Chat*> ChatMap;
@@ -116,6 +119,7 @@ private:
 	State m_initialStatus;
 	int m_chatCount;
 	ChatMap m_chatList;
+	QString m_destPassport;
 };
 }
 #endif // _CLIENT_H_

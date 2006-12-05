@@ -70,6 +70,7 @@ namespace libimmsnp {
 		QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 		QObject::connect(m_parser, SIGNAL(hasBlog(QString)), this, SLOT(hasBlog(QString)));
 		QObject::connect(m_parser, SIGNAL(chatRequest (QString, QString, QString, QString)), this, SLOT(chatRequest(QString, QString, QString, QString)));
+		QObject::connect(m_parser, SIGNAL(initChatSB (QString, QString)), this, SLOT(initChatSB(QString, QString)));
 		m_conn = new Connection (m_mainSocket, m_parser);
 		m_conn->run();
 	}
@@ -231,6 +232,41 @@ namespace libimmsnp {
 		MSG m (m_chatList[chatId]->getIdtr());
 		m.addMsg (msg);
 		send (m, chatId);
+	}
+
+	void Client::initChat(QString destPassport){
+		//TODO: Improve this 
+		m_destPassport = destPassport;
+		XFR x(getIdtr());
+		send (x);
+	}
+	void Client::initChatSB(QString ipPort, QString ticket) {
+		msocket* sock = new msocket (ipPort.latin1());
+		sock->connect();
+
+		USRchat usr (1);
+		usr.addPassport (m_msnPassport);
+		usr.addTicket (ticket);
+		sock->send(usr.makeCmd());
+		QString m;
+		sock->recv(m);
+
+		CAL cal (1);
+		cal.addPassport (m_destPassport);
+		sock->send(cal.makeCmd());
+		sock->recv(m);
+
+		ParserSB* chatParser = new ParserSB (sock, this, ++m_chatCount);
+		Chat* oneChat = new Chat (chatParser, m_chatCount, sock);
+		oneChat->Start();
+		m_chatList[m_chatCount] = oneChat;
+//		emit (notifyNewChat (m_chatCount, passport));
+
+		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
+		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
+		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
+//		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
+		
 	}
 
 }

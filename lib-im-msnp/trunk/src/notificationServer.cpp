@@ -73,4 +73,14 @@ QString PRP::makeCmd(){
 }
 void PRP::addNick (QString nick){m_nick = nick;}
 
+XFR::XFR(int idtr) : Command ("XFR", idtr) {}
+XFR::~XFR(){}
+QString XFR::makeCmd(){
+	// XFR 15 SB\r\n
+	QString res;
+	res += beginCmd();
+	res += " SB";
+	res += endCmd();
+	return res;
+}
 }

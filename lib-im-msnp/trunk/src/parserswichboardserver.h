@@ -38,6 +38,7 @@ public:
 	void parseAns();
 	void parseMsg();
 	void parseAck();
+	void parseJoi();
 	void parseBye();
 private:
 	int m_idtr;

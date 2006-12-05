@@ -108,18 +108,28 @@ void ParserNS::parseXfr () {
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
-		QString ip   = s.mid (3, s.find (':') - 3);	
-		int     port = s.mid (s.find(':')+1, 4).toInt() ;	
+		if (s.contains ("NS")){
+			QString ip   = s.mid (3, s.find (':') - 3);	
+			int     port = s.mid (s.find(':')+1, 4).toInt() ;	
 
-		m_client->makeConnection(ip, port);
-		
-		// Restart secuence of authentication.
-		VER v(m_client->getIdtr());
-		v.addProtocolSupported("MSNP12");
-		v.addProtocolSupported("MSNP11");
-		v.addProtocolSupported("MSNP10");
-		m_client->send(v);
-		m_client->startConnection();
+			m_client->makeConnection(ip, port);
+			
+			// Restart secuence of authentication.
+			VER v(m_client->getIdtr());
+			v.addProtocolSupported("MSNP12");
+			v.addProtocolSupported("MSNP11");
+			v.addProtocolSupported("MSNP10");
+			m_client->send(v);
+			m_client->startConnection();
+		}
+		else if (s.contains ("SB")){
+		// XFR 15 SB 207.46.108.37:1863 CKI 17262740.1050826919.32308\r\n
+			QStringList fields = QStringList::split(" ",s);
+			QString ipPort = fields[1];
+			QString authType = fields[2];
+			QString ticket = fields[3].replace ("\r\n","");
+			emit initChatSB (ipPort, ticket);
+		}
 
 	}
 	else m_hasCommand = false;
@@ -569,7 +579,6 @@ void ParserNS::parseRng (){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
 		QStringList fields = QStringList::split(" ",s);
-		QStringList::iterator point = fields.begin();
 		QString sessionId = fields[0];
 		QString ipPort = fields[1];
 		QString authType = fields[2];

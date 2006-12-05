@@ -43,6 +43,30 @@ private:
 	QString m_msg;
 };
 
+class USRchat : public Command {
+// ANS trid your_passport ticket sessid\r\n 
+public:
+	USRchat (int idtr);
+	virtual ~USRchat();
+	QString makeCmd();
+	void addPassport (QString passport);
+	void addTicket (QString passport);
+private:
+	QString m_passport;
+	QString m_ticket;
+};
+
+class CAL : public Command {
+// CAL 1 carlitos@hotmail.com\r\n
+public:
+	CAL (int idtr);
+	virtual ~CAL();
+	QString makeCmd();
+	void addPassport (QString passport);
+private:
+	QString m_passport;
+};
+
 }
 #endif //_SWICHBOARDSERVER_H_
 

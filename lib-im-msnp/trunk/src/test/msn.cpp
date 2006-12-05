@@ -56,6 +56,7 @@ void MsnTest::presenceChanged (QString passport, State status, QString displayNa
 	switch (status){
 		case STATUS_NLN:
 			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Online", capabilities.latin1(), displayName.latin1());
+			test.initChat(passport);
 			break;
 		case STATUS_BSY:
 			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Do Not Disturb", capabilities.latin1(), displayName.latin1()); 
