@@ -228,7 +228,7 @@ namespace libimmsnp {
 //		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
 	}
 	void Client::sendChat(int chatId, QString msg) {
-		MSG m (1);
+		MSG m (m_chatList[chatId]->getIdtr());
 		m.addMsg (msg);
 		send (m, chatId);
 	}
