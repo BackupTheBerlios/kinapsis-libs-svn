@@ -34,6 +34,7 @@ public:
 	Chat (const Chat&);
 	int getChatId (){ return m_id; };
 	std::string getHost(){ return m_socket->getHost(); };
+	msocket* getSocket(){return m_socket;};
 	int Start ();
 	// Destructor
 	virtual ~Chat();	

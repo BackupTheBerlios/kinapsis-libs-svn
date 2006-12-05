@@ -32,6 +32,17 @@ private:
 	QString m_sessId;
 };
 
+class MSG : public Command {
+// ANS trid your_passport ticket sessid\r\n 
+public:
+	MSG (int idtr);
+	virtual ~MSG();
+	QString makeCmd();
+	void addMsg (QString msg);
+private:
+	QString m_msg;
+};
+
 }
 #endif //_SWICHBOARDSERVER_H_
 

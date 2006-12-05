@@ -33,15 +33,17 @@ namespace libimmsnp {
 		m_chatCount = 0;
 		m_roster = 0;
 		m_initialStatus = initialStatus;
-		m_chatList.setAutoDelete(true);
 	}
 
 	int Client::getIdtr() {
 		return m_idtr++;
 	}
 
-	void Client::send(Command& c) {
-	 	m_mainSocket->send (c.makeCmd());
+	void Client::send(Command& c, int chat) {
+		if (!chat)
+		 	m_mainSocket->send (c.makeCmd());
+		else
+			(m_chatList[chat]->getSocket())->send(c.makeCmd());
 	}
 
 	void Client::disconnect(){
@@ -217,14 +219,18 @@ namespace libimmsnp {
 		ParserSB* chatParser = new ParserSB (sock, this, ++m_chatCount);
 		Chat* oneChat = new Chat (chatParser, m_chatCount, sock);
 		oneChat->Start();
-		m_chatList.append (oneChat);
-//		sleep(1); // if I don't wait it doesn't work
+		m_chatList[m_chatCount] = oneChat;
 		emit (notifyNewChat (m_chatCount, passport));
-//
+
 		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 //		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
+	}
+	void Client::sendChat(int chatId, QString msg) {
+		MSG m (1);
+		m.addMsg (msg);
+		send (m, chatId);
 	}
 
 }

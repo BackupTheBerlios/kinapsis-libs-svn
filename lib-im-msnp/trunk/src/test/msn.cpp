@@ -108,6 +108,7 @@ void MsnTest::chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging)
 void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg){
 	QString tmp;
 	qDebug ("## MESSAGE: `" + chatMsg + "' from chat number: " + tmp.setNum(chatId) + " written by: " + chatMsnPassport);
+	if (chatMsg == "eco") test.sendChat(chatId, "Eco Eco");
 }
 
 void MsnTest::newChat (int chatId, QString msnPassport){

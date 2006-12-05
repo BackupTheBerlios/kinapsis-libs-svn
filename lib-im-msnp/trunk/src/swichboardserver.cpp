@@ -28,4 +28,16 @@ QString ANS::makeCmd(){
 void ANS::addPassport (QString passport) {m_passport = passport;}
 void ANS::addTicket (QString ticket) {m_ticket = ticket;}
 void ANS::addSessId (QString sessId) {m_sessId = sessId;}
+
+MSG::MSG(int idtr) : Command ("MSG", idtr, "") {}
+MSG::~MSG(){}
+QString MSG::makeCmd(){
+	//ANS trid your_passport ticket sessid\r\n
+	QString res;
+	res += beginCmd();
+	res += " A " + QString("%1").arg(m_msg.length()) + "\r\n" + m_msg;
+	res += endCmd();
+	return res;
+}
+void MSG::addMsg (QString msg) {m_msg = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\n" + msg;}
 }

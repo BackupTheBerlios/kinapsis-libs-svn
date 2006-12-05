@@ -101,7 +101,7 @@ int msocket::send (QString buf){
 	int size;
 	size = ::send (m_sockFd, buf.utf8().data(), buf.length(), 0);
 	QString tmpData = buf;
-	printf("MSN::Log::Socket ##  >>> Host:%s len:%i data%s\n",m_host.c_str(), size, QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r").latin1());
+	printf("MSN::Log::Socket ##  >>> Host:%s len:%i Data:%s\n",m_host.c_str(), size, QString(tmpData.utf8().data()).replace('\n',"\\n").replace('\r',"\\r").latin1());
 	return size;
 }
 
@@ -111,7 +111,7 @@ int msocket::recv (QString& buf){
 	char data[MAX_MSG] ;
 
 	if ((size = ::recv (m_sockFd, data, MAX_MSG, 0)) == -1){
-		printf ("MSN::Log::Socket ##  <<< host: %s len: %i Error reciving  from socket\n",m_host, size);
+		printf ("MSN::Log::Socket ##  <<< host: %s len: %i Error reciving  from socket\n",m_host.c_str(), size);
 		emit disconnected (ConnSocketError);
 		return -1;
 	}

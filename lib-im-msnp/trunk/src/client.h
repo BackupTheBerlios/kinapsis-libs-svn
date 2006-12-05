@@ -32,7 +32,7 @@
 #include <sstream>
 #include <string>
 #include <qobject.h>
-#include <qptrlist.h>
+#include <qmap.h>
 
 namespace libimmsnp {
 class Chat;
@@ -47,10 +47,11 @@ public:
 	void run ();
 	virtual ~Client();
 	int getIdtr();
-	void send(Command& c);
+	void send(Command& c, int chat = 0);
 	void disconnect();
 	void makeConnection (QString ip, int port);
 	void startConnection();
+	void sendChat(int chatId, QString msg);
 
 	void changeStatus (State newStatus);
 	void changeNick(QString nick);
@@ -103,6 +104,8 @@ public slots:
 //	void chatCreated (QString hostPort, QString ticket);
 	
 private:
+	typedef QMap<int, Chat*> ChatMap;
+
 	ParserNS* m_parser;
 	Connection* m_conn;
 	msocket* m_mainSocket;
@@ -112,7 +115,7 @@ private:
 	Roster* m_roster;
 	State m_initialStatus;
 	int m_chatCount;
-	QPtrList<Chat> m_chatList;
+	ChatMap m_chatList;
 };
 }
 #endif // _CLIENT_H_

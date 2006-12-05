@@ -98,7 +98,7 @@ void ParserSB::parseMsg (){
 }
 
 void ParserSB::parseBye (){
-	// 
+	// BYE vaticano666@hotmail.com 1\r\n
 	QString s;
 	int l;
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
@@ -106,7 +106,22 @@ void ParserSB::parseBye (){
 		m_buf.removeFromBegin();
 		QStringList fields = QStringList::split(" ",s);
 		QString passport = fields[0].replace("\r\n","");
-		printf ("Contact:%s has left the room\n");
+		printf ("Contact:%s has left the room\n", passport.latin1());
+	}
+	else m_hasCommand = false;
+}
+
+void ParserSB::parseAck (){
+	// BYE vaticano666@hotmail.com 1\r\n
+	QString s;
+	int l;
+	int idtr;
+	int lIdtr = m_buf.getInt (idtr);
+	m_buf.advance (1+lIdtr);
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		printf ("MSG Received # %i\n",idtr);
 	}
 	else m_hasCommand = false;
 }
@@ -152,9 +167,14 @@ void ParserSB::parse (){
 				// TODO : quitar de la lista de comprobacion
 				parseMsg();
 		}
+		else if (cmd == "ACK"){
+				//BYE passport\r\n
+				printf ("MSN::Log::ParserSB ## Parsing ANS\n");
+				parseAck();
+		}
 		else if (cmd == "BYE"){
 				//BYE passport\r\n
-				printf ("MSN::Log::ParserSB ## Parsing MSG\n");
+				printf ("MSN::Log::ParserSB ## Parsing BYE\n");
 				m_buf.advance (1);
 				parseBye();
 		}
