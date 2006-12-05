@@ -234,11 +234,12 @@ namespace libimmsnp {
 		send (m, chatId);
 	}
 
-	void Client::initChat(QString destPassport){
+	int Client::initChat(QString destPassport){
 		//TODO: Improve this 
 		m_destPassport = destPassport;
 		XFR x(getIdtr());
 		send (x);
+		return ++m_chatCount;
 	}
 	void Client::initChatSB(QString ipPort, QString ticket) {
 		msocket* sock = new msocket (ipPort.latin1());
@@ -256,7 +257,7 @@ namespace libimmsnp {
 		sock->send(cal.makeCmd());
 		sock->recv(m);
 
-		ParserSB* chatParser = new ParserSB (sock, this, ++m_chatCount);
+		ParserSB* chatParser = new ParserSB (sock, this, m_chatCount);
 		Chat* oneChat = new Chat (chatParser, m_chatCount, sock);
 		oneChat->Start();
 		m_chatList[m_chatCount] = oneChat;

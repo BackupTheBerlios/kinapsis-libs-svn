@@ -52,7 +52,7 @@ public:
 	void makeConnection (QString ip, int port);
 	void startConnection();
 	void sendChat(int chatId, QString msg);
-	void initChat(QString destPassport);
+	int initChat(QString destPassport);
 
 	void changeStatus (State newStatus);
 	void changeNick(QString nick);
