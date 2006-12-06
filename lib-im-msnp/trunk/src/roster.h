@@ -26,6 +26,7 @@ public:
 	Roster();
 	virtual ~Roster();
 	void addContact(Contact* contact);
+	Contact* getContact(QString passport);
 	bool delContact(QString contact);
 
 	void addGroup(Group* group);

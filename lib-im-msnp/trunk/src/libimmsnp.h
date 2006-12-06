@@ -41,6 +41,7 @@ namespace libimmsnp {
 	
 	enum ParserOperation {
 		PARSER_OK,
+		PARSER_HELLO,
 		PARSER_BYE,
 		PARSER_ERROR
 	};

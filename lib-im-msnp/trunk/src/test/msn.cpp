@@ -52,38 +52,38 @@ void MsnTest::onNewGroup(Group* g){
 	printf ("# GROUP:%s\n",g->getName().latin1());
 }
 
-void MsnTest::presenceChanged (QString passport, State status, QString displayName, QString capabilities){
-	switch (status){
+void MsnTest::presenceChanged (Contact* c){
+	switch (c->getStatus()){
 		case STATUS_NLN:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Online", capabilities.latin1(), displayName.latin1());
-			test.initChat(passport);
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().latin1(),"Online", c->getCapabilities().latin1(), c->getDisplayName().latin1());
+			test.initChat(c->getPassport());
 			break;
 		case STATUS_BSY:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Do Not Disturb", capabilities.latin1(), displayName.latin1()); 
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().latin1(),"Do Not Disturb", c->getCapabilities().latin1(), c->getDisplayName().latin1()); 
 			break;
 		case STATUS_IDL:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Not Available", capabilities.latin1(), displayName.latin1()); 
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().latin1(),"Not Available", c->getCapabilities().latin1(), c->getDisplayName().latin1()); 
 			break;
 		case STATUS_BRB:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Back early", capabilities.latin1(), displayName.latin1()); 
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().latin1(),"Back early", c->getCapabilities().latin1(), c->getDisplayName().latin1()); 
 			break;
 		case STATUS_AWY:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Away", capabilities.latin1(), displayName.latin1()); 
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().latin1(),"Away", c->getCapabilities().latin1(), c->getDisplayName().latin1()); 
 			break;
 		case STATUS_PHN:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"At phone", capabilities.latin1(), displayName.latin1()); 
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().latin1(),"At phone", c->getCapabilities().latin1(), c->getDisplayName().latin1()); 
 			break;
 		case STATUS_LUN:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",passport.latin1(),"Eating", capabilities.latin1(), displayName.latin1()); 
+			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().latin1(),"Eating", c->getCapabilities().latin1(), c->getDisplayName().latin1()); 
 			break;
 		default:
-			printf("# State Changed. User Disconnected:%s\n",passport.latin1()); 
+			printf("# State Changed. User Disconnected:%s\n",c->getPassport().latin1()); 
 			break;
 	}
 }
 
-void MsnTest::personalMessage(QString passport, QString personalMsg) {
-	printf ("#Mensaje personal de %s #--> %s\n",passport.latin1(), personalMsg.latin1() );
+void MsnTest::personalMessage(Contact* c) {
+	printf ("#Mensaje personal de %s #--> %s\n",c->getPassport().latin1(), c->getPersMsg().latin1() );
 }
 
 void MsnTest::chatLeavedTheRoom(int chatId, QString chatMsnPassport){

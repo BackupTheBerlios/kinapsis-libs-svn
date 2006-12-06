@@ -47,6 +47,7 @@ public:
 	State getStatus() {return m_status;};
 	QString getCapabilities() {return m_capabilities;};
 	QString getList(){return m_list;};
+	QString getPersMsg(){return m_persMsg;};
 	QString getDisplayName(){return m_displayName;};
 	
 

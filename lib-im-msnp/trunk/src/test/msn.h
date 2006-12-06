@@ -41,8 +41,8 @@ public:
 //
 	void onNewContact(Contact* c);
 	void onNewGroup(Group*);
-	void presenceChanged(QString c, State status, QString msnPersMsg, QString msnCapabilities);
-	void personalMessage (QString c, QString msg);
+	void presenceChanged(Contact* c);
+	void personalMessage (Contact* c);
 
 	void newChat (int chatId, QString msnPassport);
 	void chatLeavedTheRoom(int chatId, QString chatMsnPassport);

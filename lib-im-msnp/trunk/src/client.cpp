@@ -133,9 +133,8 @@ namespace libimmsnp {
 	}
 
 	void Client::addPresenceListener(PresenceListener *pl) {
-		QObject::connect(this, SIGNAL(notifyPresence(QString, State, QString, QString)), pl, SLOT(presenceChangedSlot(QString, State, QString, QString)));
-		QObject::connect(this, SIGNAL(notifyPersonalMessage(QString, QString)), pl, SLOT(personalMessageSlot(QString, QString)));
-//		QObject::connect(this, SIGNAL(notifyContactDisconnected (QString)), pl, SLOT(contactDisconnectedSlot(QString)));
+		QObject::connect(this, SIGNAL(notifyPresence(Contact*)), pl, SLOT(presenceChangedSlot(Contact*)));
+		QObject::connect(this, SIGNAL(notifyPersonalMessage(Contact*)), pl, SLOT(personalMessageSlot(Contact*)));
 	}
 
 	void Client::delPresenceListener (PresenceListener *pl){
@@ -177,13 +176,20 @@ namespace libimmsnp {
 	}
 
 	void Client::statusChanged (QString passport, State status, QString displayName, QString capabilities ){
-		 emit notifyPresence (passport, status, displayName, capabilities);
+		Contact* c = m_roster->getContact(passport);
+		c->setStatus (status);
+		c->setDisplayName (displayName);
+		c->setCapabilities (capabilities);
+		emit notifyPresence (c);
 
 	}
 
 	void Client::personalMessage (QString passport, QString personalMsg){
-		if (personalMsg != "")
-			emit notifyPersonalMessage (passport, personalMsg);
+		if (personalMsg != ""){
+			Contact* c = m_roster->getContact(passport);
+			c->setPersMsg (personalMsg);
+			emit notifyPersonalMessage (c);
+		}
 	}
 
 	void Client::chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg) {

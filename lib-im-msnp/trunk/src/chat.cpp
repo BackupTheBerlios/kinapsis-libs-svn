@@ -25,6 +25,7 @@ namespace libimmsnp {
 		m_parser = c.m_parser;
 		m_socket = c.m_socket;
 		m_idtr = c.m_idtr;
+		m_hasBuddies = 1;
 	}
 	
 	int Chat::Start() {
@@ -51,23 +52,32 @@ namespace libimmsnp {
 	}
 	
 	int Chat::Run(){
-		int lenBuf;
+		int size;
 		QString data; 
-		while (1){
-			if ((lenBuf = m_socket->recv (data)) == -1) {
-				delete m_parser;
-				m_parser = 0;
-				delete m_socket;
-				m_socket = 0;
-				//emit disconnect(m_id);
+		ParserOperation parserRes;
+		while ((size = m_socket->recv (data)) != -1){
+			printf ("####size%i\n",size);
+			if (size == 0) {
+				printf ("MSN::Log::Connection ## Connection closed unexpectly. Host:%s\n",QString (m_socket->getHost()).latin1());
+			        break;
 			}
-			else {
-				m_parser->feed(data);
-				if (!m_parser->isParsing()){m_parser->parse();}
-				data = "";
-//				if (bufState == PARSER_BYE) break; 
-			}
+			m_parser->feed(data);
+			if (!m_parser->isParsing()) 
+				parserRes = m_parser->parse();
+
+			if (parserRes == PARSER_BYE && !--m_hasBuddies) 
+				break;
+
+			if (parserRes == PARSER_HELLO)
+				m_hasBuddies++;
+			data = "";
+//			if (bufState == PARSER_BYE) break; 
 		}
+		printf ("MSN::Log::Chat ## Chat closed with:%s\n", QString (m_socket->getHost()).latin1());
+		delete m_parser;
+		m_parser = 0;
+		delete m_socket;
+		m_socket = 0;
 		delete this;
 	}
 }

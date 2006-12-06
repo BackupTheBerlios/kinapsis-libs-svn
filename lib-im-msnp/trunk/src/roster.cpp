@@ -26,6 +26,10 @@ void Roster::addContact(Contact* c) {
 	if (c->getNickName()) m_contacts[c->getPassport()].setNickName (c->getNickName());
 	if (c->getId()) m_contacts[c->getPassport()].setId (c->getId());
 }
+Contact*  Roster::getContact (QString passport) {
+	return &m_contacts[passport];
+}
+
 bool Roster::delContact(QString c) {
 	m_contacts.remove(c);
 }

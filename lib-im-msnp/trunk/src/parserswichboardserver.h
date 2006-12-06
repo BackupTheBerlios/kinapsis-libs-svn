@@ -33,7 +33,7 @@ public:
 	int hasData(){return m_buf.len();}
 	void feed(QString);
 	bool isParsing() {return m_isParsing;}
-	void parse();
+	ParserOperation parse();
 	void parseIro();
 	void parseAns();
 	void parseMsg();

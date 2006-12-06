@@ -19,12 +19,12 @@ PresenceListener::PresenceListener() { }
 
 PresenceListener::~PresenceListener() { }
 
-void PresenceListener::presenceChangedSlot(QString c, State status, QString msnPersMsg, QString msnCapabilities) {
-       	this->presenceChanged(c, status, msnPersMsg, msnCapabilities);
+void PresenceListener::presenceChangedSlot(Contact* c) {
+       	this->presenceChanged(c);
 }
 
-void PresenceListener::personalMessageSlot(QString c, QString msg) {
-	this->personalMessage(c, msg);
+void PresenceListener::personalMessageSlot(Contact* c) {
+	this->personalMessage(c);
 }
 
 //void PresenceListener::contactDisconnectedSlot(QString msnPassport) {

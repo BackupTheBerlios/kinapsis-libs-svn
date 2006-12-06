@@ -48,6 +48,7 @@ private:
 	int m_id;
 	msocket* m_socket;
 	int m_idtr;
+	int m_hasBuddies;
 }; 
 }
 

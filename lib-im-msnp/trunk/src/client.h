@@ -75,8 +75,8 @@ signals:
 	void notifyDisconnect(ConnectionError e);
 	void notifyNewContact(Contact*);
 	void notifyNewGroup(Group*);
-	void notifyPresence(QString, State, QString, QString);
-	void notifyPersonalMessage(QString, QString);
+	void notifyPresence(Contact*);
+	void notifyPersonalMessage(Contact*);
 
 	void notifyNewChat (int, QString);
 	void notifyChatLeavedTheRoom (int, QString);

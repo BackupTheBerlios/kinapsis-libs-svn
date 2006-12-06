@@ -140,7 +140,7 @@ void ParserSB::parseJoi (){
 	else m_hasCommand = false;
 }
 
-void ParserSB::parse (){
+ParserOperation ParserSB::parse (){
 	m_isParsing = true;
 	QString cmd;
 	int idtr;
@@ -187,6 +187,7 @@ void ParserSB::parse (){
 				m_buf.advance (1);
 				// TODO : quitar de la lista de comprobacion
 				parseJoi();
+				return PARSER_HELLO;
 		}
 		else if (cmd == "ACK"){
 				//BYE passport\r\n
@@ -198,6 +199,7 @@ void ParserSB::parse (){
 				printf ("MSN::Log::ParserSB ## Parsing BYE\n");
 				m_buf.advance (1);
 				parseBye();
+				return PARSER_BYE;
 		}
 		else {	
 			QString error;
@@ -210,6 +212,7 @@ void ParserSB::parse (){
 	printf ("MSN::Log::ParserSB ## Buffer Data<%s>\n", d.replace('\n',"\\n").replace('\r',"\\r").latin1());
 	}	
 	m_isParsing = false;
+	return PARSER_OK;
 }
 
 }
