@@ -106,7 +106,7 @@ void ParserSB::parseBye (){
 		m_buf.removeFromBegin();
 		QStringList fields = QStringList::split(" ",s);
 		QString passport = fields[0].replace("\r\n","");
-		printf ("Contact:%s has left the room\n", passport.latin1());
+		emit chatLeavedTheRoom (m_chatId, passport);
 	}
 	else m_hasCommand = false;
 }

@@ -27,12 +27,10 @@ public:
 
 	virtual void onNewContact(Contact *c) = 0;
 	virtual void onNewGroup(Group *g) = 0;
-	virtual void hasBlog(QString passport) = 0;
 
 public slots:
 	void onNewContactSlot(Contact *c);
 	void onNewGroupSlot(Group *g);
-	void hasBlogSlot(QString passport);
 };
 
 }

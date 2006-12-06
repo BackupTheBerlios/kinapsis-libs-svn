@@ -53,6 +53,7 @@ signals:
        void chatArrivedMessage (int, QString, QString);
        void chatInfo (int, QString, QString);
        void chatIsTyping (int, QString);
+       void chatLeavedTheRoom(int, QString);
 
 };
 }

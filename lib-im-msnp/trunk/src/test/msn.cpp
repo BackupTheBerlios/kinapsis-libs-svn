@@ -86,16 +86,11 @@ void MsnTest::personalMessage(QString passport, QString personalMsg) {
 	printf ("#Mensaje personal de %s #--> %s\n",passport.latin1(), personalMsg.latin1() );
 }
 
-void MsnTest::hasBlog(QString passport){
-	QString page (passport.mid(0,passport.length() - passport.find("@")));
-	qDebug ("# " + passport + " has a Blog at " + page + ".spaces.msn.com");
+void MsnTest::chatLeavedTheRoom(int chatId, QString chatMsnPassport){
+	QString tmp;
+	qDebug ("## " + chatMsnPassport + " has left the room: " + tmp.setNum(chatId) );
 }
 
-//void MsnTest::chatLeavedTheRoom(int chatId, QString chatMsnPassport){
-//	QString tmp;
-//	qDebug ("## " + chatMsnPassport + " has left the room: " + tmp.setNum(chatId) );
-//}
-//
 void MsnTest::chatIsTyping(int chatId, QString chatMsnPassport){
 	QString tmp;
 	qDebug ("## Typing user: "+ chatMsnPassport + " in chat number: " + tmp.setNum(chatId));

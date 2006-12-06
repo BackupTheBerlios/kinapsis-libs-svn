@@ -43,11 +43,9 @@ public:
 	void onNewGroup(Group*);
 	void presenceChanged(QString c, State status, QString msnPersMsg, QString msnCapabilities);
 	void personalMessage (QString c, QString msg);
-	void hasBlog(QString c);
-//	void contactDisconnected(QString msnPassport);
-//
+
 	void newChat (int chatId, QString msnPassport);
-//	void chatLeavedTheRoom(int chatId, QString chatMsnPassport);
+	void chatLeavedTheRoom(int chatId, QString chatMsnPassport);
 	void chatIsTyping(int chatId, QString chatMsnPassport);
 	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
 	void chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg);

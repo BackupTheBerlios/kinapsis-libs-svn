@@ -25,7 +25,7 @@ public:
 	virtual ~ChatListener();
 
 	virtual void newChat (int chatId, QString msnPassport) = 0;
-//	virtual void chatLeavedTheRoom(int chatId, QString chatMsnPassport) = 0;
+	virtual void chatLeavedTheRoom(int chatId, QString chatMsnPassport) = 0;
 	virtual void chatIsTyping(int chatId, QString chatMsnPassport) = 0;
 	virtual void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging) = 0;
 	virtual void chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg) = 0;
@@ -33,7 +33,7 @@ public:
 
 public slots:
 	void newChatSlot (int chatId, QString msnPassport);
-//	void chatLeavedTheRoomSlot(int chatId, QString chatMsnPassport);
+	void chatLeavedTheRoomSlot(int chatId, QString chatMsnPassport);
 	void chatIsTypingSlot(int chatId, QString chatMsnPassport);
 	void chatInfoSlot(int chatId, QString chatMsnClient, QString chatIsLogging);
 	void chatArrivedMessageSlot (int chatId, QString chatMsnPassport, QString chatMsg);

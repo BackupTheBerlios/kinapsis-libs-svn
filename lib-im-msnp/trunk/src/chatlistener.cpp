@@ -23,9 +23,9 @@ void ChatListener::newChatSlot (int chatId, QString msnPassport){
 	this-> newChat (chatId, msnPassport);
 }
 
-//void ChatListener::chatLeavedTheRoomSlot(int chatId, QString chatMsnPassport){
-//	this->chatLeavedTheRoom(chatId, chatMsnPassport) ;
-//}
+void ChatListener::chatLeavedTheRoomSlot(int chatId, QString passport){
+	this->chatLeavedTheRoom(chatId, passport) ;
+}
 
 void ChatListener::chatIsTypingSlot(int chatId, QString chatMsnPassport){
 	this->chatIsTyping(chatId, chatMsnPassport) ;

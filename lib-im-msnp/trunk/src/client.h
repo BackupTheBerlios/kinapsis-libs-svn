@@ -52,7 +52,7 @@ public:
 	void makeConnection (QString ip, int port);
 	void startConnection();
 	void sendChat(int chatId, QString msg);
-	int initChat(QString destPassport);
+	void initChat(QString destPassport);
 
 	void changeStatus (State newStatus);
 	void changeNick(QString nick);
@@ -77,10 +77,9 @@ signals:
 	void notifyNewGroup(Group*);
 	void notifyPresence(QString, State, QString, QString);
 	void notifyPersonalMessage(QString, QString);
-	void notifyHasBlog(QString);
 
 	void notifyNewChat (int, QString);
-//	void notifyChatLeavedTheRoom (int, QString);
+	void notifyChatLeavedTheRoom (int, QString);
 	void notifyChatIsTyping(int, QString);
 	void notifyChatInfo (int, QString, QString);
 	void notifyChatArrivedMessage (int, QString, QString);
@@ -94,13 +93,12 @@ public slots:
 	void newContactArrived (Contact* c);
 	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
-	void hasBlog (QString passport);
 
 	void chatRequest(QString ipPort, QString passport, QString ticket, QString sessionId);
 	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
 	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
 	void chatIsTyping(int chatId, QString chatMsnPassport);
-//	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
+	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
 //	void contactDisconnected (QString msnPassport);
 //	void chatCreated (QString hostPort, QString ticket);
 //
