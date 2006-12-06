@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2006 by Luis Cidoncha                              *
+ *   Copyright (C) 2006 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,70 +19,23 @@
  ***************************************************************************/
 
 
-#ifndef _PARSER_H_
-#define _PARSER_H_
-
-#include "buffer.h"
-#include "client.h"
-#include "families.h"
-#include "message.h"
-#include "roster.h"
-#include "userinfo.h"
 #include "parserbase.h"
-#include <qstring.h>
 
 namespace liboscar {
 
-class Parser : public ParserBase {
-Q_OBJECT
+ParserBase::ParserBase(Client *c){ 
+	m_client = c;
+}
 
-public:
-	Parser(Client *c);
+void ParserBase::add(Byte *data, int len){
+	int i;
 
-	Word getNextSeqNumber();
-	virtual ~Parser();
+	for (i=0; i < len; i++)
+		m_buf << data[i];
+}
 
-signals:
-	void receivedBOS(QString server, QString port);
-	void serverDisconnected(QString reason, DisconnectReason error);
-	void loginSequenceFinished();
-	void rosterInfo(Roster r);
-	void newMessage(Message msg);
-	void statusChanged(UIN uin, PresenceStatus status);
-	void newUin(UIN uin);
-	void authReq(UIN uin, QString reason);
-	void awayMessageArrived(UIN uin, QString awaymsg);
-	void typingEventArrived(UIN uin, IsTypingType type);
-
-public slots:
-	void parse();
-
-private:
-	void parseCh1(Buffer& buf);
-	void parseCh2(Buffer& buf);
-	void parseCh4(Buffer& buf);
-	void parseCh5(Buffer& buf);
-
-	void parseCh2Service(Buffer& buf);
-	void parseCh2Location(Buffer& buf);
-	void parseCh2Contact(Buffer& buf);
-	void parseCh2ICBM(Buffer& buf);
-	void parseCh2BOS(Buffer& buf);
-	void parseCh2Interval(Buffer& buf);
-	void parseCh2Roster(Buffer& buf);
-	void parseCh2ICQ(Buffer& buf);
-	void parseCh2NewUser(Buffer& buf);
-
-	void sendKeepAlive();
-
-	Word m_seq; /* FLAP's sequence number */
-	Families m_fam;
-
-	Buffer m_cookie;
-
-	bool m_inlogin;
-};
+ParserBase::~ParserBase() { }
 
 }
 
-#endif // _PARSER_H_
+#include "parserbase.moc"

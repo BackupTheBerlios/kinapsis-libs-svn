@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2006 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -41,18 +41,10 @@
 
 namespace liboscar {
 
-Parser::Parser(Client *c){ 
+Parser::Parser(Client *c) : ParserBase(c) { 
 	srand(time(NULL));
 	m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
-	m_client = c;
 	m_inlogin = true;
-}
-
-void Parser::add(Byte *data, int len){
-	int i;
-
-	for (i=0; i < len; i++)
-		m_buf << data[i];
 }
 
 void Parser::parse(){
