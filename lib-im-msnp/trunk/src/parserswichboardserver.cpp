@@ -135,7 +135,7 @@ void ParserSB::parseJoi (){
 		m_buf.removeFromBegin();
 		QStringList fields = QStringList::split(" ",s);
 		QString passport = fields[0];
-		printf ("User %s Conected and ready for Chat\n",passport.latin1());
+		emit newChat (m_chatId, passport);
 	}
 	else m_hasCommand = false;
 }

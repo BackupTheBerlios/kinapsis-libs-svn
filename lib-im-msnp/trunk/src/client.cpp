@@ -171,7 +171,6 @@ namespace libimmsnp {
 		if (contact->getGroupId() != "") {
 			QString g = m_roster->getGroupName(contact->getGroupId());
 			contact->setGroupName(g);
-			printf ("MSN::Log::Client ## Contact: %s Group:%s\n", contact->getPassport().latin1(), contact->getGroupName().latin1());
 		}
 		emit notifyNewContact(contact);
 		m_roster->addContact(contact);
@@ -259,15 +258,19 @@ namespace libimmsnp {
 		Chat* oneChat = new Chat (chatParser, m_chatCount, sock);
 		oneChat->Start();
 		m_chatList[m_chatCount] = oneChat;
-//		emit (notifyNewChat (m_chatCount, passport));
 
 		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
+		QObject::connect(chatParser, SIGNAL(newChat(int, QString)), this, SLOT(newChat(int, QString)));
 		//printf ("Contact:%s has left the room\n", passport.latin1());
 		
 	}
-
+	
+	void Client::newChat (int chatId, QString passport){
+		printf ("User %s Conected and ready for Chat\n",passport.latin1());
+		emit notifyNewChat (chatId, passport);
+	}
 }
 #include "client.moc"

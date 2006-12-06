@@ -103,6 +103,7 @@ public slots:
 //	void chatCreated (QString hostPort, QString ticket);
 //
 	void initChatSB(QString, QString);
+	void newChat(int, QString);
 	
 private:
 	typedef QMap<int, Chat*> ChatMap;

@@ -54,6 +54,7 @@ signals:
        void chatInfo (int, QString, QString);
        void chatIsTyping (int, QString);
        void chatLeavedTheRoom(int, QString);
+       void newChat (int, QString);
 
 };
 }
