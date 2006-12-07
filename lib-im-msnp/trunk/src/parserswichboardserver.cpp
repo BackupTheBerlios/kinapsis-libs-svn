@@ -187,6 +187,7 @@ ParserOperation ParserSB::parse (){
 				m_buf.advance (1);
 				// TODO : quitar de la lista de comprobacion
 				parseJoi();
+				m_isParsing = false;
 				return PARSER_HELLO;
 		}
 		else if (cmd == "ACK"){
@@ -199,6 +200,7 @@ ParserOperation ParserSB::parse (){
 				printf ("MSN::Log::ParserSB ## Parsing BYE\n");
 				m_buf.advance (1);
 				parseBye();
+				m_isParsing = false;
 				return PARSER_BYE;
 		}
 		else {	
