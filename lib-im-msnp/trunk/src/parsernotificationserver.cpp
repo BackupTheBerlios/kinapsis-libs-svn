@@ -241,18 +241,23 @@ void ParserNS::parseUsr () {
 }
 
 void ParserNS::parseMsg (){
-	
-	QString a;
-	m_buf.data(a);
-	if (a.contains ("Content-Type: text/x-msmsgsprofile")){
-		int l = a.find ("\r\n\r\n") + 4;
-		m_buf.gotoBegin();
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
-		m_buf.removeFromBegin();
-
-		SYN s (m_client->getIdtr());
-		m_client->send (s);
-		// añado a lista de comprobacion 
+		QStringList fields = QStringList::split(" ",s);
+		QString passport = fields[0];
+		QString callerNick = fields[1];
+		int payload = fields[2].replace("\r\n","").toInt();
+		QString dataPayload;
+		if ((m_buf.getNChar (dataPayload,payload)) == payload){
+			m_buf.advance (payload);
+			m_buf.removeFromBegin();
+			SYN s (m_client->getIdtr());
+			m_client->send (s);
+			// añado a lista de comprobacion 
+		}
+		else m_hasCommand = false;
 	}
 	else m_hasCommand = false;
 }
@@ -777,6 +782,7 @@ void ParserNS::parse (){
 			parseRng();
 }
 		else if (cmd ==  "MSG") {
+			m_buf.advance (1);
 			printf ("MSN::Log::ParserNS ## Parsing MSG\n");
 			parseMsg();
 }
