@@ -48,7 +48,6 @@ namespace libimmsnp {
 
 	void Client::disconnect(){
 		delete m_conn;
-		delete m_parser;
 		delete m_mainSocket;
 		delete m_roster;
 		emit notifyDisconnect(ConnUserDisconnected);

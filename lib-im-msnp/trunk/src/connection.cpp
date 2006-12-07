@@ -42,6 +42,7 @@ void Connection:: run (){
 
 		if (m_iterations == 0) {
 			delete m_socket;
+			m_socket = 0;
 			m_parser->parse();
 			break;
 		}
