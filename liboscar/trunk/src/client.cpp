@@ -246,9 +246,9 @@ ConnectionError Client::connAuth() {
 
 	if (!m_logconn){
 		if (m_type == ICQ)
-			m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, m_parser);
+			m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, (ParserBase *) m_parser);
 		else if (m_type == AIM)
-			m_logconn = new Connection(AIM_LOGIN_SERVER, AIM_LOGIN_PORT, m_parser);
+			m_logconn = new Connection(AIM_LOGIN_SERVER, AIM_LOGIN_PORT, (ParserBase *) m_parser);
 	}
 
 		

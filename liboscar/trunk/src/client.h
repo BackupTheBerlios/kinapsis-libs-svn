@@ -23,6 +23,7 @@
 #define _CLIENT_H_
 
 #include "uin.h"
+#include "parser.h"
 #include "connection.h"
 #include "connectionresult.h"
 #include "liboscar.h"

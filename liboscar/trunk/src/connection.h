@@ -24,7 +24,7 @@
 
 #include "liboscar.h"
 #include "connectionresult.h"
-#include "parser.h"
+#include "parserbase.h"
 #include "buffer.h"
 #include <qstring.h>
 #include <qobject.h>
@@ -32,14 +32,14 @@
 
 namespace liboscar {
 
-	class Parser;
+	class ParserBase;
 	class Buffer;
 
 class Connection : public QObject{
 Q_OBJECT
 
 public:
-	Connection(const QString server, int port, Parser* parser);
+	Connection(const QString server, int port, ParserBase* parser);
 	virtual ~Connection();
 
 	ConnectionStatus getStatus();
@@ -69,7 +69,7 @@ private:
 
 	bool m_exit;
 
-	Parser* m_parser;
+	ParserBase* m_parser;
 
 	struct sockaddr_in m_local;
 };

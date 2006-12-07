@@ -34,7 +34,7 @@
 
 namespace liboscar {
 
-Connection::Connection(const QString server, int port, Parser* parser){
+Connection::Connection(const QString server, int port, ParserBase* parser){
 	m_server = server;
 	m_port = port;
 	m_exit = false;
