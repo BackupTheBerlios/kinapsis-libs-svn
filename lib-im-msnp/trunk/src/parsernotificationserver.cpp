@@ -30,6 +30,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, State initialStatus, Cl
 	m_client = c;
 	m_hasCommand = false;
 	m_isParsing = false;
+	m_connectionSteps = 0;
 }
 void ParserNS::feed (Buffer b){
 	m_buf << b;
@@ -397,7 +398,10 @@ void ParserNS::parseChg (){
 	if ((l = m_buf.getTilChar (s,'\n')) != -1){
 		m_buf.advance (l);
 		m_buf.removeFromBegin();
-		emit connected();
+		if (m_connectionSteps == 0){
+			emit connected();
+			m_connectionSteps = 1;
+		}
 	}
 	else m_hasCommand = false;
 }
