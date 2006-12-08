@@ -30,6 +30,7 @@ MsnTest::MsnTest () {
 
 void MsnTest::run (){
 	test.connect();
+	qDebug("FIN DEL CONNECT");
 }
 
 MsnTest::~MsnTest() {
@@ -105,6 +106,7 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString ch
 	QString tmp;
 	qDebug ("## MESSAGE: `" + chatMsg + "' from chat number: " + tmp.setNum(chatId) + " written by: " + chatMsnPassport);
 	if (chatMsg == "eco") test.sendChat(chatId, "Eco Eco");
+	if (chatMsg == "salir") test.disconnect();
 }
 
 void MsnTest::newChat (int chatId, QString msnPassport){

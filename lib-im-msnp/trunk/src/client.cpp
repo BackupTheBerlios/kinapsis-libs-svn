@@ -153,14 +153,17 @@ namespace libimmsnp {
 	}
 
 	void Client::connected() {
+		printf ("MSN::Client::SIGNAL ## notifyConnect\n");
 		emit notifyConnect();
 	}
 
 	void Client::disconnected(ConnectionError e) {
+		printf ("MSN::Client::SIGNAL ## DISCONNECT\n"); 
 		emit notifyDisconnect(e);
 	}
 
 	void Client::newGroupArrived (Group* group) {
+		printf ("MSN::Client::SIGNAL ## newGroup\n"); 
 		emit notifyNewGroup(group);
 		m_roster->addGroup(group);
 	}
@@ -170,6 +173,7 @@ namespace libimmsnp {
 			QString g = m_roster->getGroupName(contact->getGroupId());
 			contact->setGroupName(g);
 		}
+		printf ("MSN::Client::SIGNAL ## NewContact\n"); 
 		emit notifyNewContact(contact);
 		m_roster->addContact(contact);
 	}
@@ -179,6 +183,7 @@ namespace libimmsnp {
 		c->setStatus (status);
 		c->setDisplayName (displayName);
 		c->setCapabilities (capabilities);
+		printf ("MSN::Client::SIGNAL ## Presence form:%s displayName:%s CAP:%s\n", passport.latin1(), displayName.replace("\r\n","\\r\\n").latin1(), capabilities.latin1()); 
 		emit notifyPresence (c);
 
 	}
@@ -187,24 +192,29 @@ namespace libimmsnp {
 		if (personalMsg != ""){
 			Contact* c = m_roster->getContact(passport);
 			c->setPersMsg (personalMsg);
+			printf ("MSN::Client::SIGNAL ## personalMsg from:%s persMSG:%s\n", passport.latin1(), personalMsg.replace("\r\n","\\r\\n").latin1()); 
 			emit notifyPersonalMessage (c);
 		}
 	}
 
 	void Client::chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg) {
+		printf ("MSN::Client::SIGNAL ## Chat message at:%i from:%s MSG:%s\n", chatId, msnPassport.latin1(), chatMsg.replace("\r\n","\\r\\n").latin1()); 
 		emit notifyChatArrivedMessage (chatId, msnPassport, chatMsg);
 	}
 
 	void Client::chatInfo (int chatId, QString chatMsnClient, QString chatIsLogging) {
+		printf ("MSN::Client::SIGNAL ## ChatInfo at:%i from:%s Logging:%s\n", chatId, chatMsnClient.latin1(), chatIsLogging.latin1()); 
 		emit notifyChatInfo (chatId, chatMsnClient, chatIsLogging);
 	}
 
 	void Client::chatIsTyping (int chatId, QString chatMsnPassport){
+		printf ("MSN::Client::SIGNAL ## chat Typing at:%i from:%s\n", chatId, chatMsnPassport.latin1()); 
 		emit notifyChatIsTyping (chatId, chatMsnPassport);
 	}
 
 	void Client::chatLeavedTheRoom (int chatId, QString passport) {
 		emit notifyChatLeavedTheRoom (chatId, passport);
+		printf ("MSN::Client::SIGNAL ## chatLeaved by:%s from:%i\n", passport.latin1(), chatId ); 
 	}
 
 	void Client::chatRequest(QString ipPort, QString passport, QString ticket, QString sessionId){
@@ -224,6 +234,7 @@ namespace libimmsnp {
 		oneChat->Start();
 		m_chatList[m_chatCount] = oneChat;
 		emit (notifyNewChat (m_chatCount, passport));
+		printf ("MSN::Client::SIGNAL ## newChat at:%i with:%s\n", m_chatCount, passport.latin1()); 
 
 		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
@@ -274,8 +285,8 @@ namespace libimmsnp {
 	}
 	
 	void Client::newChat (int chatId, QString passport){
-		printf ("User %s Conected and ready for Chat\n",passport.latin1());
 		emit notifyNewChat (chatId, passport);
+		printf ("MSN::Client::SIGNAL ## newChat at:%i with:%s\n", chatId, passport.latin1()); 
 	}
 }
 #include "client.moc"
