@@ -31,6 +31,7 @@ Q_OBJECT
 
 public:
 	ParserNS (QString, QString, State, Client*);
+	virtual ~ParserNS() {};
 	int hasData(){return m_buf.len();}
 	void feed (Buffer);
 	void feed (QString);
