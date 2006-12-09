@@ -116,9 +116,9 @@ namespace libimmsnp {
 	}
 
 	Client::~Client(){
-		//delete m_roster;
-		//delete m_conn;
-		//delete m_mainSocket;
+		delete m_roster;
+		delete m_conn;
+		delete m_mainSocket;
 	}
 
 	void Client::addConnectionListener (ConnectionListener* cl){
@@ -167,7 +167,7 @@ namespace libimmsnp {
 
 	void Client::disconnected(ConnectionError e) {
 		delete m_roster;
-		//delete m_conn;
+		delete m_conn;
 		delete m_mainSocket;
 		m_roster = 0;
 		m_conn = 0;
