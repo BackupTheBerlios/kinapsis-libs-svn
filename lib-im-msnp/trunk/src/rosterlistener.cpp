@@ -23,8 +23,8 @@ void RosterListener::onNewContactSlot(Contact *c){
 	this->onNewContact(c);
 }
 
-void RosterListener::onNewGroupSlot(Group *c){
-	this->onNewGroup(c);
+void RosterListener::onNewGroupSlot(Group *g){
+	this->onNewGroup(g);
 }
 
 }

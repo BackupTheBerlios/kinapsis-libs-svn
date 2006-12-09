@@ -49,6 +49,7 @@ public:
 	int getIdtr();
 	void send(Command& c, int chat = 0);
 	void disconnect();
+	void addGroup(QString);
 	void changeGroup(QString passport, QString fromGroup, QString toGroup);
 	void makeConnection (QString ip, int port);
 	void startConnection();

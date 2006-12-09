@@ -108,6 +108,18 @@ void ADC::addId (QString id){m_id = id;}
 void ADC::addList (QString list){m_list = list;}
 void ADC::addGroupId (QString groupId){m_groupId = groupId;}
 
+ADG::ADG(int idtr) : Command ("ADG", idtr) {}
+ADG::~ADG(){}
+QString ADG::makeCmd(){
+	// 
+	QString res;
+	res += beginCmd();
+	res += " " + m_name; 
+	res += endCmd();
+	return res;
+}
+void ADG::addName (QString name){m_name = name;}
+
 REM::REM(int idtr) : Command ("ADC", idtr) {}
 REM::~REM(){}
 QString REM::makeCmd(){

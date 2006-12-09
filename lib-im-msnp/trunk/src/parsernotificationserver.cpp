@@ -378,8 +378,6 @@ void ParserNS::parseLst (){
 	}
 }
 
-	
-
 void ParserNS::parseSbs (){
 	QString s;
 	int l;
@@ -598,6 +596,21 @@ void ParserNS::parseRng (){
 	else m_hasCommand = false;
 }
 
+void ParserNS::parseAdg (){
+	QString s;
+	int l;
+	if ((l = m_buf.getTilChar (s,'\n')) != -1){
+		m_buf.advance (l);
+		m_buf.removeFromBegin();
+		QStringList fields = QStringList::split(" ",s);
+		QStringList::iterator point = fields.begin();
+		Group* g = new Group(fields[0],fields[1].replace("\r\n",""));
+		emit newGroupArrived(g);
+	}
+	else m_hasCommand = false;
+
+}
+
 void ParserNS::parse (){
 	m_isParsing = true;
 	QString cmd;
@@ -617,165 +630,165 @@ void ParserNS::parse (){
 
 		m_buf.setPosition(3);
 		if (cmd == "VER"){
-				printf ("MSN::Log::ParserNS ## Parsing VER\n");
-				// VER 1 MSNP12 MSNP11 MSNP10 CVR0\r\n
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.advance (1+lIdtr+1);
-				// TODO : quitar de la lista de comprobacion
-				parseVer();
+			printf ("MSN::Log::ParserNS ## Parsing VER\n");
+			// VER 1 MSNP12 MSNP11 MSNP10 CVR0\r\n
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.advance (1+lIdtr+1);
+			// TODO : quitar de la lista de comprobacion
+			parseVer();
 }
 		else if (cmd == "CVR"){
-				printf ("MSN::Log::ParserNS ## Parsing CVR\n");
-				// CVR 2 0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs probando_msnpy@hotmail.com\r\n
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				parseCvr();
-				// TODO : quitar de la lista de comprobacion
-				//parseCvr();
+			printf ("MSN::Log::ParserNS ## Parsing CVR\n");
+			// CVR 2 0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs probando_msnpy@hotmail.com\r\n
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr);
+			parseCvr();
+			// TODO : quitar de la lista de comprobacion
+			//parseCvr();
 }
 		else if (cmd == "USR"){
-				printf ("MSN::Log::ParserNS ## Parsing USR\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.advance (1+lIdtr+1);
-				// TODO : quitar de la lista de comprobacion
-				parseUsr();
+			printf ("MSN::Log::ParserNS ## Parsing USR\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.advance (1+lIdtr+1);
+			// TODO : quitar de la lista de comprobacion
+			parseUsr();
 }
 		else if (cmd == "XFR"){
-				printf ("MSN::Log::ParserNS ## Parsing XFR\n");
-				// XFR 2 NS 207.46.107.27:1863 0 207.46.28.93:1863\r\n
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.advance (1+lIdtr+1);
-				parseXfr();
-				// TODO : quitar de la lista de comprobacion
+			printf ("MSN::Log::ParserNS ## Parsing XFR\n");
+			// XFR 2 NS 207.46.107.27:1863 0 207.46.28.93:1863\r\n
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.advance (1+lIdtr+1);
+			parseXfr();
+			// TODO : quitar de la lista de comprobacion
 }
 		else if (cmd ==  "ADC"){
-				printf ("MSN::Log::ParserNS ## Parsing ADC\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				// TODO : quitar de la lista de comprobacion
-				//parseAdc();
+			printf ("MSN::Log::ParserNS ## Parsing ADC\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr);
+			// TODO : quitar de la lista de comprobacion
+			//parseAdc();
 }
 		else if (cmd ==  "ADG"){
-				printf ("MSN::Log::ParserNS ## Parsing ADG\n");
-				// TODO : quitar de la lista de comprobacion
-				//parseAdg();
+			printf ("MSN::Log::ParserNS ## Parsing ADG\n");
+			// TODO : quitar de la lista de comprobacion
+			parseAdg();
 }
 		else if (cmd ==  "BLP"){
-				printf ("MSN::Log::ParserNS ## Parsing BLP\n");
-				// TODO : quitar de la lista de comprobacion
-				parseBlp();
+			printf ("MSN::Log::ParserNS ## Parsing BLP\n");
+			// TODO : quitar de la lista de comprobacion
+			parseBlp();
 }
 		else if (cmd ==  "BPR"){
-				printf ("MSN::Log::ParserNS ## Parsing BPR\n");
-				// TODO : quitar de la lista de comprobacion
-				parseBpr();
+			printf ("MSN::Log::ParserNS ## Parsing BPR\n");
+			// TODO : quitar de la lista de comprobacion
+			parseBpr();
 }
 		else if (cmd ==  "CHG"){
-				printf ("MSN::Log::ParserNS ## Parsing CHG\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				// TODO : quitar de la lista de comprobacion
-				parseChg();
+			printf ("MSN::Log::ParserNS ## Parsing CHG\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr);
+			// TODO : quitar de la lista de comprobacion
+			parseChg();
 }
 		else if (cmd ==  "CHL"){
-				printf ("MSN::Log::ParserNS ## Parsing CHL\n");
-				m_buf.advance (1 + 1 + 1); // CHL[ 0 ].....
-				parseChl();
+			printf ("MSN::Log::ParserNS ## Parsing CHL\n");
+			m_buf.advance (1 + 1 + 1); // CHL[ 0 ].....
+			parseChl();
 }
 		else if (cmd ==  "FLN"){
-				printf ("MSN::Log::ParserNS ## Parsing FLN\n");
-				// TODO : quitar de la lista de comprobacion
-				parseFln();
+			printf ("MSN::Log::ParserNS ## Parsing FLN\n");
+			// TODO : quitar de la lista de comprobacion
+			parseFln();
 }
 		else if (cmd ==  "GCF"){
-				printf ("MSN::Log::ParserNS ## Parsing GCF\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				// TODO : quitar de la lista de comprobacion
-				//parseGcf();
+			printf ("MSN::Log::ParserNS ## Parsing GCF\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr);
+			// TODO : quitar de la lista de comprobacion
+			//parseGcf();
 }
 		else if (cmd ==  "GTC"){
-				printf ("MSN::Log::ParserNS ## Parsing GTC\n");
-				// TODO : quitar de la lista de comprobacion
-				parseGtc();
+			printf ("MSN::Log::ParserNS ## Parsing GTC\n");
+			// TODO : quitar de la lista de comprobacion
+			parseGtc();
 }
 		else if (cmd ==  "ILN"){
-				printf ("MSN::Log::ParserNS ## Parsing ILN\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr + 1 );
-				// TODO : quitar de la lista de comprobacion
-				parseNln();
+			printf ("MSN::Log::ParserNS ## Parsing ILN\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr + 1 );
+			// TODO : quitar de la lista de comprobacion
+			parseNln();
 }
 		else if (cmd ==  "LSG"){
-				printf ("MSN::Log::ParserNS ## Parsing LSG\n");
-				m_buf.setPosition(3 + 1);
-				// TODO : quitar de la lista de comprobacion
-				parseLsg();
+			printf ("MSN::Log::ParserNS ## Parsing LSG\n");
+			m_buf.setPosition(3 + 1);
+			// TODO : quitar de la lista de comprobacion
+			parseLsg();
 }
 		else if (cmd ==  "LST"){
-				printf ("MSN::Log::ParserNS ## Parsing LST\n");
-				m_buf.setPosition(3 + 1);
-				// TODO : quitar de la lista de comprobacion
-				parseLst();
+			printf ("MSN::Log::ParserNS ## Parsing LST\n");
+			m_buf.setPosition(3 + 1);
+			// TODO : quitar de la lista de comprobacion
+			parseLst();
 }
 		else if (cmd ==  "NLN"){
-				printf ("MSN::Log::ParserNS ## Parsing NLN\n");
-				m_buf.setPosition(3);
-				// TODO : quitar de la lista de comprobacion
-				parseNln();
+			printf ("MSN::Log::ParserNS ## Parsing NLN\n");
+			m_buf.setPosition(3);
+			// TODO : quitar de la lista de comprobacion
+			parseNln();
 }
 		else if (cmd ==  "OUT"){
-				printf ("MSN::Log::ParserNS ## Parsing OUT\n");
-				// TODO : quitar de la lista de comprobacion
-				parseOut();
+			printf ("MSN::Log::ParserNS ## Parsing OUT\n");
+			// TODO : quitar de la lista de comprobacion
+			parseOut();
 }
 		else if (cmd ==  "PNG"){
-				printf ("MSN::Log::ParserNS ## Parsing PNG\n");
-				// TODO : quitar de la lista de comprobacion
-				//parsePng();
+			printf ("MSN::Log::ParserNS ## Parsing PNG\n");
+			// TODO : quitar de la lista de comprobacion
+			//parsePng();
 }
 		else if (cmd ==  "PRP"){
-				printf ("MSN::Log::ParserNS ## Parsing PRP\n");
-				// TODO : quitar de la lista de comprobacion
-				parsePrp();
+			printf ("MSN::Log::ParserNS ## Parsing PRP\n");
+			// TODO : quitar de la lista de comprobacion
+			parsePrp();
 }
 		else if (cmd ==  "QRY"){
-				printf ("MSN::Log::ParserNS ## Parsing QRY\n");
-				QString s;
-				m_buf.data(s);
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr + 3); // QRY 11\r\n
-				m_buf.removeFromBegin();
-				// TODO : quitar de la lista de comprobacion
+			printf ("MSN::Log::ParserNS ## Parsing QRY\n");
+			QString s;
+			m_buf.data(s);
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr + 3); // QRY 11\r\n
+			m_buf.removeFromBegin();
+			// TODO : quitar de la lista de comprobacion
 }
 		else if (cmd ==  "SYN"){
-				printf ("MSN::Log::ParserNS ## Parsing SYN\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				// TODO : quitar de la lista de comprobacion
-				parseSyn();
+			printf ("MSN::Log::ParserNS ## Parsing SYN\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr);
+			// TODO : quitar de la lista de comprobacion
+			parseSyn();
 }
 		else if (cmd ==  "REA"){ // Deprecated ??
-				printf ("MSN::Log::ParserNS ## Parsing REA\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				// TODO : quitar de la lista de comprobacion
-				//parseRea();
+			printf ("MSN::Log::ParserNS ## Parsing REA\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr);
+			// TODO : quitar de la lista de comprobacion
+			//parseRea();
 }
 		else if (cmd ==  "REG"){
-				printf ("MSN::Log::ParserNS ## Parsing REA\n");
-				// TODO : quitar de la lista de comprobacion
-				//parseReg();
+			printf ("MSN::Log::ParserNS ## Parsing REA\n");
+			// TODO : quitar de la lista de comprobacion
+			//parseReg();
 }
 		else if (cmd ==  "REM"){
-				printf ("MSN::Log::ParserNS ## Parsing REM\n");
-				lIdtr = m_buf.getInt (idtr);
-				m_buf.setPosition(3 + lIdtr);
-				// TODO : quitar de la lista de comprobacion
-				//parseRem();
+			printf ("MSN::Log::ParserNS ## Parsing REM\n");
+			lIdtr = m_buf.getInt (idtr);
+			m_buf.setPosition(3 + lIdtr);
+			// TODO : quitar de la lista de comprobacion
+			//parseRem();
 }
 		else if (cmd ==  "RMG"){
-				printf ("MSN::Log::ParserNS ## Parsing RMG\n");
+			printf ("MSN::Log::ParserNS ## Parsing RMG\n");
 				// TODO : quitar de la lista de comprobacion
 				//parseRmg();
 }
@@ -801,10 +814,7 @@ void ParserNS::parse (){
 			printf ("MSN::Log::ParserNS ## Disconnecting\n");
 			exit(-1);
 }
-		else {	// pueden venir errores 715 1\r\n
-			// quitar el primero 
-			// reañadir al buffer ppal
-			//
+		else {
 			// Errors:
 			if (cmd ==  "715") {
 				printf ("MSN::ERROR::ParserNS ## Not expected\n");

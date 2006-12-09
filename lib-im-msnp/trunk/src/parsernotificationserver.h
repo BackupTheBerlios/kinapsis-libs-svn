@@ -58,6 +58,7 @@ public:
 	void parseFln();
 	void parseRng();
 	void parseOut();
+	void parseAdg();
 	void parse ();
 
 private:

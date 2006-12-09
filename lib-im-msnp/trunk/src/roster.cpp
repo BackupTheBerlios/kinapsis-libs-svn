@@ -65,7 +65,8 @@ QString Roster::getGroupName(QString id) {
 }
 
 QString Roster::getGroupId (QString groupName){
-	return m_groups[groupName].getName();
+	if (m_groups[groupName].getId()) return m_groups[groupName].getId();
+	else return "";
 }
 
 }
