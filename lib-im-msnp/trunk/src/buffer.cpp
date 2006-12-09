@@ -61,16 +61,19 @@ int Buffer::getTilChar (QString &s, QChar c){
 
 	int l = 0;
 	BIterator it = m_it;
+	QCString tmp;
 
 	while (*(it) != c){
 		if (it == m_data.end())
 			return -1;
-		s += *(it);
+		tmp += *(it);
 		l++;
 		it++;
 	}
-	s += *(it);
+	tmp += *(it);
 	l ++;
+
+	s = QString::fromUtf8(tmp);
 	return l;
 }
 
@@ -79,35 +82,44 @@ int Buffer::getNChar (QString &s, uint len){
 
 	uint l = 0;
 	BIterator it = m_it;
+	QCString tmp;
 
 	while (len-- !=0){
 		if (it == m_data.end())
 			return -1;
-		s += *(it);
+		tmp += *(it);
 		l++;
 		it++;
 	}
+
+	s = QString::fromUtf8(tmp);
 	return l;
 }
 
 
 int Buffer::getQString (QString &c, uint len) {
+	QCString tmp;
+
 	if (len > this->len()){
 		for (uint i=0; i < this->len(); i ++)
-			c+= *(m_data.at(i));
+			tmp += *(m_data.at(i));
 	}
 	else {
 		for (uint i=0; i < len; i ++)
-			c+= *(m_data.at(i));
+			tmp += *(m_data.at(i));
 	}
+
+	c = QString::fromUtf8(tmp);
 	return c.length();
 }
+
 int Buffer::getInt (int& idtr) {
 	// devuelve la longitud del buffer que ha leido hasta sacar el entero.
 	uint l = 0;
 	BIterator it = m_it;
 	QChar c = *(it);
-	QString s;
+	QCString s;
+
 	while (c.digitValue() == -1){
 		if (it == m_data.end())
 			break;
@@ -123,13 +135,17 @@ int Buffer::getInt (int& idtr) {
 		it++;
 		c = *(it);
 	}
+
 	idtr = s.toInt();
 	return l;
 }
 
 unsigned int Buffer::data(QString& d) {
+	QCString tmp;
 	for (uint i=0; i < this->len(); i ++)
-		d+= *(m_data.at(i));
+		tmp += *(m_data.at(i));
+
+	d = QString::fromUtf8(tmp);
 	return d.length();
 }
 
