@@ -297,6 +297,13 @@ namespace libimmsnp {
 		//printf ("Contact:%s has left the room\n", passport.latin1());
 		
 	}
+
+	void Client::closeChat(int chatId){
+		BYE bye;
+		bye.addPassport(m_msnPassport);
+		send(bye,chatId);
+		m_chatList.remove(chatId);
+	}
 	
 	void Client::newChat (int chatId, QString passport){
 		emit notifyNewChat (chatId, passport);

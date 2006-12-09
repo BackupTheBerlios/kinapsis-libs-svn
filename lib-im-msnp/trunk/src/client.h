@@ -53,6 +53,7 @@ public:
 	void startConnection();
 	void sendChat(int chatId, QString msg);
 	void initChat(QString destPassport);
+	void closeChat(int chatId);
 
 	void changeStatus (State newStatus);
 	void changeNick(QString nick);

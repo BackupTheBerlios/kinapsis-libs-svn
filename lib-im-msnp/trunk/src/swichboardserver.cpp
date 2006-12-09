@@ -70,7 +70,7 @@ void CAL::addPassport (QString passport) {m_passport = passport;}
 BYE::BYE() : Command ("BYE") {}
 BYE::~BYE(){}
 QString BYE::makeCmd(){
-	//BYE\r\n
+	//BYE xxxx@hotmail.com\r\n
 	QString res;
 	res += beginCmd();
 	res += " " + m_passport;
