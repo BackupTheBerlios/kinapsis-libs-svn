@@ -16,17 +16,16 @@
 
 namespace libimmsnp {
 
-Connection::Connection (msocket* s, ParserNS* p, int iter){
+Connection::Connection (msocket* s, ParserNS* p){
 	m_socket = s;
 	m_parser = p;
-	m_iterations = iter;
 	m_disconnect = false;
 }
 
 void Connection:: run (){
 	QString data;
 	int size;
-	printf("MSN::Log::Connection ## Start Run\n");
+	printf("MSN::Log::Connection ## START\n");
 	while ((size = (m_socket->recv(data))) != -1){
 		printf ("MSN::Log::Connection ## Receiving: %i\n",size);
 		if (size == 0) {
@@ -35,22 +34,10 @@ void Connection:: run (){
 		}
 		m_parser->feed (data);
 
-		if (m_iterations > 0) {
-			m_iterations--;
-			printf("MSN::Log::Connection ## itera:%i\n",m_iterations);
-		}
-
-		if (m_iterations == 0) {
-			delete m_socket;
-			m_socket = 0;
-			m_parser->parse();
-			break;
-		}
-
 		if (!m_parser->isParsing()){m_parser->parse();}
 		data = "";
 	}
-	printf("MSN::Log::Connection ## END Run\n");
+	printf("MSN::Log::Connection ## END Connecton with %s\n",QString (m_socket->getHost()).latin1());
 	if (m_disconnect) emit disconnected (ConnUserDisconnected);
 }
 

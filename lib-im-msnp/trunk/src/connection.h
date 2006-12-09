@@ -26,7 +26,7 @@ class Connection :public QObject {
 Q_OBJECT
 
 public:
-	Connection (msocket*, ParserNS*, int iter = -1);
+	Connection (msocket*, ParserNS*);
 	~Connection ();
 	void disconnect () {m_disconnect = true;};
 
@@ -36,7 +36,6 @@ signals:
 private:
 	msocket* m_socket;
 	ParserNS* m_parser;
-	int m_iterations;
 	bool m_disconnect;
 };
 }

@@ -51,6 +51,14 @@ public:
 	QString makeCmd();
 };
 
+class OUT : public Command {
+// OUT\r\n 
+public:
+	OUT ();
+	virtual ~OUT();
+	QString makeCmd();
+};
+
 }
 #endif //_NOTIFICATIONSERVER_H_
 

@@ -83,4 +83,14 @@ QString XFR::makeCmd(){
 	res += endCmd();
 	return res;
 }
+
+OUT::OUT() : Command ("OUT") {}
+OUT::~OUT(){}
+QString OUT::makeCmd(){
+	// OUT\r\n
+	QString res;
+	res += beginCmd();
+	res += endCmd();
+	return res;
+}
 }

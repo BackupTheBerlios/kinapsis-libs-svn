@@ -112,7 +112,6 @@ void ParserNS::parseXfr () {
 		if (s.contains ("NS")){
 			QString ip   = s.mid (3, s.find (':') - 3);	
 			int     port = s.mid (s.find(':')+1, 4).toInt() ;	
-
 			m_client->makeConnection(ip, port);
 			
 			// Restart secuence of authentication.

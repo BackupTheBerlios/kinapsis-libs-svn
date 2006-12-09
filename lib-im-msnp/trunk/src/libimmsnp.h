@@ -23,7 +23,8 @@ namespace libimmsnp {
 		ConnAuthenticationFailed,
 		ConnAtOtherPlace,		// Connected at other place with the same account
 		ConnNotExpected,		// error 751
-		ConnBadMd5Digest		// error 540
+		ConnBadMd5Digest,		// error 540
+		ConnCloseUnexpect
 
 	};
 

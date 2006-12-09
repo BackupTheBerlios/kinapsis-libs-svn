@@ -48,9 +48,8 @@ namespace libimmsnp {
 
 	void Client::disconnect(){
 		m_conn->disconnect();
-		BYE bye;
-		bye.addPassport(m_msnPassport);
-		send (bye);
+		OUT out;
+		send (out);
 	}
 
 	void Client::makeConnection (QString ip, int port){
@@ -59,7 +58,6 @@ namespace libimmsnp {
 	}
 
 	void Client::startConnection(){
-		delete m_conn;
 		m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this);
 		QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
 		QObject::connect(m_parser, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
@@ -80,15 +78,23 @@ namespace libimmsnp {
 		m_roster = new Roster ();
 		m_mainSocket = new msocket("messenger.hotmail.com",1863);
 		m_mainSocket->connect();
-		QObject::connect(m_mainSocket, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
-		m_conn = new Connection (m_mainSocket, m_parser,3);
 
 		VER v(getIdtr());
 		v.addProtocolSupported("MSNP12");
 		v.addProtocolSupported("MSNP11");
 		v.addProtocolSupported("MSNP10");
 		send(v);
-		m_conn->run();
+
+		int steps;
+		int size;
+		QString data;
+		for (steps = 0 ; steps < 3; steps++) {
+			if ((size = (m_mainSocket->recv(data))) != -1) {
+				m_parser->feed (data);
+				if (!m_parser->isParsing()){m_parser->parse();}
+				data = "";
+			}
+		}
 	}
 
 	void Client::changeStatus (State status){
@@ -110,8 +116,8 @@ namespace libimmsnp {
 	}
 
 	Client::~Client(){
-		delete m_roster;
-		delete m_conn;
+		//delete m_roster;
+		//delete m_conn;
 		//delete m_mainSocket;
 	}
 
@@ -160,13 +166,9 @@ namespace libimmsnp {
 	}
 
 	void Client::disconnected(ConnectionError e) {
-		printf ("1\n");
 		delete m_roster;
-		printf ("2\n");
-		delete m_conn;
-		printf ("3\n");
+		//delete m_conn;
 		delete m_mainSocket;
-		printf ("4\n");
 		m_roster = 0;
 		m_conn = 0;
 		m_mainSocket = 0;
