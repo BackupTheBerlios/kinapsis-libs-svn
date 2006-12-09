@@ -59,6 +59,36 @@ public:
 	QString makeCmd();
 };
 
+class ADC : public Command {
+// ADC 58 FL C=2c2d3fa5-9360-42c2-a166-7f4529f02fa4 22a6a1c3-f93b-423c-9c0e-413f4884603b\r\n
+public:
+	ADC (int idtr);
+	virtual ~ADC();
+	QString makeCmd();
+	void addId (QString);
+	void addGroupId (QString);
+	void addList (QString);
+private:
+	QString m_id;
+	QString m_groupId;
+	QString m_list;
+};
+
+class REM : public Command {
+// REM 59 FL 2c2d3fa5-9360-42c2-a166-7f4529f02fa4 54b8d74b-92af-44c9-b337-fe112ba08515\r\n
+public:
+	REM (int idtr);
+	virtual ~REM();
+	QString makeCmd();
+	void addId (QString);
+	void addGroupId (QString);
+	void addList (QString);
+private:
+	QString m_id;
+	QString m_groupId;
+	QString m_list;
+};
+
 }
 #endif //_NOTIFICATIONSERVER_H_
 

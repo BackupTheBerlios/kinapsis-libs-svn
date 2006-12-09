@@ -27,6 +27,7 @@ public:
 	virtual ~Roster();
 	void addContact(Contact* contact);
 	Contact* getContact(QString passport);
+	Group*  getGroup (QString groupName);
 	bool delContact(QString contact);
 
 	void addGroup(Group* group);
@@ -35,8 +36,11 @@ public:
 	unsigned int contactLen();
 	unsigned int groupLen();
 	QString getGroupName(QString id);	
+	QString getGroupId (QString groupName);
 	
 private:
+	typedef QMap<QString, Contact>::Iterator cIt;
+	typedef QMap<QString, Group>::Iterator gIt;
 	typedef QMap<QString, Contact> ContactMap;
 	typedef QMap<QString, Group> GroupMap;
 	ContactMap m_contacts;

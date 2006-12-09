@@ -32,12 +32,16 @@ Contact*  Roster::getContact (QString passport) {
 	return &m_contacts[passport];
 }
 
+Group*  Roster::getGroup (QString groupName) {
+	return &m_groups[groupName];
+}
+
 bool Roster::delContact(QString c) {
 	m_contacts.remove(c);
 }
 
 void Roster::addGroup (Group* g){
-	m_groups[g->getId()] = Group (g->getName(), g->getId());
+	m_groups[g->getName()] = Group (g->getName(), g->getId());
 }
 
 bool Roster::delGroup (QString g){
@@ -53,7 +57,15 @@ unsigned int Roster::groupLen() {
 	return m_groups.size();
 }
 QString Roster::getGroupName(QString id) {
-	return m_groups[id].getName();
+	gIt it;
+	for ( it = m_groups.begin(); it != m_groups.end(); ++it ) {
+		if (it.data().getId() == id) return it.data().getName();
+	}
+	return "";
+}
+
+QString Roster::getGroupId (QString groupName){
+	return m_groups[groupName].getName();
 }
 
 }

@@ -93,4 +93,32 @@ QString OUT::makeCmd(){
 	res += endCmd();
 	return res;
 }
+
+ADC::ADC(int idtr) : Command ("ADC", idtr) {}
+ADC::~ADC(){}
+QString ADC::makeCmd(){
+	// 
+	QString res;
+	res += beginCmd();
+	res += " " + m_list + " C=" + m_id + " " + m_groupId;
+	res += endCmd();
+	return res;
+}
+void ADC::addId (QString id){m_id = id;}
+void ADC::addList (QString list){m_list = list;}
+void ADC::addGroupId (QString groupId){m_groupId = groupId;}
+
+REM::REM(int idtr) : Command ("ADC", idtr) {}
+REM::~REM(){}
+QString REM::makeCmd(){
+	// 
+	QString res;
+	res += beginCmd();
+	res += " " + m_list + " " + m_id + " " + m_groupId;
+	res += endCmd();
+	return res;
+}
+void REM::addId (QString id){m_id = id;}
+void REM::addList (QString list){m_list = list;}
+void REM::addGroupId (QString groupId){m_groupId = groupId;}
 }

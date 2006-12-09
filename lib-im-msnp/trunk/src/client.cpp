@@ -46,6 +46,25 @@ namespace libimmsnp {
 			(m_chatList[chat]->getSocket())->send(c.makeCmd());
 	}
 
+	void Client::changeGroup(QString passport, QString fromGroup, QString toGroup){
+		//ADC 58 FL C=2c2d3fa5-9360-42c2-a166-7f4529f02fa4 22a6a1c3-f93b-423c-9c0e-413f4884603b
+		ADC add (getIdtr());
+		add.addList ("FL"); // TODO: make a enum
+		add.addId (m_roster->getContact (passport)->getId ());
+		add.addGroupId (m_roster->getGroupId (toGroup));
+		send(add);
+		m_roster->getContact(passport)->setGroupName (toGroup); 
+		m_roster->getContact(passport)->setGroupId (m_roster->getGroupId(toGroup));
+
+		//REM 59 FL 2c2d3fa5-9360-42c2-a166-7f4529f02fa4 54b8d74b-92af-44c9-b337-fe112ba08515
+		REM del (getIdtr());
+		del.addList ("FL"); // TODO: make a enum
+		del.addId (m_roster->getContact (passport)->getId ());
+		del.addGroupId (m_roster->getGroupId (fromGroup));
+		send(del);
+		//buddy
+	}
+
 	void Client::disconnect(){
 		m_conn->disconnect();
 		OUT out;
@@ -297,6 +316,7 @@ namespace libimmsnp {
 		//printf ("Contact:%s has left the room\n", passport.latin1());
 		
 	}
+
 
 	void Client::closeChat(int chatId){
 		BYE bye;
