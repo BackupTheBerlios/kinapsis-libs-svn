@@ -31,7 +31,7 @@ Q_OBJECT
 
 public:
 	ParserNS (QString, QString, State, Client*);
-	virtual ~ParserNS() {};
+	virtual ~ParserNS() {printf ("MSN::ParserNS::log ## Parser deleted\n");}
 	int hasData(){return m_buf.len();}
 	void feed (Buffer);
 	void feed (QString);

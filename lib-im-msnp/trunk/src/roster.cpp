@@ -18,7 +18,9 @@ namespace libimmsnp {
 Roster::Roster() { 
 }
 
-Roster::~Roster() { }
+Roster::~Roster() { 
+	printf ("MSN::Roster::log ## Roster deleted\n");
+}
 
 void Roster::addContact(Contact* c) {
 	m_contacts[c->getPassport()] = Contact ();

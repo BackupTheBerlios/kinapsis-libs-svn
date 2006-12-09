@@ -30,6 +30,7 @@ class ParserSB :public QObject {
 Q_OBJECT
 public:
 	ParserSB(msocket*, Client*, int);
+	~ParserSB(){printf ("MSN::ParserSB::log ## Parser deleted\n");}
 	int hasData(){return m_buf.len();}
 	void feed(QString);
 	bool isParsing() {return m_isParsing;}

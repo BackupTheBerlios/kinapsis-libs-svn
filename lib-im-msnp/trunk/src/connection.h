@@ -16,21 +16,28 @@
 
 #include "libimmsnp.h"
 #include "msocket.h"
+#include <qobject.h>
 namespace libimmsnp {
 
 class ParserNS;
 
-class Connection {
+class Connection :public QObject {
+
+Q_OBJECT
 
 public:
 	Connection (msocket*, ParserNS*, int iter = -1);
 	~Connection ();
+	void disconnect () {m_disconnect = true;};
 
 	void run ();
+signals:
+	void disconnected (ConnectionError);
 private:
 	msocket* m_socket;
 	ParserNS* m_parser;
 	int m_iterations;
+	bool m_disconnect;
 };
 }
 #endif // _CONNECTION_H_

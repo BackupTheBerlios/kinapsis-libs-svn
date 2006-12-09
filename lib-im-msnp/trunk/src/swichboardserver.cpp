@@ -67,4 +67,15 @@ QString CAL::makeCmd(){
 }
 void CAL::addPassport (QString passport) {m_passport = passport;}
 
+BYE::BYE() : Command ("BYE") {}
+BYE::~BYE(){}
+QString BYE::makeCmd(){
+	//BYE\r\n
+	QString res;
+	res += beginCmd();
+	res += " " + m_passport;
+	res += endCmd();
+	return res;
+}
+void BYE::addPassport (QString passport) {m_passport = passport;}
 }

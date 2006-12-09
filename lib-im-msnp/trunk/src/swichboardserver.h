@@ -67,6 +67,16 @@ private:
 	QString m_passport;
 };
 
+class BYE : public Command {
+// BYEr\n
+public:
+	BYE ();
+	virtual ~BYE();
+	QString makeCmd();
+	void addPassport (QString passport);
+private:
+	QString m_passport;
+};
 }
 #endif //_SWICHBOARDSERVER_H_
 

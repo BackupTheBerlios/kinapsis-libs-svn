@@ -136,10 +136,5 @@ int main(void){
 	using namespace libimmsnp;
 	MsnTest cliente;
 	cliente.start();
-	while (!cliente.getConnected()) {}
-	//cliente.changeStatus(dnd);
-	cliente.changeNick(QString("Cambiando_nick"));
-	while (1) {}
-
-//	cliente.wait();
+	cliente.wait();
 }

@@ -13,7 +13,6 @@
 
 #include "connection.h"
 #include "parsernotificationserver.h"
-#include <qobject.h>
 
 namespace libimmsnp {
 
@@ -21,6 +20,7 @@ Connection::Connection (msocket* s, ParserNS* p, int iter){
 	m_socket = s;
 	m_parser = p;
 	m_iterations = iter;
+	m_disconnect = false;
 }
 
 void Connection:: run (){
@@ -50,12 +50,14 @@ void Connection:: run (){
 		if (!m_parser->isParsing()){m_parser->parse();}
 		data = "";
 	}
-	printf("MSN::Log::Connection ## Start Run\n");
-	//exit();
+	printf("MSN::Log::Connection ## END Run\n");
+	if (m_disconnect) emit disconnected (ConnUserDisconnected);
 }
 
 Connection::~Connection (){
+	// TODO:clean the parser
 	delete m_parser;
 	printf("MSN::Log::Connection ## Connection Deleted\n");
 }
 }
+#include "connection.moc"

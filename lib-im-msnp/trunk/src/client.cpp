@@ -47,13 +47,10 @@ namespace libimmsnp {
 	}
 
 	void Client::disconnect(){
-		delete m_roster;
-		delete m_conn;
-		delete m_mainSocket;
-		m_roster = 0;
-		m_conn = 0;
-		m_mainSocket = 0;
-		emit notifyDisconnect(ConnUserDisconnected);
+		m_conn->disconnect();
+		BYE bye;
+		bye.addPassport(m_msnPassport);
+		send (bye);
 	}
 
 	void Client::makeConnection (QString ip, int port){
@@ -73,6 +70,7 @@ namespace libimmsnp {
 		QObject::connect(m_parser, SIGNAL(chatRequest (QString, QString, QString, QString)), this, SLOT(chatRequest(QString, QString, QString, QString)));
 		QObject::connect(m_parser, SIGNAL(initChatSB (QString, QString)), this, SLOT(initChatSB(QString, QString)));
 		m_conn = new Connection (m_mainSocket, m_parser);
+		QObject::connect(m_conn, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
 		m_conn->run();
 	}
 
@@ -114,7 +112,7 @@ namespace libimmsnp {
 	Client::~Client(){
 		delete m_roster;
 		delete m_conn;
-		delete m_mainSocket;
+		//delete m_mainSocket;
 	}
 
 	void Client::addConnectionListener (ConnectionListener* cl){
@@ -162,6 +160,16 @@ namespace libimmsnp {
 	}
 
 	void Client::disconnected(ConnectionError e) {
+		printf ("1\n");
+		delete m_roster;
+		printf ("2\n");
+		delete m_conn;
+		printf ("3\n");
+		delete m_mainSocket;
+		printf ("4\n");
+		m_roster = 0;
+		m_conn = 0;
+		m_mainSocket = 0;
 		printf ("MSN::Client::SIGNAL ## DISCONNECT\n"); 
 		emit notifyDisconnect(e);
 	}
