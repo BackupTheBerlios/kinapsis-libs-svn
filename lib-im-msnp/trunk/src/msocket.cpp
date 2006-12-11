@@ -20,16 +20,7 @@
 
 #include "msocket.h"
 namespace libimmsnp {
-	
-std::string replace (std::string& linea, std::string oldChr, std::string newChr){
-	while (1) {
-		const unsigned int pos = linea.find(oldChr);
-		if (pos == std::string::npos) break;
-		linea.replace(pos,1,newChr);
-	}
-	return linea;
-	
-}
+
 // Constructor
 msocket::msocket (std::string host, int port) : m_port (port),m_host (host), m_sockFd (socket(AF_INET, SOCK_STREAM, 0)){
 	 m_buf = (char*)calloc( m_bufsize + 1, sizeof( char ) );

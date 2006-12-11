@@ -78,7 +78,7 @@ QString SYN::makeCmd(){
 	// USR 3    TWN I alice@passport.com\r\n
 	QString res;
 	res += beginCmd();
-	res += " 2005-04-23T18:57:44.8130000-07:00 2005-04-23T18:57:54.2070000-07:00";
+	res += " 0 0";
 	res += endCmd();
 	return res;
 }
