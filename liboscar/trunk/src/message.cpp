@@ -155,6 +155,10 @@ void Message::setCh2Cookie(Word cookie){
 	m_ch2cookie = cookie;
 }
 
+FTData Message::getFTData(){
+	return m_ftd;
+}
+
 Byte Message::typeToByte(MessageType t) {
 	switch (t) {
 		default:
@@ -517,7 +521,9 @@ void Message::parseCh1(Buffer &b) {
 void Message::parseCh2(Buffer &b) {
 	Word type=0, len=0, reqType=0;
 	DWord dw;
+	DWord c1,c2,c3,c4;
 	UnformattedTLV tlv(TLV_TYPE_GENERIC);
+	QString s;
 
 	// XXX: well it seems like ICQ5 sends a unknown 0x13 TLV here.
 	// Ignore TLVs other than 0x0005
@@ -531,7 +537,15 @@ void Message::parseCh2(Buffer &b) {
 	b >> reqType; m_ch2req = (MessageRequest) reqType;
 
 	b.advance(8); // Cookie
-	b.advance(16); // Capability
+
+	b >> c1; // 16 bytes of capability
+	b >> c2; //
+	b >> c3; //
+	b >> c4; //
+
+	if (c1 == 0x09461343 && c2 == 0x4c7f11d1
+			&& c3 == 0x82224445 && c4 == 0x53540000)
+		m_type = TYPE_FILEREQ;
 
 	len -= 26; // Type, cookie and capability
 
@@ -539,15 +553,59 @@ void Message::parseCh2(Buffer &b) {
 		tlv.parse(b);
 		switch (tlv.getType()){
 			// XXX: ignoring lots of stuff here
-			case 0x0004:
-			case 0x0005:
-			case 0x000a:
+			case 0x0002: // Proxy IP
+				tlv.data() >> dw;
+				m_ftd.setProxyIP(dw);
+				break;
+			case 0x0003: // Client IP address
+				tlv.data() >> dw;
+				m_ftd.setClientIP(dw);
+				break;
+			case 0x0004: // Server's client IP (or external client IP)
+				tlv.data() >> dw;
+				m_ftd.setExternalIP(dw);
+				break;
+			case 0x0005: // External port
+				tlv.data().readString(s);
+				m_ftd.setListeningPort(s);
+				break;
 			case 0x000b:
+				break;
+			case 0x000e: // Locale (seems only to be in FT reqs)
+				tlv.data().readString(s);
+				m_ftd.setLocale(s);
+				break;
+			case 0x000d: // Encoding
+				tlv.data().readString(s);
+				m_ftd.setEncoding(s);
+				break;
 			case 0x000f:
 				break;
+			case 0x000a: // Request number for file transfer
+				break;
+			case 0x000c: // FT User Message
+				tlv.data().readString(s);
+				m_ftd.setMessage(s);
+				break;
+			case 0x0010: // Proxy flag
+				m_ftd.setProxyUsed(true);
+				break;
+			case 0x0016: // Proxy IP Check XXX:ignoring ATM
+				break;
+			case 0x0017: // Port Check XXX:ignoring ATM
+				break;
 			case 0x2711:
-				// real message :-)
-				parse2711(tlv.data());
+				if (m_type == TYPE_FILEREQ){
+					parse2711file(tlv.data());
+				}
+				else{
+					// real message :-)
+					parse2711(tlv.data()); // FIXME: different for FT
+				}
+				break;
+			case 0x2712: // File name encoding
+				tlv.data().readString(s);
+				m_ftd.setFileEncoding(s);
 				break;
 			default:
 				qDebug("Unknown TLV in channel 2 message: " + QString::number(tlv.getType()));
@@ -582,6 +640,30 @@ void Message::parseCh4(Buffer &b) {
 		m_msg.append(by);
 	}
 	b.removeFromBegin();
+}
+
+void Message::parse2711file(Buffer& b){
+	
+	Word w;
+	DWord dw;
+	QString s;
+
+	b >> w;
+
+	if (w == 0x0001)
+		m_ftd.setMultiple(false);
+	else
+		m_ftd.setMultiple(true);
+
+	b >> w;
+	m_ftd.setFileCount(w);
+
+	b >> dw;
+	m_ftd.setFileSize(dw);
+
+	b.readString(s);
+	m_ftd.setFileName(s);
+
 }
 
 void Message::parse2711(Buffer& b){

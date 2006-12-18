@@ -19,105 +19,81 @@
  ***************************************************************************/
 
 
-#ifndef _MESSAGE_H_
-#define _MESSAGE_H_
+#ifndef _FTDATA_H_
+#define _FTDATA_H_
 
-#include "uin.h"
-#include "buffer.h"
-#include "userinfo.h"
-#include "ftdata.h"
-#include <qdatetime.h>
+#include <qstring.h>
+#include "liboscar.h"
 
 namespace liboscar {
 
-class Message {
+class FTData {
 
 public:
-	Message();
-	virtual ~Message();
+	FTData();
+	virtual ~FTData();
 
-	void fromMessage(Message &m);
+	void setMessage(QString m);
+	QString getMessage();
 
-	QString getText();
-	void setText(QString message);
-	
-	UIN getUin();
-	void setUin(UIN uin);
+	void setLocale(QString l);
+	QString getLocale();
 
-	Word getFormat();
-	void setFormat(Word format);
+	void setEncoding(QString e);
+	QString getEncoding();
 
-	UserInfo getInfo();
+	void setFileEncoding(QString f);
+	QString getFileEncoding();
 
-	MessageEncoding getEncoding();
-	void setEncoding(MessageEncoding encoding);
+	void setProxyUsed(bool u);
+	bool getProxyUsed();
 
-	MessageType getType();
-	void setType(MessageType type);
+	void setProxyIP(DWord i);
+	DWord getProxyIP();
 
-	MessageFlags getFlags();
-	void setFlags(MessageFlags flags);
+	void setClientIP(DWord i);
+	DWord getClientIP();
 
-	MessageRequest getRequest();
-	void setRequest(MessageRequest req);
+	void setExternalIP(DWord i);
+	DWord getExternalIP();
 
-	QDateTime getTime();
-	void setTime(QDateTime time);
+	void setListeningPort(QString p);
+	QString getListeningPort();
 
-	void parse(Buffer &b);
+	void setMultiple(bool m);
+	bool getMultiple();
 
-	Buffer& pack();
+	void setFileCount(Word c);
+	Word getFileCount();
 
-	DWord getCookieHigh();
-	DWord getCookieLow();
+	void setFileSize(DWord s);
+	DWord getFileSize();
 
-	void setCookieHigh(DWord h);
-	void setCookieLow(DWord l);
-
-	void setCh2Cookie(Word cookie);
-	Word getCh2Cookie();
-
-	FTData getFTData();
-
-	static MessageType byteToType(Byte b);
-	static MessageFlags byteToFlags(Byte b);
+	void setFileName(QString n);
+	QString getFileName();
 
 private:
-	void parseCh1(Buffer& b);
-	void parseCh2(Buffer& b);
-	void parseCh4(Buffer& b);
-	void parse2711(Buffer& b);
-	void parse2711file(Buffer& b);
-
-	void packCh2();
-
-	Byte typeToByte(MessageType t);
-	Byte flagsToByte(MessageFlags f);
-
-	Word m_format;
 	QString m_msg;
-	UIN m_uin;
+	QString m_loc;
+	QString m_enc;
+	QString m_fileenc;
 
-	FTData m_ftd;
+	bool m_proxyused;
 
-	UserInfo m_info;
-	
-	MessageEncoding m_encoding;
-	MessageType m_type;
-	MessageFlags m_flags;
+	DWord m_clientip;
+	DWord m_proxyip;
+	DWord m_externalip;
+	QString m_listenport;
 
-	DWord m_cookiehigh;
-	DWord m_cookielow;
+	bool m_mul;
 
-	Word m_ch2cookie;
-	MessageRequest m_ch2req;
+	Word m_count;
+	DWord m_size;
 
-	QDateTime m_time;
-
-	Buffer m_data;
+	QString m_filename;
 };
 
 
 }
 
-#endif // _MESSAGE_H_
+#endif // _FTDATA_H_

@@ -18,106 +18,118 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-#ifndef _MESSAGE_H_
-#define _MESSAGE_H_
-
-#include "uin.h"
-#include "buffer.h"
-#include "userinfo.h"
 #include "ftdata.h"
-#include <qdatetime.h>
 
 namespace liboscar {
 
-class Message {
-
-public:
-	Message();
-	virtual ~Message();
-
-	void fromMessage(Message &m);
-
-	QString getText();
-	void setText(QString message);
-	
-	UIN getUin();
-	void setUin(UIN uin);
-
-	Word getFormat();
-	void setFormat(Word format);
-
-	UserInfo getInfo();
-
-	MessageEncoding getEncoding();
-	void setEncoding(MessageEncoding encoding);
-
-	MessageType getType();
-	void setType(MessageType type);
-
-	MessageFlags getFlags();
-	void setFlags(MessageFlags flags);
-
-	MessageRequest getRequest();
-	void setRequest(MessageRequest req);
-
-	QDateTime getTime();
-	void setTime(QDateTime time);
-
-	void parse(Buffer &b);
-
-	Buffer& pack();
-
-	DWord getCookieHigh();
-	DWord getCookieLow();
-
-	void setCookieHigh(DWord h);
-	void setCookieLow(DWord l);
-
-	void setCh2Cookie(Word cookie);
-	Word getCh2Cookie();
-
-	FTData getFTData();
-
-	static MessageType byteToType(Byte b);
-	static MessageFlags byteToFlags(Byte b);
-
-private:
-	void parseCh1(Buffer& b);
-	void parseCh2(Buffer& b);
-	void parseCh4(Buffer& b);
-	void parse2711(Buffer& b);
-	void parse2711file(Buffer& b);
-
-	void packCh2();
-
-	Byte typeToByte(MessageType t);
-	Byte flagsToByte(MessageFlags f);
-
-	Word m_format;
-	QString m_msg;
-	UIN m_uin;
-
-	FTData m_ftd;
-
-	UserInfo m_info;
-	
-	MessageEncoding m_encoding;
-	MessageType m_type;
-	MessageFlags m_flags;
-
-	DWord m_cookiehigh;
-	DWord m_cookielow;
-
-	Word m_ch2cookie;
-	MessageRequest m_ch2req;
-
-	QDateTime m_time;
-
-	Buffer m_data;
-};
-
-
+FTData::FTData() {
+	m_msg = "";
 }
 
-#endif // _MESSAGE_H_
+FTData::~FTData() { }
+
+void FTData::setMessage(QString m){
+	m_msg = m;
+}
+
+QString FTData::getMessage(){
+	return m_msg;
+}
+
+void FTData::setLocale(QString l){
+	m_loc = l;
+}
+
+QString FTData::getLocale(){
+	return m_loc;
+}
+
+void FTData::setEncoding(QString e){
+	m_enc = e;
+}
+
+QString FTData::getEncoding(){
+	return m_enc;
+}
+
+void FTData::setFileEncoding(QString f){
+	m_fileenc = f;
+}
+
+QString FTData::getFileEncoding(){
+	return m_fileenc;
+}
+
+void FTData::setProxyUsed(bool u){
+	m_proxyused = u;
+}
+
+bool FTData::getProxyUsed(){
+	return m_proxyused;
+}
+
+void FTData::setProxyIP(DWord i){ 
+	m_proxyip = i;
+}
+
+DWord FTData::getProxyIP() {
+	return m_proxyip;
+}
+
+void FTData::setClientIP(DWord i) {
+	m_clientip = i;
+}
+
+DWord FTData::getClientIP() {
+	return m_clientip;
+}
+
+void FTData::setExternalIP(DWord i) {
+	m_externalip = i;
+}
+
+DWord FTData::getExternalIP() {
+	return m_externalip;
+}
+
+void FTData::setListeningPort(QString p) {
+	m_listenport = p;
+}
+
+QString FTData::getListeningPort() {
+	return m_listenport;
+}
+
+void FTData::setMultiple(bool m){
+	m_mul = m;
+}
+
+bool FTData::getMultiple(){
+	return m_mul;
+}
+
+void FTData::setFileCount(Word c) {
+	m_count = c;
+}
+
+Word FTData::getFileCount() {
+	return m_count;
+}
+
+void FTData::setFileSize(DWord s) {
+	m_size = s;
+}
+
+DWord FTData::getFileSize() {
+	return m_size;
+}
+
+void FTData::setFileName(QString n) {
+	m_filename = n;
+}
+
+QString FTData::getFileName() {
+	return m_filename;
+}
+
+}
