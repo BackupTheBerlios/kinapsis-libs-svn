@@ -25,8 +25,6 @@ class Buffer {
 public:
 	Buffer();
 
-	Buffer& operator+=(int);
-
 	Buffer& operator<<(QChar);
 	Buffer& operator<<(QString);
 	Buffer& operator<<(Buffer);
@@ -59,8 +57,6 @@ private:
 
 	QValueList<QChar> m_data;
 	BIterator m_it;
-	int m_lenCmd;
-
 };
 
 }

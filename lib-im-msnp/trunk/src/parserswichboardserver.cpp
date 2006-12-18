@@ -154,9 +154,6 @@ ParserOperation ParserSB::parse (){
 
 		cmd = "";
 		m_buf.getQString(cmd, 3);
-
-		m_buf += 3; // The command
-
 		m_buf.setPosition(3);
 		if (cmd == "IRO"){
 				printf ("MSN::Log::ParserSB ## Parsing IRO\n");

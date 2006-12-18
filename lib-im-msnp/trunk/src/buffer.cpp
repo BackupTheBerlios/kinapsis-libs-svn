@@ -16,12 +16,6 @@
 namespace libimmsnp {
 
 Buffer::Buffer(){
-	m_lenCmd = 0;
-}
-
-Buffer& Buffer::operator += (int l){
-	m_lenCmd += l;
-	return *this;
 }
 
 Buffer& Buffer::operator << (QChar q){

@@ -108,7 +108,6 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString ch
 	if (chatMsg == "eco") test.sendChat(chatId, "Eco Eco");
 	if (chatMsg == "salir") test.disconnect();
 	if (chatMsg == "grupo") test.addGroup("Grupo Msn");
-	}
 }
 
 void MsnTest::newChat (int chatId, QString msnPassport){

@@ -625,9 +625,6 @@ void ParserNS::parse (){
 
 		cmd = "";
 		m_buf.getQString(cmd, 3);
-
-		m_buf += 3; // The command
-
 		m_buf.setPosition(3);
 		if (cmd == "VER"){
 			printf ("MSN::Log::ParserNS ## Parsing VER\n");
@@ -823,6 +820,18 @@ void ParserNS::parse (){
 			if (cmd ==  "540") {
 				printf ("MSN::ERROR::ParserNS ## Bad MD5 digest\n");
 				emit disconnected (ConnBadMd5Digest);
+			}
+
+			if (cmd ==  "800") {
+				// TODO: add ->  Last switchboard fail
+				QString s;
+				int l;
+				if ((l = m_buf.getTilChar (s,'\n')) != -1){
+					m_buf.advance (l);
+					m_buf.removeFromBegin();
+					printf ("MSN::ERROR::ParserNS ## Too many switchboard sessions >8/60sec\n");
+				}
+				else m_hasCommand = false;
 			}
 
 			QString error;
