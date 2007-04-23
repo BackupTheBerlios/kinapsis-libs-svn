@@ -403,60 +403,116 @@ void ParserNS::parseChg (){
 	else m_hasCommand = false;
 }
 
-// This pieze of code  is based on code http://msnpiki.msnfanatic.com/extra/CHL_Cpp.zip
-void challenge (const char *szChallenge, char *szOutput) {
-	const char *szClientID="PROD0090YUAUV{2B";
-	const char *szClientCode="YMM8C_H7KCQ2S_KL";
-	int i;
-	MD5_CTX mdContext;
-	MD5Init(&mdContext);
-	MD5Update(&mdContext,(unsigned char *)szChallenge,strlen(szChallenge));
-	MD5Update(&mdContext,(unsigned char *)szClientCode,strlen(szClientCode));
-	MD5Final(&mdContext);
-	unsigned char pMD5Hash[16];
-	memcpy(pMD5Hash,mdContext.digest,16);
-	int *pMD5Parts=(int *)mdContext.digest;
-	
-	for (i=0; i<4; i++) {
-		pMD5Parts[i]&=0x7FFFFFFF;
-	}
-	
-	int nchlLen=strlen(szChallenge)+strlen(szClientID);
-	if (nchlLen%8!=0)
-		nchlLen+=8-(nchlLen%8);
-	char *chlString=new char[nchlLen];
-	memset(chlString,'0',nchlLen);
-	memcpy(chlString,szChallenge,strlen(szChallenge));
-	memcpy(chlString+strlen(szChallenge),szClientID,strlen(szClientID));
-	int *pchlStringParts=(int *)chlString;
+// This pieze of code  is based on code http://tmsnc.sourceforge.net/chl.c 
+/* MSNP11 Challenge Handler v2
+ * Based on the C++ implementation. 
+ * This implementation works on big endian systems as well.
+ * Compile: 'gcc chl.c -o chl -lcrypto -Wall'
+ *
+ * Licensed for distribution under the GPL version 2
+ * Copyright 2005 Sanoi <sanoix@gmail.com>
+ */
 
-	long long nHigh=0;
-	long long nLow=0;
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <openssl/md5.h>
 
-	for (i=0; i<(nchlLen/4)-1; i+=2) {
-		long long temp=pchlStringParts[i];
-		temp=(pMD5Parts[0] * (((0x0E79A9C1 * (long long)pchlStringParts[i]) % 0x7FFFFFFF)+nHigh) + pMD5Parts[1])%0x7FFFFFFF;
-		nHigh=(pMD5Parts[2] * (((long long)pchlStringParts[i+1]+temp) % 0x7FFFFFFF) + pMD5Parts[3]) % 0x7FFFFFFF;
-		nLow=nLow + nHigh + temp;
-	}
-	
-	nHigh=(nHigh+pMD5Parts[1]) % 0x7FFFFFFF;
-	nLow=(nLow+pMD5Parts[3]) % 0x7FFFFFFF;
-	delete[] chlString;
+#define BUFSIZE 256
 
-	unsigned long *pNewHash=(unsigned long *)pMD5Hash;
-	
-	pNewHash[0]^=nHigh;
-	pNewHash[1]^=nLow;
-	pNewHash[2]^=nHigh;
-	pNewHash[3]^=nLow;
+int isBigEndian(void)
+{
+  short int word = 0x0100;
+  char *byte = (char *)&word;
+  return(byte[0]);
+}
 
-	char szHexChars[]="0123456789abcdef";
-	
-	for (i=0; i<16; i++) {
-		szOutput[i*2]=szHexChars[(pMD5Hash[i]>>4)&0xF];
-		szOutput[(i*2)+1]=szHexChars[pMD5Hash[i]&0xF];
-	}
+unsigned int swapInt(unsigned int dw)
+{
+  unsigned int tmp;
+  tmp =  (dw & 0x000000FF);
+  tmp = ((dw & 0x0000FF00) >> 0x08) | (tmp << 0x08);
+  tmp = ((dw & 0x00FF0000) >> 0x10) | (tmp << 0x08);
+  tmp = ((dw & 0xFF000000) >> 0x18) | (tmp << 0x08);
+  return(tmp);
+}
+
+void challenge(const char *input, char *output) {
+  char *productKey = "YMM8C_H7KCQ2S_KL",
+       *productID  = "PROD0090YUAUV{2B",
+       *hexChars   = "0123456789abcdef",
+       buf[BUFSIZE];
+  unsigned char md5Hash[16], *newHash;
+  unsigned int *md5Parts, *chlStringParts, newHashParts[5];
+  
+  long long nHigh=0, nLow=0;
+  
+  int i, bigEndian;
+
+  /* Determine our endianess */
+  bigEndian = isBigEndian();
+
+  /* Create the MD5 hash */
+  snprintf(buf, BUFSIZE-1, "%s%s", input, productKey);
+  MD5((unsigned char *)buf, strlen(buf), md5Hash);
+
+  /* Split it into four integers */
+  md5Parts = (unsigned int *)md5Hash;
+  for(i=0; i<4; i++) {  
+    /* check for endianess */
+    if(bigEndian)
+      md5Parts[i] = swapInt(md5Parts[i]);
+    
+    /* & each integer with 0x7FFFFFFF          */
+    /* and save one unmodified array for later */
+    newHashParts[i] = md5Parts[i];
+    md5Parts[i] &= 0x7FFFFFFF;
+  }
+  
+  /* make a new string and pad with '0' */
+  snprintf(buf, BUFSIZE-5, "%s%s", input, productID);
+  i = strlen(buf);
+  memset(&buf[i], '0', 8 - (i % 8));
+  buf[i + (8 - (i % 8))]='\0';
+  
+  /* split into integers */
+  chlStringParts = (unsigned int *)buf;
+  
+  /* this is magic */
+  for (i=0; i<(strlen(buf)/4)-1; i+=2) {
+    long long temp;
+
+    if(bigEndian) {
+      chlStringParts[i]   = swapInt(chlStringParts[i]);
+      chlStringParts[i+1] = swapInt(chlStringParts[i+1]);
+    }
+
+    temp=(md5Parts[0] * (((0x0E79A9C1 * (long long)chlStringParts[i]) % 0x7FFFFFFF)+nHigh) + md5Parts[1])%0x7FFFFFFF;
+    nHigh=(md5Parts[2] * (((long long)chlStringParts[i+1]+temp) % 0x7FFFFFFF) + md5Parts[3]) % 0x7FFFFFFF;
+    nLow=nLow + nHigh + temp;
+  }
+  nHigh=(nHigh+md5Parts[1]) % 0x7FFFFFFF;
+  nLow=(nLow+md5Parts[3]) % 0x7FFFFFFF;
+  
+  newHashParts[0]^=nHigh;
+  newHashParts[1]^=nLow;
+  newHashParts[2]^=nHigh;
+  newHashParts[3]^=nLow;
+  
+  /* swap more bytes if big endian */
+  for(i=0; i<4 && bigEndian; i++)
+    newHashParts[i] = swapInt(newHashParts[i]); 
+  
+  /* make a string of the parts */
+  newHash = (unsigned char *)newHashParts;
+  
+  /* convert to hexadecimal */
+  for (i=0; i<16; i++) {
+    output[i*2]=hexChars[(newHash[i]>>4)&0xF];
+    output[(i*2)+1]=hexChars[newHash[i]&0xF];
+  }
+  
+  output[32]='\0';
 }
 
 void ParserNS::parseChl (){
