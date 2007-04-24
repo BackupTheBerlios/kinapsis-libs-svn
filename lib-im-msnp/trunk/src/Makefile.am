@@ -2,7 +2,7 @@ AM_CPPFLAGS = $(all_includes)
 
 lib_LTLIBRARIES = libimmsnp.la 
 
-libimmsnp_la_LIBADD = -lqt -lcurl -lpthread
+libimmsnp_la_LIBADD = -lqt -lcurl -lcrypto -lpthread
 #$(LIB_KPARTS)
 libimmsnp_la_LDFLAGS = $(all_libraries) -version-info 0:1:0 -no-undefined
 libimmsnp_la_SOURCES = client.cpp msocket.cpp connectionlistener.cpp buffer.cpp parsernotificationserver.cpp connection.cpp login.cpp notificationServer.cpp contact.cpp presencelistener.cpp rosterlistener.cpp roster.cpp swichboardserver.cpp parserswichboardserver.cpp chat.cpp chatlistener.cpp
