@@ -15,7 +15,6 @@
 #include "client.h"
 #include "login.h"
 #include "notificationServer.h"
-#include "md5.h"
 #include <qstringlist.h>
 
 namespace libimmsnp {
