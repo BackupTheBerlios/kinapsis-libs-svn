@@ -131,11 +131,12 @@ void ParserNS::parseGcf () {
 		if (m_ticket == ""){
 			//emit disconnected (ConnAuthenticationFailed);
 		}
-
-		USR u(m_client->nextIdtr());
-		u.addTwnType ("S");
-		u.addTicket (m_ticket);
-		m_client->send (u);
+		else {
+			USR u(m_client->nextIdtr());
+			u.addTwnType ("S");
+			u.addTicket (m_ticket);
+			m_client->send (u);
+		}
 	}
 	m_hasCommand = false;
 }

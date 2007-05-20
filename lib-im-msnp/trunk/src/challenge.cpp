@@ -169,6 +169,7 @@ namespace libimmsnp {
 
 			}
 		}
+		else return "";
 
 		
 	}
