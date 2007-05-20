@@ -7,21 +7,19 @@ Basic Usage
 
   1. `cd' to the directory containing the package's source code and type
   
-     `make -f Makefile.cvs'
+     `cmake .'
 
-  2. sh configure --prefix=/usr/kde/3.5
+  2. Type `make' to compile the package.
 
-  3. Type `make' to compile the package.
+  3. `cd' to test directory
 
-  4. `cd' to test directory
+  4. edit msn.cpp and change `your msn mail here @hotmail.com' for your msn account
+   
+  5. change `your password here' or your msn password
 
-  5. edit msn.cpp and change `your msn mail here @hotmail.com' for your msn account
-  
-  6. change `your password here' or your msn password
+  6. type `make'
 
-  7. type `make'
-
-  8. type `./msn'
+  7. type `./msn'
 
 Compilers and Options
 =====================
