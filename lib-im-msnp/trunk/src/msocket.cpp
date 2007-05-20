@@ -22,6 +22,7 @@ msocket::msocket (bool ssl) {
 	if (ssl) {
 		m_ssl = true;
 		m_sslSocket = new QSslSocket(this);
+		QObject::connect(m_sslSocket, SIGNAL(sslErrors()), this, SLOT(ignoreSslErrors()));
 	}
 	else {
 		m_ssl = false;
@@ -37,6 +38,7 @@ int msocket::connect (QString host, quint16 port) {
 	if (m_ssl) {
 		m_sslSocket->abort();
 		m_sslSocket->connectToHostEncrypted(m_host,m_port);
+
 		if (m_sslSocket->waitForEncrypted(30000)) 
 			qDebug ("MSN:: SSL Socket::CONNECTED to %s at %d", m_host.toUtf8().data(), m_port);
 		else{
@@ -122,7 +124,7 @@ int msocket::recv (Buffer& buf){
 			else {
 				qDebug ("ERROR::MSN::Socket::%s <<<",m_host.toUtf8().data());
 			}
-				//qDebug ("MSN::Socket::%s ::len:%i <<< : %s",m_host.toUtf8().data(),tmpData.size() , tmpData.replace("\r\n","\\r\\n").data());
+				qDebug ("MSN::Socket::%s ::len:%i <<< : %s",m_host.toUtf8().data(),tmpData.size() , tmpData.replace("\r\n","\\r\\n").data());
 			return size;
 		}
 		else return -1;
