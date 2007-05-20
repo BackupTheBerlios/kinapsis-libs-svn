@@ -130,7 +130,7 @@ int msocket::recv (Buffer& buf){
 }
 
 msocket::~msocket () {
-	qDebug("MSN::Socket::CLOSED");
+	qDebug("MSN::Socket::CLOSED %s",m_host.toUtf8().data());
 
 }
 

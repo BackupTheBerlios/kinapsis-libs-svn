@@ -94,7 +94,6 @@ void ParserSB::parseAns(){
 void ParserSB::parseMsg () {
 	// MSG XXXXXXXX@gmail.com XXXXXX 590\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: XXXXXXXX@hotmail.com\r\n\r\n......
 	// MSG XXXXXXXX@hotmail.com XXXX 128\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nholaaa
-	qDebug("MSN::ParserSB::Log::BUFFER ANTES MSG <%s>",m_buf.dataDebug());
 	QRegExp rx;
 	rx.setPattern("(^MSG (\\S+) (\\S+) (\\d+)\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
@@ -131,8 +130,6 @@ void ParserSB::parseMsg () {
 
 	}
 	else m_hasCommand = false;
-
-	qDebug("MSN::ParserSB::Log::BUFFER TRAS MSG <%s>",m_buf.data());
 }
 
 void ParserSB::parseUsr(){
@@ -220,7 +217,7 @@ void ParserSB::parse (){
 	m_isParsing = true;
 	QString cmd;
 	while (m_buf.size() && m_hasCommand){
-		qDebug("MSN::ParserSB::Log::BUFFER <%s>",m_buf.dataDebug());
+		//qDebug("MSN::ParserSB::Log::BUFFER <%s>",m_buf.dataDebug());
 		cmd = m_buf.getCmd();
 		if (cmd == "IRO"){
 			qDebug ("MSN::Log::ParserSB ## Parsing IRO");

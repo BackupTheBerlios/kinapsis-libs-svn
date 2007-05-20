@@ -16,8 +16,8 @@
 namespace libimmsnp {
 
 MsnTest::MsnTest () {
-	QString id ("your msn mail here @hotmail.com");
-	QString pass ("your password here");
+	QString id ("probando_msnpy@hotmail.com");
+	QString pass ("gargolas");
 	m_client = new Client (id, pass, STATUS_NLN);
 }
 

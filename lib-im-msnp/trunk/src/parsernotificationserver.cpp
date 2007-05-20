@@ -30,7 +30,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, State initialStatus, Cl
 	m_isParsing = false;
 	m_protocol = protocol;
 }
-void ParserNS::run(){
+void ParserNS::init(){
 
 	VER v(m_client->nextIdtr());
 	v.addProtocolSupported(m_protocol);
@@ -302,6 +302,7 @@ void ParserNS::parseLst () {
 		Contact* c = new Contact(mail,"" , nick, id, groupId);
 		//emit newContactArrived (c); 
 		if (--m_contacts == 0) {
+			qDebug ("MSN::Log::ParserNS ## Roster Received");
 			CHG c (m_client->nextIdtr());
 			c.addStatusCode (m_initialStatus);
 			c.addCapabilities ("1342558252");
@@ -529,15 +530,15 @@ void ParserNS::parse (){
 			parsePrp();
 		}
 		else if (cmd == "LSG"){
-			qDebug ("MSN::Log::ParserNS ## Parsing LSG");
+			//qDebug ("MSN::Log::ParserNS ## Parsing LSG");
 			parseLsg();
 		}
 		else if (cmd == "LST"){
-			qDebug ("MSN::Log::ParserNS ## Parsing LST");
+			//qDebug ("MSN::Log::ParserNS ## Parsing LST");
 			parseLst();
 		}
 		else if (cmd == "CHG"){
-			qDebug ("MSN::Log::ParserNS ## Parsing LST");
+			qDebug ("MSN::Log::ParserNS ## Parsing CHG");
 			parseChg();
 		}
 		else if (cmd == "CHL"){

@@ -31,7 +31,7 @@ Q_OBJECT
 
 public:
 	ParserNS (QString, QString, State, Client*, msocket*, QString);
-	void run();
+	void init();
 
 	int hasData() {return m_buf.size();}
 
