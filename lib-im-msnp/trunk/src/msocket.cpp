@@ -22,7 +22,6 @@ msocket::msocket (bool ssl) {
 	if (ssl) {
 		m_ssl = true;
 		m_sslSocket = new QSslSocket(this);
-		QObject::connect(m_sslSocket, SIGNAL(sslErrors()), this, SLOT(ignoreSslErrors()));
 	}
 	else {
 		m_ssl = false;
@@ -72,7 +71,7 @@ int msocket::send (Buffer buf){
 	else { 
 		m_socket->write (buf.data());
 		if (m_socket->waitForBytesWritten(30000)) {
-			//qDebug ("MSN::Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());
+			qDebug ("MSN::Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());
 			}
 		else
 			qDebug ("ERROR::MSN::Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());
@@ -91,7 +90,7 @@ int msocket::send (QString str){
 	else {
 		m_socket->write (str.toUtf8().data());
 		if (m_socket->waitForBytesWritten(30000)) {
-			//qDebug ("MSN::Socket::%s >>> %s",m_host.replace("\r\n","\\r\\n").toUtf8().data(),str.toUtf8().data());
+			qDebug ("MSN::Socket::%s >>> %s",m_host.replace("\r\n","\\r\\n").toUtf8().data(),str.toUtf8().data());
 			}
 		else
 			qDebug ("ERROR::MSN::Socket::%s >>>",m_host.toUtf8().data());

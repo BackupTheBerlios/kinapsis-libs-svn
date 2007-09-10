@@ -18,6 +18,7 @@
 #include "buffer.h"
 #include "msocket.h"
 #include "client.h"
+#include "command.h"
 #include <qobject.h>
 #include <qthread.h>
 
@@ -35,6 +36,7 @@ public:
 
 	int hasData() {return m_buf.size();}
 
+	void send (Command& c);
 	void feed(Buffer);
 	void parse();
 

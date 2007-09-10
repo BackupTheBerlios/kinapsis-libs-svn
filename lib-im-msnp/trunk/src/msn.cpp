@@ -15,10 +15,22 @@
 
 namespace libimmsnp {
 
+
 MsnTest::MsnTest () {
-	QString id ("probando_msnpy@hotmail.com");
-	QString pass ("gargolas");
-	m_client = new Client (id, pass, STATUS_NLN);
+//	QString id ("probando_msnpy@hotmail.com");
+//	QString pass ("gargolas");
+	m_client = new Client (id, pass, STATUS_HDN);
+        m_client->addConnectionListener(this);
+
+}
+
+void MsnTest::onConnect()  {
+        m_connected = 1;
+        printf("# CONNECTED\n\n\n");
+}
+
+void MsnTest::onDisconnect(ConnectionError) {
+        printf("# DISCONNECTED\n\n\n");
 }
 
 void MsnTest::run (){
@@ -36,10 +48,13 @@ MsnTest::~MsnTest() {
 
 }
 
-int main(void){
+int main(int argc, char *argv[]){
 	using namespace libimmsnp;
+	QCoreApplication a(argc, argv); 
 	MsnTest cliente;
+	cliente.setApp(&a); 
 	cliente.start();
+	a.exec(); 
 	cliente.wait();
 }
 

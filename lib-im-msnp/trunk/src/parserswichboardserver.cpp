@@ -60,6 +60,10 @@ void ParserSB::run(){
 	m_socket = 0;
 }
 
+void ParserSB::send (Command& c){
+	m_socket->send(c.makeCmd());
+}
+
 void ParserSB::feed (Buffer b){
 	m_hasCommand = true;
 	m_buf << b;
@@ -112,9 +116,9 @@ void ParserSB::parseMsg () {
 			qDebug("MSG Typing user:%s ",rx.cap(1).toUtf8().data());
 		}
 
-		rx.setPattern("MIME-Version: 1.0\r\nContent-Type: text/plain; charset=(\\S+)\r\nX-MMS-IM-Format: FN=(\\S+); EF=(\\S*); CO=(\\S*); CS=(\\S*); PF=(\\d*)\r\n\r\n([\\s|\\S]*)$");
+		rx.setPattern("MIME-Version: 1.0\r\nContent-Type: text/plain; charset=(\\S+)\r\nX-MMS-IM-Format: FN=(\\S+); EF=(\\S*); CO=(\\S*); CS=(\\S*); PF=(\\d*)\r\n\r\n([\\s|\\S]*$)");
 		if (rx.indexIn(data.data()) != -1){
-			qDebug("MSG Codificacion:%s Fuente:%s Efectos:%s Color:%s Character sets:%s Font Type:%s msg:%s",rx.cap(1).toUtf8().data(), rx.cap(2).toUtf8().data(),rx.cap(3).toUtf8().data(),rx.cap(4).toUtf8().data(), rx.cap(5).toUtf8().data(),rx.cap(6).toUtf8().data());
+			qDebug("MSG Codificacion:%s Fuente:%s Efectos:%s Color:%s Character sets:%s Font Type:%s msg:%s",rx.cap(1).toUtf8().data(), rx.cap(2).toUtf8().data(),rx.cap(3).toUtf8().data(),rx.cap(4).toUtf8().data(), rx.cap(5).toUtf8().data(), rx.cap(6).toUtf8().data(), rx.cap(7).toUtf8().data());
 		}
 
 		rx.setPattern("MIME-Version: 1.0\r\nContent-Type: text/x-msnmsgr-datacast\r\n\r\nID: 1[\r\n]+$");
@@ -124,8 +128,7 @@ void ParserSB::parseMsg () {
 
 		rx.setPattern("(MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: \\S+\r\n\r\n)");
 		if (rx.indexIn(data.data()) != -1){
-			qDebug("MSG archivo");
-			qDebug("datos:%i",data.size());
+			qDebug("MSG archivo datos:%i:",data.size());
 		}
 
 	}
@@ -217,7 +220,7 @@ void ParserSB::parse (){
 	m_isParsing = true;
 	QString cmd;
 	while (m_buf.size() && m_hasCommand){
-		//qDebug("MSN::ParserSB::Log::BUFFER <%s>",m_buf.dataDebug());
+		qDebug("MSN::ParserSB::Log::BUFFER <%s>",m_buf.dataDebug());
 		cmd = m_buf.getCmd();
 		if (cmd == "IRO"){
 			qDebug ("MSN::Log::ParserSB ## Parsing IRO");

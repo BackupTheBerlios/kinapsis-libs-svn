@@ -16,6 +16,9 @@
 
 #include "libimmsnp.h"
 #include "parsernotificationserver.h"
+#include "parserswichboardserver.h"
+#include "connectionlistener.h"
+
 #include "command.h"
 #include "msocket.h"
 #include "buffer.h"
@@ -28,6 +31,7 @@
 namespace libimmsnp {
 
 class ParserNS;
+class ParserSB;
 
 class Client : public  QObject{
 	
@@ -43,18 +47,24 @@ public:
 	QString nextChatPassport();
 	void send(Command& c, int chat = -1);
 
+        // Listener's connections
+        void addConnectionListener (ConnectionListener* cl);
+        void delConnectionListener (ConnectionListener* cl);
+
+
 	virtual ~Client();
 
 public slots:
 	void connected ();
-//	void disconnected (ConnectionError e);
-//	void newGroupArrived (Group* g);
-//
-//	void newContactArrived (Contact* c);
-//	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
-//	void personalMessage (QString passport, QString personalMsg);
+	void disconnected (ConnectionError e);
 
-//	void chatRequest(QString ipPort, QString passport, QString ticket, QString sessionId);
+	void newGroupArrived (Group* g);
+	void newContactArrived (Contact* c);
+	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
+	void personalMessage (QString passport, QString personalMsg);
+	void hasBlog (QString passport);
+
+	void chatRequest(QString address, int port, QString contact, QString fName, QString ticket, QString sessid);
 //	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
 //	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
 //	void chatIsTyping(int chatId, QString chatMsnPassport);
@@ -64,6 +74,14 @@ public slots:
 //
 //	void initChatSB(QString, QString);
 //	void newChat(int, QString);
+signals:
+        void notifyConnect();
+        void notifyDisconnect(ConnectionError e);
+
+        void notifyNewContact(Contact*);
+        void notifyNewGroup(Group*);
+        void notifyPresence(Contact*);
+        void notifyPersonalMessage(Contact*);
 	
 private:
 	ParserNS* m_parser;
@@ -75,7 +93,7 @@ private:
 	State m_initialStatus;
 	Roster* m_roster;
 
-	typedef QMap<int, msocket*> ChatMap;
+	typedef QMap<int, ParserSB*> ChatMap;
 	ChatMap m_chatList;
 
 	QStringList m_destPassport;

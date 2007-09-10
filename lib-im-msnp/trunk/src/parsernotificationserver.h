@@ -70,13 +70,13 @@ public:
 signals:
 //	void mainSocket(msocket*);
 	void connected ();
-	//void disconnected(ConnectionError);
-	//void newGroupArrived (Group*);
-	//void newContactArrived (Contact*);
-	//void statusChanged (QString, State, QString, QString); 
-	//void personalMessage (QString, QString);
-//	void hasBlog (QString);
-//	void chatRequest (QString, QString, QString, QString);
+	void disconnected(ConnectionError);
+	void newGroupArrived (Group*);
+	void newContactArrived (Contact*);
+	void statusChanged (QString, State, QString, QString); 
+	void personalMessage (QString, QString);
+	void hasBlog (QString);
+	void chatRequest (QString, int, QString, QString, QString, QString);
 //	void initChatSB (QString, QString);
 
 private:
@@ -90,6 +90,7 @@ private:
 	State m_initialStatus;
 	Client* m_client;
 	QString m_protocol;
+	QString m_prevContact;
 
 	int m_contacts;
 	int m_groups;

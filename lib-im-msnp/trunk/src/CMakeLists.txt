@@ -19,6 +19,7 @@ SET(LibImMsnP_SRCS
 	contact.cpp
 	roster.cpp
 	msn.cpp
+	connectionlistener.cpp
 )
 
 SET(LibImMsnP_HDRS
@@ -37,6 +38,7 @@ SET(LibImMsnP_HDRS
 	contact.h
 	roster.h
 	msn.h
+	connectionlistener.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

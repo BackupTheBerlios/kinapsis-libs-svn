@@ -11,29 +11,22 @@
   This software is distributed without any warranty.
 */
 
-#ifndef _CONNECTIONLISTENER_H_
-#define _CONNECTIONLISTENER_H_
-
-#include <qobject.h>
-#include "libimmsnp.h"
+#include "rosterlistener.h"
 
 namespace libimmsnp {
 
-class ConnectionListener : public QObject{
-Q_OBJECT
-public:
-	ConnectionListener();
-	virtual ~ConnectionListener();
+RosterListener::RosterListener() { }
 
-	virtual void onConnect() = 0;
-	virtual void onDisconnect(ConnectionError e) = 0;
+RosterListener::~RosterListener() { }
 
-public slots:
-	void connectSlot();
-	void disconnectSlot(ConnectionError e);
-};
+void RosterListener::onNewContactSlot(Contact *c){
+	this->onNewContact(c);
+}
 
+void RosterListener::onNewGroupSlot(Group *g){
+	this->onNewGroup(g);
+}
 
 }
 
-#endif // _CONNECTIONLISTENER_H_
+#include "rosterlistener.moc"
