@@ -20,6 +20,9 @@ SET(LibImMsnP_SRCS
 	roster.cpp
 	msn.cpp
 	connectionlistener.cpp
+	presencelistener.cpp
+	rosterlistener.cpp
+	chatlistener.cpp
 )
 
 SET(LibImMsnP_HDRS
@@ -39,6 +42,9 @@ SET(LibImMsnP_HDRS
 	roster.h
 	msn.h
 	connectionlistener.h
+	presencelistener.h
+	rosterlistener.h
+	chatlistener.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

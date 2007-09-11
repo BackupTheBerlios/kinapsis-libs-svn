@@ -109,8 +109,9 @@ void ParserNS::parseXfr () {
 
 		if (type == "SB"){
 			qDebug("Connecting at: %s:%i ticket:%s",address.toUtf8().data(), port, ticket.toUtf8().data());
-			ParserSB* chatParser = new ParserSB (address, port, m_client->nextChatCount(), m_msnPassport, ticket, "", m_client);
-			chatParser->start();
+			emit chatRequest (address, port, "", "" ,ticket, "");
+			//ParserSB* chatParser = new ParserSB (address, port, m_client->nextChatCount(), m_msnPassport, ticket, "", m_client);
+			//chatParser->start();
 			// //emit newChat ...
 		}
 	}
@@ -164,7 +165,7 @@ void ParserNS::parseUsr () {
 			m_buf.remove(0,s.size());
 		}
 		else {
-			//m_hasCommand = false;
+			m_hasCommand = false;
 		}
 	}
 
@@ -193,7 +194,7 @@ void ParserNS::parseMsg () {
 				int inboxNotRead = rx.cap(2).toInt();
 				int spam = rx.cap(3).toInt();
 				int spamNotRead = rx.cap(4).toInt();
-				qDebug("MSN::Log::ParserNS ## New Mail inbox not Readed :%i of %i; spam not Readed :%i of %i", inboxNotRead, inbox, spamNotRead, spam);
+				qDebug("MSN::Log::ParserNS : New Mail inbox not Readed :%i of %i; spam not Readed :%i of %i", inboxNotRead, inbox, spamNotRead, spam);
 			}
 		}
 	//	//else m_hasCommand = false;
@@ -252,11 +253,10 @@ void ParserNS::parseBpr () {
 		if (rx.indexIn(m_buf.data()) != -1){
 			m_buf.remove(0,rx.cap(1).size());
 		}
-		else {
-			qDebug("###########COMMAND FALSE");
-			//m_hasCommand = false;
-			return;
-		}
+		//else {
+		//	//m_hasCommand = false;
+		//	return;
+		//}
 	}
 
 }
@@ -268,7 +268,7 @@ void ParserNS::parsePrp () {
 	if (rx.indexIn(m_buf.data()) != -1){
 		if (rx.cap(2) == "MFN") {
 			// TODO: //emit signal sending my name
-			qDebug ("MSN::Log::ParserNS ## MFN: %s", rx.cap(3).toUtf8().data());
+			qDebug ("MSN::Log::ParserNS : MFN: %s", rx.cap(3).toUtf8().data());
 		}
 		m_buf.remove(0,rx.cap(1).size());
 	}
@@ -282,7 +282,7 @@ void ParserNS::parseLsg () {
 	if (rx.indexIn(m_buf.data()) != -1){
 		QString nombre = rx.cap(2);
 		QString id = rx.cap(3);
-		//qDebug ("MSN::Log::ParserNS ## New Group=%s id=%s",nombre.toUtf8().data(),id.toUtf8().data());
+		//qDebug ("MSN::Log::ParserNS : New Group=%s id=%s",nombre.toUtf8().data(),id.toUtf8().data());
 		Group* g = new Group(nombre, id);
 		emit newGroupArrived(g);
 		m_buf.remove(0,rx.cap(1).size());
@@ -303,17 +303,17 @@ void ParserNS::parseLst () {
 		QString num1 = rx.cap(5); 
 		QString num2 = rx.cap(6); 
 		QString groupId = rx.cap(7).split(" ")[0];
-		qDebug ("MSN::Log::ParserNS ## New Contact=%s nick=%s", mail.toUtf8().data(), nick.toUtf8().data());
+		qDebug ("MSN::Log::ParserNS : New Contact=%s nick=%s", mail.toUtf8().data(), nick.toUtf8().data());
 		m_buf.remove(0,rx.cap(1).size());
 		Contact* c = new Contact(mail,"" , nick, id, groupId);
 		emit newContactArrived (c); 
 		m_prevContact = mail;
 		if (--m_contacts == 0) {
-			qDebug ("MSN::Log::ParserNS ## Roster Received");
+			qDebug ("MSN::Log::ParserNS : Roster Received");
 			CHG c (m_client->nextIdtr());
 			c.addStatusCode (m_initialStatus);
 			c.addCapabilities ("1342558252");
-			qDebug ("MSN::Log::ParserNS ## Roster received#");
+			qDebug ("MSN::Log::ParserNS : Roster received#");
 			m_client->send (c);
 			emit connected();
 		}
@@ -330,7 +330,7 @@ void ParserNS::parseChg () {
 	if (rx.indexIn(m_buf.data()) != -1){
 		QString estado = rx.cap(2);
 		QString capabilities = rx.cap(3);
-		//qDebug ("MSN::Log::ParserNS ## State Changed=%s capabilities=%s",estado.toUtf8().data(), capabilities.toUtf8().data());
+		//qDebug ("MSN::Log::ParserNS : State Changed=%s capabilities=%s",estado.toUtf8().data(), capabilities.toUtf8().data());
 		m_buf.remove(0,rx.cap(1).size());
 	}
 	////else m_hasCommand = false;
@@ -389,7 +389,7 @@ void ParserNS::parseNln () {
 		else if (state == "AWY") emit statusChanged (passport, STATUS_AWY, nick, capabilities);
 		else if (state == "PHN") emit statusChanged (passport, STATUS_PHN, nick, capabilities);
 		else if (state == "LUN") emit statusChanged (passport, STATUS_LUN, nick, capabilities);
-		qDebug ("MSN::Log::ParserNS ## Status Changed:%s mail:%s nick:%s capabi:%s#",state.toUtf8().data(), passport.toUtf8().data(), nick.toUtf8().data(), capabilities.toUtf8().data());
+		qDebug ("MSN::Log::ParserNS : Status Changed:%s mail:%s nick:%s capabi:%s#",state.toUtf8().data(), passport.toUtf8().data(), nick.toUtf8().data(), capabilities.toUtf8().data());
 		m_buf.remove(0,rx.cap(1).size());
 	}
 	//else m_hasCommand = false;
@@ -401,7 +401,7 @@ void ParserNS::parseFln () {
 	rx.setPattern("(^FLN (\\S+)\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
 		QString passport = rx.cap(2);
-		//qDebug ("MSN::Log::ParserNS ## Contact %s Disconnected",rx.cap(2).toUtf8().data());
+		//qDebug ("MSN::Log::ParserNS : Contact %s Disconnected",rx.cap(2).toUtf8().data());
 		emit statusChanged (passport,STATUS_OFF ,"","");
 		m_buf.remove(0,rx.cap(1).size());
 	}
@@ -421,7 +421,7 @@ void ParserNS::parseUbx () {
 			QString passport = rx.cap(2);
 			QString personalMsg = rx.cap(3);
 			m_buf.remove(0,rx.cap(1).size());
-			//qDebug("MSN::Log::ParserNS ## Personal MSG mail:%s  msg:%s", passport.toUtf8().data(), personalMsg.toUtf8().data());
+			//qDebug("MSN::Log::ParserNS : Personal MSG mail:%s  msg:%s", passport.toUtf8().data(), personalMsg.toUtf8().data());
 			emit personalMessage(passport, personalMsg);
 		}
 	}
@@ -439,7 +439,7 @@ void ParserNS::parseRng () {
 		QString ticket = rx.cap(5);
 		QString contact = rx.cap(6);
 		QString fName = rx.cap(7);
-		qDebug ("MSN::Log::ParserNS::Calling ## sessid:%s address:%s port:%i ticket:%s contact:%s FriendName:%s",sessid.toUtf8().data(),address.toUtf8().data(),port ,ticket.toUtf8().data(),contact.toUtf8().data(),fName.toUtf8().data());
+		qDebug ("MSN::Log::ParserNS::Calling : sessid:%s address:%s port:%i ticket:%s contact:%s FriendName:%s",sessid.toUtf8().data(),address.toUtf8().data(),port ,ticket.toUtf8().data(),contact.toUtf8().data(),fName.toUtf8().data());
 		m_buf.remove(0,rx.cap(1).size());
 		emit chatRequest (address, port, contact, fName ,ticket, sessid);
 	}
@@ -468,15 +468,15 @@ void ParserNS::parseError () {
 		QString reason = rx.cap(2);
 		m_buf.remove(0,rx.cap(1).size());
 		if (reason == "715") {
-			qDebug("MSN::ERROR::ParserNS ## Not expected");
+			qDebug("MSN::ERROR::ParserNS : Not expected");
 			emit disconnected (ConnNotExpected);;
 		}
 		if (reason == "540") {
-			qDebug("MSN::ERROR::ParserNS ## Bad MD5 digest");
+			qDebug("MSN::ERROR::ParserNS : Bad MD5 digest");
 			emit disconnected (ConnBadMd5Digest);
 		}
 		if (reason == "800") {
-			qDebug("MSN::ERROR::ParserNS ## Too many switchboard sessions more than 8 in 60 seconds");
+			qDebug("MSN::ERROR::ParserNS : Too many switchboard sessions more than 8 in 60 seconds");
 			////emit ;
 		}
 	}
@@ -490,96 +490,96 @@ void ParserNS::parse (){
 		qDebug("MSN::ParserNS::Log::BUFFER <%s>",m_buf.dataDebug());
 		cmd = m_buf.getCmd();
 		if (cmd == "VER"){
-			qDebug ("MSN::Log::ParserNS ## Parsing VER");
+			qDebug ("MSN::Log::ParserNS : Parsing VER");
 			parseVer();
 		}
 
 		else if (cmd == "CVR"){
-			qDebug ("MSN::Log::ParserNS ## Parsing CVR");
+			qDebug ("MSN::Log::ParserNS : Parsing CVR");
 			parseCvr();
 		}
 		else if (cmd == "XFR"){
-			qDebug ("MSN::Log::ParserNS ## Parsing XFR");
+			qDebug ("MSN::Log::ParserNS : Parsing XFR");
 			parseXfr();
 		}
 		else if (cmd == "GCF"){
-			qDebug ("MSN::Log::ParserNS ## Parsing GCF");
+			qDebug ("MSN::Log::ParserNS : Parsing GCF");
 			parseGcf();
 		}
 		else if (cmd == "USR"){
-			qDebug ("MSN::Log::ParserNS ## Parsing USR");
+			qDebug ("MSN::Log::ParserNS : Parsing USR");
 			parseUsr();
 		}
 		else if (cmd == "MSG"){
-			qDebug ("MSN::Log::ParserNS ## Parsing MSG");
+			qDebug ("MSN::Log::ParserNS : Parsing MSG");
 			parseMsg();
 		}
 		else if (cmd == "SYN"){
-			qDebug ("MSN::Log::ParserNS ## Parsing SYN");
+			qDebug ("MSN::Log::ParserNS : Parsing SYN");
 			parseSyn();
 		}
 		else if (cmd == "GTC"){
-			qDebug ("MSN::Log::ParserNS ## Parsing GTC");
+			qDebug ("MSN::Log::ParserNS : Parsing GTC");
 			parseGtc();
 		}
 		else if (cmd == "BLP"){
-			qDebug ("MSN::Log::ParserNS ## Parsing BLP");
+			qDebug ("MSN::Log::ParserNS : Parsing BLP");
 			parseBlp();
 		}
 		else if (cmd == "BPR"){
-			qDebug ("MSN::Log::ParserNS ## Parsing BPR");
+			qDebug ("MSN::Log::ParserNS : Parsing BPR");
 			parseBpr();
 		}
 		else if (cmd == "PRP"){
-			qDebug ("MSN::Log::ParserNS ## Parsing PRP");
+			qDebug ("MSN::Log::ParserNS : Parsing PRP");
 			parsePrp();
 		}
 		else if (cmd == "LSG"){
-			//qDebug ("MSN::Log::ParserNS ## Parsing LSG");
+			//qDebug ("MSN::Log::ParserNS : Parsing LSG");
 			parseLsg();
 		}
 		else if (cmd == "LST"){
-			//qDebug ("MSN::Log::ParserNS ## Parsing LST");
+			//qDebug ("MSN::Log::ParserNS : Parsing LST");
 			parseLst();
 		}
 		else if (cmd == "CHG"){
-			qDebug ("MSN::Log::ParserNS ## Parsing CHG");
+			qDebug ("MSN::Log::ParserNS : Parsing CHG");
 			parseChg();
 		}
 		else if (cmd == "CHL"){
-			qDebug ("MSN::Log::ParserNS ## Parsing CHL");
+			qDebug ("MSN::Log::ParserNS : Parsing CHL");
 			parseChl();
 		}
 		else if (cmd == "QRY"){
-			qDebug ("MSN::Log::ParserNS ## Parsing QRY");
+			qDebug ("MSN::Log::ParserNS : Parsing QRY");
 			parseQry();
 		}
 		/// Connected
 		else if (cmd == "NLN"){
-			qDebug ("MSN::Log::ParserNS ## Parsing NLN");
+			qDebug ("MSN::Log::ParserNS : Parsing NLN");
 			parseNln();
 		}
 		else if (cmd == "ILN"){
-			qDebug ("MSN::Log::ParserNS ## Parsing ILN");
+			qDebug ("MSN::Log::ParserNS : Parsing ILN");
 			parseNln();
 		}
 
 		else if (cmd == "UBX"){
-			qDebug ("MSN::Log::ParserNS ## Parsing UBX");
+			qDebug ("MSN::Log::ParserNS : Parsing UBX");
 			parseUbx();
 		}
 		else if (cmd == "FLN"){
-			qDebug ("MSN::Log::ParserNS ## Parsing FLN");
+			qDebug ("MSN::Log::ParserNS : Parsing FLN");
 			parseFln();
 		}
 		// Calling
 		else if (cmd == "RNG"){
-			qDebug ("MSN::Log::ParserNS ## Parsing RNG");
+			qDebug ("MSN::Log::ParserNS : Parsing RNG");
 			parseRng();
 		}
 
 		else if (cmd == "OUT"){
-			qDebug ("MSN::Log::ParserNS ## Parsing OUT");
+			qDebug ("MSN::Log::ParserNS : Parsing OUT");
 			parseOut();
 		}
 

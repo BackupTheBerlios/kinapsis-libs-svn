@@ -50,8 +50,17 @@ public:
 	void parseBye();
 
 	void parseError();
+
+	int getIdtr (){return m_idtr++;};
 	
 	~ParserSB(){printf ("MSN::ParserSB::log ## Parser deleted\n");}
+
+signals:
+       void chatArrivedMessage (int, QString, QString);
+       void chatInfo (int, QString, QString);
+       void chatIsTyping (int, QString);
+       void chatLeavedTheRoom(int, QString);
+       void newChat (int, QString);
 
 private:
 	QString m_address;
@@ -72,13 +81,6 @@ private:
 	QString m_buddy;
 	bool m_endChat;
 
-//signals:
-//       void chatArrivedMessage (int, QString, QString);
-//       void chatInfo (int, QString, QString);
-//       void chatIsTyping (int, QString);
-//       void chatLeavedTheRoom(int, QString);
-//       void newChat (int, QString);
-//
 };
 }
 	

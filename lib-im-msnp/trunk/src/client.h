@@ -17,7 +17,11 @@
 #include "libimmsnp.h"
 #include "parsernotificationserver.h"
 #include "parserswichboardserver.h"
+
 #include "connectionlistener.h"
+#include "rosterlistener.h"
+#include "presencelistener.h"
+#include "chatlistener.h"
 
 #include "command.h"
 #include "msocket.h"
@@ -46,11 +50,22 @@ public:
 	int nextChatCount();
 	QString nextChatPassport();
 	void send(Command& c, int chat = -1);
+	void sendChat(int chatId, QString msg);
+
+	void changeStatus (State newStatus);
 
         // Listener's connections
         void addConnectionListener (ConnectionListener* cl);
         void delConnectionListener (ConnectionListener* cl);
 
+	void addRosterListener (RosterListener *rl);
+	void delRosterListener (RosterListener *rl);
+
+	void addPresenceListener(PresenceListener *pl);
+	void delPresenceListener(PresenceListener *pl);
+	
+	void addChatListener(ChatListener *chl);
+	void delChatListener(ChatListener *chl);
 
 	virtual ~Client();
 
@@ -65,10 +80,10 @@ public slots:
 	void hasBlog (QString passport);
 
 	void chatRequest(QString address, int port, QString contact, QString fName, QString ticket, QString sessid);
-//	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
-//	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
-//	void chatIsTyping(int chatId, QString chatMsnPassport);
-//	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
+	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
+	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
+	void chatIsTyping(int chatId, QString chatMsnPassport);
+	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
 //	void contactDisconnected (QString msnPassport);
 //	void chatCreated (QString hostPort, QString ticket);
 //
@@ -82,6 +97,12 @@ signals:
         void notifyNewGroup(Group*);
         void notifyPresence(Contact*);
         void notifyPersonalMessage(Contact*);
+
+	void notifyNewChat (int, QString);
+	void notifyChatLeavedTheRoom (int, QString);
+	void notifyChatIsTyping(int, QString);
+	void notifyChatInfo (int, QString, QString);
+	void notifyChatArrivedMessage (int, QString, QString);
 	
 private:
 	ParserNS* m_parser;

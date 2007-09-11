@@ -26,7 +26,7 @@ namespace libimmsnp {
 		m_idtr = 1;
 		m_chatCount = 0;
 		m_initialStatus = initialStatus;
-		m_roster = 0;
+		m_roster = new Roster ;
 	}
 
 	int 	Client::nextIdtr() {return m_idtr++;}
@@ -61,7 +61,7 @@ namespace libimmsnp {
 			QObject::connect(m_parser, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
 			m_parser->init();
 		}
-		qDebug("##################### End of Client");
+		qDebug("###### End of Client");
 	}       
 	
 	void Client::initChat(QString destPassport){
@@ -75,16 +75,35 @@ namespace libimmsnp {
 		send (out);
 	}
 
+	void Client::sendChat(int chatId, QString msg) {
+		if (m_chatList[chatId]){
+			MSG m (m_chatList[chatId]->getIdtr());
+			m.addMsg (msg);
+			send (m, chatId);
+		}
+	}
+
+	void Client::changeStatus (State status){
+		// CHG idtr status capabilities\r\n
+		printf("MSN::Log::Client ## Status Changed\n");
+		CHG cmd (nextIdtr());
+		cmd.addStatusCode(status);
+		cmd.addCapabilities ("1342558252");
+		send (cmd);
+	}
+
 	Client::~Client(){
 		delete m_mainSocket;
 	}
 
 
-	/// SLOTS
+	/**************************
+	 * ******* SLOTS **********
+	 * ************************/
 
 	void Client::connected() {
-		qDebug ("MSN::Client::SIGNAL ## notifyConnect");
-		//emit notifyConnect();
+		//qDebug ("MSN::Client::SIGNAL ## notifyConnect");
+		emit notifyConnect();
 	}
 
 	void Client::disconnected(ConnectionError e) {
@@ -92,15 +111,15 @@ namespace libimmsnp {
 		delete m_mainSocket;
 		m_roster = 0;
 		m_mainSocket = 0;
-		printf ("MSN::Client::SIGNAL ## DISCONNECT\n"); 
-		//emit notifyDisconnect(e);
+		//printf ("MSN::Client::SIGNAL ## DISCONNECT\n"); 
+		emit notifyDisconnect(e);
 	}
 
 	void Client::newGroupArrived (Group* group) {
-		printf ("MSN::Client::SIGNAL ## newGroup\n"); 
-		//emit notifyNewGroup(group);
+	//	printf ("MSN::Client::SIGNAL ## newGroup\n"); 
+		emit notifyNewGroup(group);
 
-		//m_roster->addGroup(group);
+		m_roster->addGroup(group);
 	}
 
 	void Client::newContactArrived (Contact* contact) {
@@ -108,27 +127,27 @@ namespace libimmsnp {
 			QString g = m_roster->getGroupName(contact->getGroupId());
 			contact->setGroupName(g);
 		}
-		printf ("MSN::Client::SIGNAL ## NewContact\n"); 
-		//emit notifyNewContact(contact);
-		//m_roster->addContact(contact);
+	//	printf ("MSN::Client::SIGNAL ## NewContact\n"); 
+		emit notifyNewContact(contact);
+		m_roster->addContact(contact);
 	}
 
 	void Client::statusChanged (QString passport, State status, QString displayName, QString capabilities ){
-		//Contact* c = m_roster->getContact(passport);
-		//c->setStatus (status);
-		//c->setDisplayName (displayName);
-		//c->setCapabilities (capabilities);
-		printf ("MSN::Client::SIGNAL ## Presence form:%s displayName:%s CAP:%s\n", passport.toUtf8().data(), displayName.replace("\r\n","\\r\\n").toUtf8().data(), capabilities.toUtf8().data()); 
-		//emit notifyPresence (c);
+		Contact* c = m_roster->getContact(passport);
+		c->setStatus (status);
+		c->setDisplayName (displayName);
+		c->setCapabilities (capabilities);
+		//printf ("MSN::Client::SIGNAL ## Presence form:%s displayName:%s CAP:%s\n", passport.toUtf8().data(), displayName.replace("\r\n","\\r\\n").toUtf8().data(), capabilities.toUtf8().data()); 
+		emit notifyPresence (c);
 
 	}
 
 	void Client::personalMessage (QString passport, QString personalMsg){
 		if (personalMsg != ""){
-			//Contact* c = m_roster->getContact(passport);
-			//c->setPersMsg (personalMsg);
-			printf ("MSN::Client::SIGNAL ## personalMsg from:%s persMSG:%s\n", passport.toUtf8().data(), personalMsg.replace("\r\n","\\r\\n").toUtf8().data()); 
-			//emit notifyPersonalMessage (c);
+			Contact* c = m_roster->getContact(passport);
+			c->setPersMsg (personalMsg);
+			//printf ("MSN::Client::SIGNAL ## personalMsg from:%s persMSG:%s\n", passport.toUtf8().data(), personalMsg.replace("\r\n","\\r\\n").toUtf8().data()); 
+			emit notifyPersonalMessage (c);
 		}
 	}
 
@@ -137,49 +156,42 @@ namespace libimmsnp {
 	}
 
 	void Client::chatRequest(QString address, int port, QString contact, QString fName, QString ticket, QString sessid){
-		printf ("MSN::Log::ParserNS ## Calling:%s From: %s\n",contact.toUtf8().data(), address.toUtf8().data());
+		//printf ("MSN::Log::ParserNS ## Calling:%s From: %s\n",contact.toUtf8().data(), address.toUtf8().data());
 		ParserSB* chatParser = new ParserSB (address, port, ++m_chatCount, m_msnPassport, ticket, sessid, this);
 		m_chatList[m_chatCount] = chatParser;
-		chatParser->run();
-		//emit (notifyNewChat (m_chatCount, passport));
-		printf ("MSN::Client::SIGNAL ## newChat at:%i with:%s\n", m_chatCount, contact.toUtf8().data()); 
+		emit (notifyNewChat (m_chatCount, contact));
 
-		//QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
-		//QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
-		//QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
-		//QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
+		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
+		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
+		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
+		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
+		chatParser->run();
 	}
-//
-//	void Client::initChatSB(QString ipPort, QString ticket) {
-//		msocket* sock = new msocket (ipPort.toUtf8().data());
-//		sock->connect();
-//
-//		USRchat usr (1);
-//		usr.addPassport (m_msnPassport);
-//		usr.addTicket (ticket);
-//		sock->send(usr.makeCmd());
-//		QString m;
-//		sock->recv(m);
-//
-//		CAL cal (1);
-//		cal.addPassport (m_destPassport);
-//		sock->send(cal.makeCmd());
-//		sock->recv(m);
-//
-//		m_chatCount ++;
-//		ParserSB* chatParser = new ParserSB (sock, this, m_chatCount);
-//		Chat* oneChat = new Chat (chatParser, m_chatCount, sock);
-//		oneChat->Start();
-//		m_chatList[m_chatCount] = oneChat;
-//
-//		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
-//		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
-//		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
-//		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
-//		QObject::connect(chatParser, SIGNAL(newChat(int, QString)), this, SLOT(newChat(int, QString)));
-//		//printf ("Contact:%s has left the room\n", passport.toUtf8().data());
-//		
-//	}
+
+	void Client::chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg) {
+		//printf ("MSN::Client::SIGNAL ## Chat message at:%i from:%s MSG:%s\n", chatId, msnPassport.toUtf8().data(), chatMsg.replace("\r\n","\\r\\n").toUtf8().data()); 
+		emit notifyChatArrivedMessage (chatId, msnPassport, chatMsg);
+	}
+
+	void Client::chatInfo (int chatId, QString chatMsnClient, QString chatIsLogging) {
+		//printf ("MSN::Client::SIGNAL ## ChatInfo at:%i from:%s Logging:%s\n", chatId, chatMsnClient.toUtf8().data(), chatIsLogging.toUtf8().data()); 
+		emit notifyChatInfo (chatId, chatMsnClient, chatIsLogging);
+	}
+
+	void Client::chatIsTyping (int chatId, QString chatMsnPassport){
+		//printf ("MSN::Client::SIGNAL ## chat Typing at:%i from:%s\n", chatId, chatMsnPassport.toUtf8().data()); 
+		emit notifyChatIsTyping (chatId, chatMsnPassport);
+	}
+
+	void Client::chatLeavedTheRoom (int chatId, QString passport) {
+		//printf ("MSN::Client::SIGNAL ## chatLeaved by:%s from:%i\n", passport.toUtf8().data(), chatId ); 
+		emit notifyChatLeavedTheRoom (chatId, passport);
+	}
+
+
+	/******************************
+	 * ******* LISTENERS **********
+	 * ***************************/
 
         void Client::addConnectionListener (ConnectionListener* cl){
                 QObject::connect (this, SIGNAL(notifyConnect()), cl, SLOT(connectSlot()));
@@ -189,6 +201,36 @@ namespace libimmsnp {
         void Client::delConnectionListener (ConnectionListener* cl){
                 QObject::disconnect (this, 0, cl, 0);
         }
+
+	void Client::addRosterListener (RosterListener *rl){
+		QObject::connect (this, SIGNAL(notifyNewContact(Contact*)), rl, SLOT(onNewContactSlot(Contact*)));
+		QObject::connect (this, SIGNAL(notifyNewGroup(Group*)), rl, SLOT(onNewGroupSlot(Group*)));
+	}
+
+	void Client::delRosterListener (RosterListener *rl){
+		QObject::disconnect (this, 0, rl, 0);
+	}
+
+	void Client::addPresenceListener(PresenceListener *pl) {
+		QObject::connect(this, SIGNAL(notifyPresence(Contact*)), pl, SLOT(presenceChangedSlot(Contact*)));
+		QObject::connect(this, SIGNAL(notifyPersonalMessage(Contact*)), pl, SLOT(personalMessageSlot(Contact*)));
+	}
+
+	void Client::delPresenceListener (PresenceListener *pl){
+		QObject::disconnect (this, 0, pl, 0);
+	}
+
+	void Client::addChatListener (ChatListener *chl){
+		QObject::connect (this, SIGNAL(notifyNewChat (int, QString)), chl, SLOT(newChatSlot (int, QString)));
+		QObject::connect (this, SIGNAL(notifyChatLeavedTheRoom(int, QString)), chl, SLOT(chatLeavedTheRoomSlot(int, QString)));
+		QObject::connect (this, SIGNAL(notifyChatIsTyping(int, QString)), chl, SLOT(chatIsTypingSlot(int, QString)));
+		QObject::connect (this, SIGNAL(notifyChatInfo (int, QString, QString)), chl, SLOT(chatInfoSlot(int, QString, QString)));
+		QObject::connect (this, SIGNAL(notifyChatArrivedMessage (int, QString, QString)),chl, SLOT(chatArrivedMessageSlot(int, QString, QString)));
+	}
+
+	void Client::delChatListener (ChatListener *chl){
+		QObject::disconnect (this, 0, chl, 0);
+	}
 
 }
 #include "client.moc"
