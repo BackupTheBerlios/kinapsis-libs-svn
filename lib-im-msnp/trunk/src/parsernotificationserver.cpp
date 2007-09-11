@@ -246,6 +246,11 @@ void ParserNS::parseBpr () {
 		emit hasBlog (m_prevContact);
 		return;
 	}
+	rx.setPattern("(^BPR MOB Y\r\n)");
+	if (rx.indexIn(m_buf.data()) != -1){
+		m_buf.remove(0,rx.cap(1).size());
+		return;
+	}
 	else {
 		//BPR PHH tel:34%20925825866 0\r\nBPR PHW tel:34%20625914471 0\r\nBPR PHM tel:34%20625914471 0\r\nBPR HSB 1\r\n
 		//rx.setPattern("(^BPR PHM (\\S+) 0\r\n)");
@@ -301,8 +306,6 @@ void ParserNS::parseLst () {
 	QString num2;
 	QString groupId;
 
-	QRegExp rx;
-	rx.setPattern("(^LST N=(\\S+)[ F=]?([\\S]*)[ C=]?([\\S]*) (\\d+) (\\d)([ ]?[\\S]*)+\r\n)"); 
 	if (m_buf.indexOf("\r\n") >= 0) {
 		QList<QByteArray> p2 = m_buf.split(' ');
 		if (p2.size() == 4)  {
@@ -395,15 +398,39 @@ void ParserNS::parseNln () {
 	// ILN 9 BSY XXXXXXXX@hotmail.com Diecoballa,%20Watashi%20wa%20supeinjin%20desu,%20watashi%20no%20namae%20wa%20Akimoto%20Makoto%20desu 1616760868 %3Cmsnobj%20Creator%3D%22darkerviti%40hotmail.com%22%20Size%3D%2229089%22%20Type%3D%223%22%20Location%3D%22TFR11A.dat%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%22Ra4vcWsSOszskaurp71jzB0RSUk%3D%22%20SHA1C%3D%22zMQH9sLLaWshs9B8k27FglzFJ%2Fk%3D%22%2F%3E\r\n
 	// ILN 9 NLN XXXXXXXXX@hotmail.com pedro 1342558252\r\n
 	// NLN NLN XXXXXXXXXXX@hotmail.com pedro 1342558252 0\r\n
-	QRegExp rx;
-	//rx.setPattern("(^[I|N]LN[ ]?[\\d+]? ([\\S+]{3}) (\\S+) (\\S+) (\\S+)[ ]?([\\d]+)[ ]?([\\S]*)\r\n)");
-	rx.setPattern("(^[I|N]LN[ ]?[\\d+]? ([\\S+]{3}) (\\S+) (\\S+) (\\S+)[ ]?([\\d]+)[ ]?(\\S*)\r\n)");
+	QString state;
+	QString passport;
+	QString nick;
+	QString capabilities;
 
-	if (rx.indexIn(m_buf.data()) != -1){
-		QString state = rx.cap(2);
-		QString passport = rx.cap(3);
-		QString nick = rx.cap(4);
-		QString capabilities = rx.cap(5);
+	if (m_buf.indexOf("\r\n") >= 0) {
+		QList<QByteArray> p2 = m_buf.split(' ');
+		if (p2.size() == 6 )  {
+			bool ok;
+		  	int dec = p2[1].toInt(&ok, 10);
+			if (ok) {
+				// ILN 9 NLN XXXXXXXXX@hotmail.com pedro 1342558252\r\n
+				state = p2[2].data();
+				passport = p2[3].data();
+				nick   = p2[4].data();
+				capabilities = p2[5].data();
+			}
+			else {
+				// NLN NLN XXXXXXXXXXX@hotmail.com pedro 1342558252 0\r\n
+				state = p2[1].data();
+				passport = p2[2].data();
+				nick   = p2[3].data();
+				capabilities = p2[4].data();
+			}
+
+		}
+		if (p2.size() >= 7 )  {
+			state = p2[2].data();
+			passport = p2[3].data();
+			nick   = p2[4].data();
+			capabilities = p2[5].data();
+		}
+
 		qRegisterMetaType<State>("State");
 		if (state == "NLN") emit statusChanged (passport, STATUS_NLN, nick, capabilities);
 		else if (state == "BSY") emit statusChanged (passport, STATUS_BSY, nick, capabilities);
@@ -413,7 +440,7 @@ void ParserNS::parseNln () {
 		else if (state == "PHN") emit statusChanged (passport, STATUS_PHN, nick, capabilities);
 		else if (state == "LUN") emit statusChanged (passport, STATUS_LUN, nick, capabilities);
 		qDebug ("MSN::Log::ParserNS : Status Changed:%s mail:%s nick:%s capabi:%s#",state.toUtf8().data(), passport.toUtf8().data(), nick.toUtf8().data(), capabilities.toUtf8().data());
-		m_buf.remove(0,rx.cap(1).size());
+		m_buf.remove(0,m_buf.indexOf("\r\n")+2);
 	}
 	else m_hasCommand = false;
 }
@@ -444,6 +471,10 @@ void ParserNS::parseUbx () {
 			QString passport = rx.cap(2);
 			QString personalMsg = rx.cap(3);
 			m_buf.remove(0,rx.cap(1).size());
+			rx.setPattern("<PSM>([\\d|\\D]*)</PSM>");
+			if (rx.indexIn(personalMsg) != -1){
+				personalMsg = rx.cap(1);
+			}
 			//qDebug("MSN::Log::ParserNS : Personal MSG mail:%s  msg:%s", passport.toUtf8().data(), personalMsg.toUtf8().data());
 			emit personalMessage(passport, personalMsg);
 		}

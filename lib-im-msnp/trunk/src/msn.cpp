@@ -19,6 +19,8 @@ namespace libimmsnp {
 MsnTest::MsnTest () {
 	QString id ("probando_msnpy@hotmail.com");
 	QString pass ("gargolas");
+
+	// TODO:  segfault if bad password
 	m_client = new Client (id, pass, STATUS_HDN);
         m_client->addConnectionListener(this);
 	m_client->addRosterListener(this);
