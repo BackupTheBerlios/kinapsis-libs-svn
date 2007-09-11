@@ -294,18 +294,41 @@ void ParserNS::parseLst () {
 	// LST N=aaaaaaaaa@hotmail.com F=nick:%20aaÃ³ C=07ad2594-ef7f-4a1e-96e1-0158611521ed 11 1\r\n
 	// LST N=aaaaaaaaa@hotmail.com 11 1\r\n
 	
+	QString mail;
+	QString nick;
+	QString id;
+	QString num1;
+	QString num2;
+	QString groupId;
+
 	QRegExp rx;
 	rx.setPattern("(^LST N=(\\S+)[ F=]?([\\S]*)[ C=]?([\\S]*) (\\d+) (\\d)([ ]?[\\S]*)+\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
-		QString mail = rx.cap(2);
-		QString nick = rx.cap(3);
-		QString id   = rx.cap(4);
-		QString num1 = rx.cap(5); 
-		QString num2 = rx.cap(6); 
-		QString groupId = rx.cap(7).split(" ")[0];
+	if (m_buf.indexOf("\r\n") >= 0) {
+		QList<QByteArray> p2 = m_buf.split(' ');
+		if (p2.size() == 4)  {
+			mail = p2[1].mid(2).data();
+			nick = p2[2].mid(2).data();
+			id   = p2[3].mid(2).data();
+		}
+		if (p2.size() == 6)  {
+			mail = p2[1].mid(2).data();
+			nick = p2[2].mid(2).data();
+			id   = p2[3].mid(2).data();
+			num1 = p2[4].data();
+			num2 = p2[5].data();
+		}
+		if (p2.size() >6 )  {
+			mail = p2[1].mid(2).data();
+			nick = p2[2].mid(2).data();
+			id   = p2[3].mid(2).data();
+			num1 = p2[4].data();
+			num2 = p2[5].data();
+			groupId = p2[6].data();
+		}
+
 		qDebug ("MSN::Log::ParserNS : New Contact=%s nick=%s", mail.toUtf8().data(), nick.toUtf8().data());
-		m_buf.remove(0,rx.cap(1).size());
-		Contact* c = new Contact(mail,"" , nick, id, groupId);
+		m_buf.remove(0,m_buf.indexOf("\r\n")+2);
+		Contact* c = new Contact(mail,"" , QString(nick), id, groupId);
 		emit newContactArrived (c); 
 		m_prevContact = mail;
 		if (--m_contacts == 0) {
@@ -392,7 +415,7 @@ void ParserNS::parseNln () {
 		qDebug ("MSN::Log::ParserNS : Status Changed:%s mail:%s nick:%s capabi:%s#",state.toUtf8().data(), passport.toUtf8().data(), nick.toUtf8().data(), capabilities.toUtf8().data());
 		m_buf.remove(0,rx.cap(1).size());
 	}
-	//else m_hasCommand = false;
+	else m_hasCommand = false;
 }
 
 void ParserNS::parseFln () {
@@ -424,8 +447,9 @@ void ParserNS::parseUbx () {
 			//qDebug("MSN::Log::ParserNS : Personal MSG mail:%s  msg:%s", passport.toUtf8().data(), personalMsg.toUtf8().data());
 			emit personalMessage(passport, personalMsg);
 		}
+		else m_hasCommand = false;
 	}
-	//else m_hasCommand = false;
+	else m_hasCommand = false;
 }
 
 void ParserNS::parseRng () {
@@ -487,7 +511,9 @@ void ParserNS::parse (){
 	m_isParsing = true;
 	QString cmd;
 	while (m_buf.size() && m_hasCommand){
-		qDebug("MSN::ParserNS::Log::BUFFER <%s>",m_buf.dataDebug());
+		if (m_buf.size() > 8000) qDebug("MSN::ParserNS::Log::BUFFER <%s>",QString(m_buf.dataDebug()).mid(0,3000).toUtf8().data());
+		else qDebug("MSN::ParserNS::Log::BUFFER <%s>",m_buf.dataDebug());
+
 		cmd = m_buf.getCmd();
 		if (cmd == "VER"){
 			qDebug ("MSN::Log::ParserNS : Parsing VER");
