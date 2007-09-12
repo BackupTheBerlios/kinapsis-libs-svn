@@ -58,10 +58,11 @@ public:
 	void parseBpr();
 	void parseFln();
 	void parseRng();
+	void parseNot();
 	void parseOut();
-	//void parseAdg();
-	//void parseGcf();
-	//
+	void parseRem();
+	void parseAdc();
+	void parseRmg();
 	
 	void parseError();
 
@@ -77,6 +78,7 @@ signals:
 	void personalMessage (QString, QString);
 	void hasBlog (QString);
 	void chatRequest (QString, int, QString, QString, QString, QString);
+	void groupDeleted(QString);
 //	void initChatSB (QString, QString);
 
 private:

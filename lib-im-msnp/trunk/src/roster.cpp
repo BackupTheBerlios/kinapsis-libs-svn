@@ -46,7 +46,6 @@ void Roster::addGroup (Group* g){
 
 bool Roster::delGroup (QString g){
 	m_groups.remove(g);
-	// TODO : Choose to del all contacts in this group or move to default group
 }
 
 unsigned int Roster::contactLen() {

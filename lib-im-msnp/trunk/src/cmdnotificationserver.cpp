@@ -90,43 +90,64 @@ Buffer OUT::makeCmd(){
 	return res;
 }
 
-//ADC::ADC(int idtr) : Command ("ADC", idtr) {}
-//ADC::~ADC(){}
-//Buffer ADC::makeCmd(){
-//	// 
-//	Buffer res;
-//	res += beginCmd();
-//	res += " " + m_list + " C=" + m_id + " " + m_groupId;
-//	res += endCmd();
-//	return res;
-//}
-//void ADC::addId (QString id){m_id = id;}
-//void ADC::addList (QString list){m_list = list;}
-//void ADC::addGroupId (QString groupId){m_groupId = groupId;}
-//
-//ADG::ADG(int idtr) : Command ("ADG", idtr) {}
-//ADG::~ADG(){}
-//Buffer ADG::makeCmd(){
-//	// 
-//	Buffer res;
-//	res += beginCmd();
-//	res += " " + m_name; 
-//	res += endCmd();
-//	return res;
-//}
-//void ADG::addName (QString name){m_name = name;}
-//
-//REM::REM(int idtr) : Command ("ADC", idtr) {}
-//REM::~REM(){}
-//Buffer REM::makeCmd(){
-//	// 
-//	Buffer res;
-//	res += beginCmd();
-//	res += " " + m_list + " " + m_id + " " + m_groupId;
-//	res += endCmd();
-//	return res;
-//}
-//void REM::addId (QString id){m_id = id;}
-//void REM::addList (QString list){m_list = list;}
-//void REM::addGroupId (QString groupId){m_groupId = groupId;}
+ADC::ADC(int idtr) : Command ("ADC", idtr) {}
+ADC::~ADC(){}
+Buffer ADC::makeCmd(){
+	// >> ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95\r\n
+	// << ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95\r\n
+	Buffer res;
+	res += beginCmd();
+	if (m_list == "FL"){
+		if (m_id ==  "") res += " " + m_list + " C=" + m_id + " " + m_groupId;
+		if (m_passport !=  "") res += " " + m_list + " N=" + m_passport + " F=" + m_dispName;
+	}
+	if (m_list == "BL"){
+		res += " " + m_list + " N=" + m_passport;
+	}
+
+	res += endCmd();
+	return res;
+}
+void ADC::addList (QString list){m_list = list;}
+// if new contact
+void ADC::addPassport (QString passport){m_passport = passport;}
+void ADC::addDisplayName (QString dispName){m_dispName = dispName;}
+// if I want to add a contact to a group
+void ADC::addId (QString id){m_id = id;}
+void ADC::addGroupId (QString groupId){m_groupId = groupId;}
+
+REM::REM(int idtr) : Command ("REM", idtr) {}
+REM::~REM(){}
+Buffer REM::makeCmd(){
+	Buffer res;
+	res += beginCmd();
+	res += " " + m_list + " " + m_id;
+	res += endCmd();
+	return res;
+}
+void REM::addList (QString list){m_list = list;}
+void REM::addId (QString id){m_id = id;}
+
+ADG::ADG(int idtr) : Command ("ADG", idtr) {}
+ADG::~ADG(){}
+Buffer ADG::makeCmd(){
+	Buffer res;
+	res += beginCmd();
+	res += " " + m_name + " 0"; 
+	res += endCmd();
+	return res;
+}
+void ADG::addName (QString name){m_name = name;}
+
+RMG::RMG(int idtr) : Command ("RMG", idtr) {}
+RMG::~RMG(){}
+Buffer RMG::makeCmd(){
+	Buffer res;
+	res += beginCmd();
+	res += " " + m_name; 
+	res += endCmd();
+	return res;
+}
+void RMG::addId (QString name){m_name = name;}
+
 }

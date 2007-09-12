@@ -51,6 +51,12 @@ public:
 	QString nextChatPassport();
 	void send(Command& c, int chat = -1);
 	void sendChat(int chatId, QString msg);
+	void addContact(Contact* contact, Group* group);
+	void delContact(Contact* contact);
+	void blockContact(Contact* contact);
+	void deblockContact(Contact* contact);
+	void addGroup(Group* group);
+	void delGroup(QString group);
 
 	void changeStatus (State newStatus);
 
@@ -78,6 +84,7 @@ public slots:
 	void statusChanged(QString passport, State status, QString displayName, QString capabilities);
 	void personalMessage (QString passport, QString personalMsg);
 	void hasBlog (QString passport);
+	void groupDeleted (QString groupId);
 
 	void chatRequest(QString address, int port, QString contact, QString fName, QString ticket, QString sessid);
 	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);

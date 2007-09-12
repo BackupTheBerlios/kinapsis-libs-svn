@@ -32,6 +32,7 @@ public:
 
 	void addGroup(Group* group);
 	bool delGroup(QString groupName);
+
 	
 	unsigned int contactLen();
 	unsigned int groupLen();

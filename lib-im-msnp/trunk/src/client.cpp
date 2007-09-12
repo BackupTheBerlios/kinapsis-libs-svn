@@ -56,6 +56,7 @@ namespace libimmsnp {
 			QObject::connect(m_parser, SIGNAL(statusChanged (QString, State, QString, QString)), this, SLOT(statusChanged(QString, State, QString, QString)));
 			QObject::connect(m_parser, SIGNAL(personalMessage (QString, QString)), this, SLOT(personalMessage(QString, QString)));
 			QObject::connect(m_parser, SIGNAL(hasBlog (QString)), this, SLOT(hasBlog(QString)));
+			QObject::connect(m_parser, SIGNAL(groupDeleted (QString)), this, SLOT(groupDeleted(QString)));
 			QObject::connect(m_parser, SIGNAL(chatRequest (QString, int, QString, QString, QString, QString)), this, SLOT(chatRequest(QString, int, QString, QString, QString, QString)));
 			//QObject::connect(m_parser, SIGNAL(initChatSB (QString, QString)), this, SLOT(initChatSB(QString, QString)));
 			QObject::connect(m_parser, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
@@ -81,6 +82,74 @@ namespace libimmsnp {
 			m.addMsg (msg);
 			send (m, chatId);
 		}
+	}
+
+	void Client::addContact(Contact* contact, Group* group = 0){
+		// >> ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95
+		// << ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95
+
+		qDebug("MSN::Log::Client ## Adding contact %s to group %s\r\n",contact->getPassport().toUtf8().data(), (m_roster->getContact(contact->getPassport()))->getGroupName().toUtf8().data());
+		ADC c (nextIdtr());
+		c.addList (QString("FL"));
+		if (group == 0) {
+			c.addPassport(contact->getPassport());
+			c.addDisplayName (contact->getNickName());
+		}
+		else {
+			c.addId ( (m_roster->getContact(contact->getPassport()))->getId() );
+			c.addGroupId ( (m_roster->getContact(contact->getPassport()))->getGroupId() );
+		}
+
+		send (c);
+	}
+	void Client::delContact(Contact* contact){
+		// >> REM 46 FL f39c2bb5-8a18-4f40-ae18-75aa595b747e
+		// << REM 46 FL f39c2bb5-8a18-4f40-ae18-75aa595b747e
+		qDebug("MSN::Log::Client ## Deleting contact %s\r\n", contact->getPassport().toUtf8().data());
+		REM d (nextIdtr());
+		d.addList (QString("FL"));
+		d.addId((m_roster->getContact(contact->getPassport()))->getId());
+		send (d);
+	}
+	
+	void Client::blockContact(Contact* contact){
+		// >> ADC 56 BL N=xxxxxxxxxxxxx@hotmail.com
+		// << ADC 56 BL N=xxxxxxxxxxxxx@hotmail.com
+		qDebug("MSN::Log::Client ## Blocking contact %s\r\n",contact->getPassport().toUtf8().data());
+		ADC c (nextIdtr());
+		c.addList (QString("BL"));
+		c.addPassport(contact->getPassport());
+		send (c);
+	}
+
+	void Client::deblockContact(Contact* contact){
+		// >> REM 57 BL xxxxxxxxxx@hotmail.com
+		// << REM 57 BL xxxxxxxxxx@hotmail.com
+		qDebug("MSN::Log::Client ## deblocking contact %s\r\n",contact->getPassport().toUtf8().data());
+		REM d (nextIdtr());
+		d.addList (QString("BL"));
+		d.addId(contact->getPassport());
+		send (d);
+	}
+
+	void Client::addGroup(Group* group){
+		// >> ADG 44 grupo%20de%20prueba
+		// << ADG 44 grupo%20de%20prueba cc57fad0-f245-42c2-a5f7-e13df408cb95
+		qDebug("MSN::Log::Client ## Adding group %s\r\n", group->getName().toUtf8().data());
+		ADG g (nextIdtr());
+		// TODO : Url encode
+		g.addName(group->getName());
+		send (g);
+	}
+
+	//void Client::delGroup(Group* group){
+	void Client::delGroup(QString group){
+		//>> RMG 47 cc57fad0-f245-42c2-a5f7-e13df408cb95
+		//<< RMG 47 cc57fad0-f245-42c2-a5f7-e13df408cb95
+			qDebug("MSN::Log::Client ## Deleting group %s\n", group.toUtf8().data());
+			RMG g (nextIdtr());
+			g.addId(m_roster->getGroupId(group));
+			//send (g);
 	}
 
 	void Client::changeStatus (State status){
@@ -153,6 +222,11 @@ namespace libimmsnp {
 
 	void Client::hasBlog (QString passport) {
 		printf ("MSN::Client::SIGNAL ## Blog :%s\n",passport.toUtf8().data());
+	}
+
+	void Client::groupDeleted (QString groupId) {
+		printf ("MSN::Client::SIGNAL ## Deleted Group:%s\n",groupId.toUtf8().data());
+		//m_roster->delGroupById (groupId);
 	}
 
 	void Client::chatRequest(QString address, int port, QString contact, QString fName, QString ticket, QString sessid){

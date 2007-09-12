@@ -12,6 +12,7 @@
 */
 
 #include "msn.h"
+#include "contact.h"
 
 namespace libimmsnp {
 
@@ -21,7 +22,7 @@ MsnTest::MsnTest () {
 	QString pass ("gargolas");
 
 	// TODO:  segfault if bad password
-	m_client = new Client (id, pass, STATUS_HDN);
+	m_client = new Client (id, pass, STATUS_NLN);
         m_client->addConnectionListener(this);
 	m_client->addRosterListener(this);
 	m_client->addPresenceListener(this);
@@ -50,7 +51,7 @@ void MsnTest::presenceChanged (Contact* c){
 	switch (c->getStatus()){
 		case STATUS_NLN:
 			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Online", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data());
-			//m_client->initChat(c->getPassport());
+			m_client->initChat(c->getPassport());
 			break;
 		case STATUS_BSY:
 			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Do Not Disturb", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
@@ -101,6 +102,32 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString ch
 	if (chatMsg == "eco") 	m_client->sendChat(chatId, "Eco Eco");
 	if (chatMsg == "exit") m_client->disconnect();
 	if (chatMsg == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);
+
+	if (chatMsg == "delPassport") {
+		Contact* c;
+		c->setPassport(chatMsnPassport);
+		m_client->delContact(c);
+	}
+	if (chatMsg == "blkPassport") {
+		Contact* c;
+		c->setPassport(chatMsnPassport);
+		m_client->blockContact(c);
+	}
+	if (chatMsg == "deBlkPassport") {
+		Contact* c;
+		c->setPassport(chatMsnPassport);
+		m_client->deblockContact(c);
+	}
+	if (chatMsg == "addGroup") {
+		Group* g;
+		g->setName(QString ("Minewgroup"));
+		m_client->addGroup(g);
+	}
+
+	if (chatMsg == "delGroup") {
+		m_client->delGroup("Minewgroup");
+	}
+	
 }
 
 void MsnTest::run (){
@@ -128,4 +155,19 @@ int main(int argc, char *argv[]){
 	a.exec(); 
 	cliente.wait();
 }
+//int main(int argc, char *argv[]){
+//	using namespace libimmsnp;
+//	QCoreApplication a(argc, argv); 
+//	QRegExp rx;
+//	Buffer buf;
+//	buf << QString ("ADC 0 RL N=xxxxxxxxxxx@hotmail.com F=xxxxxx 1\r\n");
+//	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) \\d+\r\n)"); 
+//	if (rx.indexIn(buf.data()) != -1){
+//		QString list = rx.cap(2);
+//		QString passport = rx.cap(3);
+//		QString friendName = rx.cap(4);
+//		qDebug ("MSN::Log::ParserNS::%s with fName: %s has added you to:%s list",passport.toUtf8().data(), friendName.toUtf8().data(), list.toUtf8().data());
+//	}
+//	a.exec(); 
+//}
 

@@ -281,9 +281,18 @@ void ParserNS::parsePrp () {
 }
 
 void ParserNS::parseLsg () {
-	// 
+	// ADG 10 Minewgroup 59ed80fa-a585-4488-9d36-a976cdf7488f\r\n 
+	// LSG Grupo%20Msn d45b8f16-037f-48f6-b972-815e6f2d71fc\r\n
 	QRegExp rx;
 	rx.setPattern("(^LSG (\\S+) (\\S+)\r\n)"); 
+	if (rx.indexIn(m_buf.data()) != -1){
+		QString nombre = rx.cap(2);
+		QString id = rx.cap(3);
+		Group* g = new Group(nombre, id);
+		emit newGroupArrived(g);
+		m_buf.remove(0,rx.cap(1).size());
+	}
+	rx.setPattern("(^ADG \\d+ (\\S+) (\\S+)\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
 		QString nombre = rx.cap(2);
 		QString id = rx.cap(3);
@@ -501,6 +510,22 @@ void ParserNS::parseRng () {
 	//else m_hasCommand = false;
 }
 
+void ParserNS::parseNot () {
+	// NOT 1119\r\n<NOTIFICATION id="0" siteid="45705" siteurl="http://storage.msn.com"><TO pid="0x0:0xAA816ADF" name="#########@hotmail.com" ><VIA agent="messenger"/></TO><MSG id="0"><SUBSCR url="s.htm"/><ACTION url="a.htm"/><BODY>&lt;NotificationData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;  &lt;SpaceHandle&gt;    &lt;ResourceID&gt;1paJbsiSBiLG6HFnu7qoU6mw!101&lt;/ResourceID&gt;  &lt;/SpaceHandle&gt;  &lt;ComponentHandle&gt;    &lt;ResourceID&gt;2EC83A1E19F85738!101&lt;/ResourceID&gt;  &lt;/ComponentHandle&gt;  &lt;OwnerCID&gt;3371008222045951800&lt;/OwnerCID&gt;  &lt;LastModifiedDate&gt;2007-09-11T15:21:40-07:00&lt;/LastModifiedDate&gt;  &lt;HasNewItem&gt;true&lt;/HasNewItem&gt;  &lt;ComponentSummary&gt;    &lt;Component xsi:type="Folder"&gt;      &lt;ResourceID&gt;2EC83A1E19F85738!118&lt;/ResourceID&gt;    &lt;/Component&gt;    &lt;Items&gt;      &lt;Item xsi:type="Photo"&gt;        &lt;ResourceID&gt;2EC83A1E19F85738!0&lt;/ResourceID&gt;      &lt;/Item&gt;    &lt;/Items&gt;  &lt;/ComponentSummary&gt;&lt;/NotificationData&gt;</BODY></MSG></NOTIFICATION>\r\n
+	QRegExp rx;
+	rx.setPattern("(^NOT (\\d+)\r\n)"); 
+	if (rx.indexIn(m_buf.data()) != -1){
+		QString payload = rx.cap(1).toUtf8().data();
+
+		rx.setPattern("(^NOT \\d+\r\n[\\d|\\D]{" + payload + "})"); 
+		if (rx.indexIn(m_buf.data()) != -1){
+			m_buf.remove(0,rx.cap(1).size());
+		}
+		else m_hasCommand = false;
+	}
+	else m_hasCommand = false;
+}
+
 void ParserNS::parseOut () {
 	// OUT OTH\r\n
 	QRegExp rx;
@@ -515,6 +540,45 @@ void ParserNS::parseOut () {
 	//else m_hasCommand = false;
 }
 
+void ParserNS::parseRem () {
+	// REM 0 RL xxxxxxxx@hotmail.com\r\n
+	QRegExp rx;
+	rx.setPattern("(^REM \\d+ (\\S+) (\\S+)\r\n)"); 
+	if (rx.indexIn(m_buf.data()) != -1){
+		QString list = rx.cap(2);
+		QString passport = rx.cap(3);
+		m_buf.remove(0,rx.cap(1).size());
+		qDebug ("MSN::Log::ParserNS::%s has deleted you from:%s list",passport.toUtf8().data(), list.toUtf8().data());
+	}
+	//else m_hasCommand = false;
+}
+
+void ParserNS::parseAdc () {
+	// ADC 0 RL N=xxxxxxxx@hotmail.com F=XXXXXX 1\r\n 
+	QRegExp rx;
+	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) \\d+\r\n)"); 
+	if (rx.indexIn(m_buf.data()) != -1){
+		QString list = rx.cap(2);
+		QString passport = rx.cap(3);
+		QString friendName = rx.cap(4);
+		m_buf.remove(0,rx.cap(1).size());
+		qDebug ("MSN::Log::ParserNS::%s with fName: %s has added you to:%s list",passport.toUtf8().data(), friendName.toUtf8().data(), list.toUtf8().data());
+	}
+	//else m_hasCommand = false;
+}
+
+void ParserNS::parseRmg () {
+	// RMG 12 59ed80fa-a585-4488-9d36-a976cdf7488f\r\n
+	QRegExp rx;
+	rx.setPattern("(^RMG \\d+ (\\S+)\r\n)"); 
+	if (rx.indexIn(m_buf.data()) != -1){
+		QString groupId = rx.cap(2);
+		m_buf.remove(0,rx.cap(1).size());
+		qDebug ("MSN::Log::ParserNS::Group Deleted:%s list",groupId.toUtf8().data());
+		emit groupDeleted(groupId);
+	}
+	//else m_hasCommand = false;
+}
 void ParserNS::parseError () {
 	// 215 1\r\n
 	QRegExp rx;
@@ -591,7 +655,7 @@ void ParserNS::parse (){
 			qDebug ("MSN::Log::ParserNS : Parsing PRP");
 			parsePrp();
 		}
-		else if (cmd == "LSG"){
+		else if (cmd == "LSG" || cmd == "ADG"){
 			//qDebug ("MSN::Log::ParserNS : Parsing LSG");
 			parseLsg();
 		}
@@ -638,6 +702,26 @@ void ParserNS::parse (){
 		else if (cmd == "OUT"){
 			qDebug ("MSN::Log::ParserNS : Parsing OUT");
 			parseOut();
+		}
+
+		else if (cmd == "NOT"){
+			qDebug ("MSN::Log::ParserNS : Parsing NOT");
+			parseNot();
+		}
+
+		else if (cmd == "REM"){
+			qDebug ("MSN::Log::ParserNS : Parsing REM");
+			parseRem();
+		}
+
+		else if (cmd == "ADC"){
+			qDebug ("MSN::Log::ParserNS : Parsing ADC");
+			parseAdc();
+		}
+
+		else if (cmd == "RMG"){
+			qDebug ("MSN::Log::ParserNS : Parsing RMG");
+			parseRmg();
 		}
 
 		else if (cmd.contains(QRegExp::QRegExp("^\\d{3}"))){
