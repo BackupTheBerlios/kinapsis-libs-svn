@@ -99,33 +99,39 @@ void MsnTest::chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging)
 
 void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg){
 	qDebug ("## MESSAGE: `%s' from chat number: %i written by: %s", chatMsg.toUtf8().data(), chatId, chatMsnPassport.toUtf8().data());
-	if (chatMsg == "eco") 	m_client->sendChat(chatId, "Eco Eco");
+	if (chatMsg == "eco") {
+		MSG m; 
+		m.addMsg("Eco Eco");
+		m_client->sendChat(chatId, m);
+	}
 	if (chatMsg == "exit") m_client->disconnect();
 	if (chatMsg == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);
 
 	if (chatMsg == "delPassport") {
-		Contact* c;
-		c->setPassport(chatMsnPassport);
+		Contact c;
+		c.setPassport(chatMsnPassport);
 		m_client->delContact(c);
 	}
 	if (chatMsg == "blkPassport") {
-		Contact* c;
-		c->setPassport(chatMsnPassport);
+		Contact c;
+		c.setPassport(chatMsnPassport);
 		m_client->blockContact(c);
 	}
 	if (chatMsg == "deBlkPassport") {
-		Contact* c;
-		c->setPassport(chatMsnPassport);
+		Contact c;
+		c.setPassport(chatMsnPassport);
 		m_client->deblockContact(c);
 	}
 	if (chatMsg == "addGroup") {
-		Group* g;
-		g->setName(QString ("Minewgroup"));
+		Group g;
+		g.setName(QString ("Minewgroup"));
 		m_client->addGroup(g);
 	}
 
 	if (chatMsg == "delGroup") {
-		m_client->delGroup("Minewgroup");
+		Group g;
+		g.setName(QString ("Minewgroup"));
+		m_client->delGroup(g);
 	}
 	
 }

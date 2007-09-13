@@ -50,13 +50,13 @@ public:
 	int nextChatCount();
 	QString nextChatPassport();
 	void send(Command& c, int chat = -1);
-	void sendChat(int chatId, QString msg);
-	void addContact(Contact* contact, Group* group);
-	void delContact(Contact* contact);
-	void blockContact(Contact* contact);
-	void deblockContact(Contact* contact);
-	void addGroup(Group* group);
-	void delGroup(QString group);
+	void sendChat(int chatId, Command& msg);
+	void addContact(Contact& contact, Group& group);
+	void delContact(Contact& contact);
+	void blockContact(Contact& contact);
+	void deblockContact(Contact& contact);
+	void addGroup(Group& group);
+	void delGroup(Group& group);
 
 	void changeStatus (State newStatus);
 

@@ -29,7 +29,7 @@ void ANS::addPassport (QString passport) {m_passport = passport;}
 void ANS::addTicket (QString ticket) {m_ticket = ticket;}
 void ANS::addSessId (QString sessId) {m_sessId = sessId;}
 
-MSG::MSG(int idtr) : Command ("MSG", idtr, "") {}
+MSG::MSG() : Command ("MSG", 0, "") {}
 MSG::~MSG(){}
 Buffer MSG::makeCmd(){
 	// MSG vaticano666@hotmail.com pedro 126\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nhola

@@ -36,7 +36,7 @@ private:
 class MSG : public Command {
 // ANS trid your_passport ticket sessid\r\n 
 public:
-	MSG (int idtr);
+	MSG ();
 	virtual ~MSG();
 	Buffer makeCmd();
 	void addMsg (QString msg);

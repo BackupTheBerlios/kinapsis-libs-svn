@@ -24,6 +24,7 @@ public:
 	virtual Buffer makeCmd() = 0;
 	QString beginCmd() {return m_cmdName + QString((hasTransaction()) ? QString(" %1").arg(m_trid):"");};
 	bool hasTransaction () {return (m_trid)?true:false;};
+	bool addTrid (int trid) {m_trid = trid;};
 	QString endCmd () {return m_endCmd;};
 
 private:

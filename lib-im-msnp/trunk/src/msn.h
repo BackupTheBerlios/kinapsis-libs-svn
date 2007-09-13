@@ -1,6 +1,7 @@
 #include "libimmsnp.h"
 #include "msocket.h"
 #include "client.h"
+#include "cmdswichboardserver.h"
 
 #include <qthread.h>
 #include <QCoreApplication> 
