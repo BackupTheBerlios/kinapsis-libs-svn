@@ -63,8 +63,12 @@ INCLUDE_DIRECTORIES(
 # note: this assumes that you use #include "header.moc" in your files
 QT4_AUTOMOC(${LibImMsnP_SRCS})
 
-# create an executable file named "LibImMsnP" from the source files in the variable "LibImMsnP_SRCS".
+# create an executable file named "msn" from the source files in the variable "LibImMsnP_SRCS".
 ADD_EXECUTABLE(msn ${LibImMsnP_SRCS} ${LibImMsnP_HDRS})
 
-# link the "LibImMsnP" target against the Qt libraries. which libraries exactly, is defined by the "include(${QT_USE_FILE})" line above, which sets up this variable.
+# link the "LibImMsnP" target against the Qt, openssl and curl libraries.
 TARGET_LINK_LIBRARIES(msn ${QT_LIBRARIES} ${QT_QTNETWORK_LIBRARIES} ${OpenSSL_LIBRARY} ${CURL_LIBRARY})
+
+# Enable the instalation of the library
+ADD_LIBRARY(ImMsnP SHARED ${LibImMsnP_SRCS})
+INSTALL(TARGETS ImMsnP DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
