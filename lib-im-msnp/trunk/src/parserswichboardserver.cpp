@@ -134,7 +134,7 @@ void ParserSB::parseMsg () {
 			QString charSet;
 			QString fontType; 
 			QString codif;
-			Buffer msg ;
+			MSG msg ;
 
 			rx.setPattern("charset=(\\S+)");
 			if (rx.indexIn(data.data()) != -1){
@@ -156,13 +156,16 @@ void ParserSB::parseMsg () {
 				effect = rx.cap(2);
 				color = rx.cap(3);
 			}
+			msg.addColor(color);
+			msg.addFont(font);
+			if (effect.contains('B')) msg.addEffect(EFFECT_BOLD);
+			if (effect.contains('I')) msg.addEffect(EFFECT_ITALIC);
+			if (effect.contains('U')) msg.addEffect(EFFECT_UNDERLINE);
 
-			msg.clear();
-			//qDebug(data.dataDebug());
-			msg << data.mid (data.indexOf("\r\n\r\n")+4);
+			msg.addMsg( data.mid (data.indexOf("\r\n\r\n")+4));
 
 			//qDebug("MSG Codificacion:%s Fuente:%s Efectos:%s Color:%s Character sets:%s Font Type:%s msg:%s",codif.toUtf8().data(), font.toUtf8().data(), effect.toUtf8().data(), color.toUtf8().data(), charSet.toUtf8().data(), fontType.toUtf8().data() ,msg.dataDebug());
-			emit chatArrivedMessage(m_chatId, senderPassport, msg.data());
+			emit chatArrivedMessage(m_chatId, senderPassport, msg);
 			return;
 
 		}

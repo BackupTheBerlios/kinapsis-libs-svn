@@ -40,10 +40,26 @@ public:
 	virtual ~MSG();
 	Buffer makeCmd();
 	void addMsg (QString msg);
+	void addEffect (Effect effect);
+	void addColor (QString color);
+	void addFont (QString font);
+	QString getMsg () {return m_msg;}
+	QString getColor () {return m_color;}
+	QString getFont () {return m_font;}
+	bool getItalic () {return m_italic != "";}
+	bool getBold () {return m_bold != "";}
+	bool getUnderline () {return m_underline != "";}
 private:
 	QString m_msg;
 	QString m_contact;
 	QString m_fName;
+
+	QString m_color;
+	QString m_font;
+
+	QString m_italic;
+	QString m_bold;
+	QString m_underline;
 };
 
 class USRchat : public Command {

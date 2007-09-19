@@ -24,6 +24,7 @@
 #include "chatlistener.h"
 
 #include "command.h"
+#include "cmdswichboardserver.h"
 #include "msocket.h"
 #include "buffer.h"
 #include "cmdlogin.h"
@@ -87,7 +88,7 @@ public slots:
 	void groupDeleted (QString groupId);
 
 	void chatRequest(QString address, int port, QString contact, QString fName, QString ticket, QString sessid);
-	void chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg);
+	void chatArrivedMessage (int chatId, QString msnPassport, MSG chatMsg);
 	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
 	void chatIsTyping(int chatId, QString chatMsnPassport);
 	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
@@ -109,7 +110,7 @@ signals:
 	void notifyChatLeavedTheRoom (int, QString);
 	void notifyChatIsTyping(int, QString);
 	void notifyChatInfo (int, QString, QString);
-	void notifyChatArrivedMessage (int, QString, QString);
+	void notifyChatArrivedMessage (int, QString, MSG);
 	
 private:
 	ParserNS* m_parser;

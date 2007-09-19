@@ -45,7 +45,11 @@ namespace libimmsnp {
 		PARSER_BYE,
 		PARSER_ERROR
 	};
-	
-		
+
+	enum Effect {
+		EFFECT_ITALIC,
+		EFFECT_BOLD,
+		EFFECT_UNDERLINE
+	};
 }
 #endif // LIBIMMSNP_H__

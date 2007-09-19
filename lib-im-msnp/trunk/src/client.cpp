@@ -233,15 +233,15 @@ namespace libimmsnp {
 		m_chatList[m_chatCount] = chatParser;
 		emit (notifyNewChat (m_chatCount, contact));
 
-		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, QString)), this, SLOT(chatArrivedMessage(int, QString, QString)));
+		QObject::connect(chatParser, SIGNAL(chatArrivedMessage(int, QString, MSG)), this, SLOT(chatArrivedMessage(int, QString, MSG)));
 		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
 		chatParser->run();
 	}
 
-	void Client::chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg) {
-		//printf ("MSN::Client::SIGNAL ## Chat message at:%i from:%s MSG:%s\n", chatId, msnPassport.toUtf8().data(), chatMsg.replace("\r\n","\\r\\n").toUtf8().data()); 
+	void Client::chatArrivedMessage (int chatId, QString msnPassport, MSG chatMsg) {
+		printf ("MSN::Client::SIGNAL ## Chat message at:%i from:%s MSG:%s\n", chatId, msnPassport.toUtf8().data(), chatMsg.getMsg().replace("\r\n","\\r\\n").toUtf8().data()); 
 		emit notifyChatArrivedMessage (chatId, msnPassport, chatMsg);
 	}
 

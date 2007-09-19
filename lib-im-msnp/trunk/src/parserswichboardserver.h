@@ -19,6 +19,7 @@
 #include "msocket.h"
 #include "client.h"
 #include "command.h"
+#include "cmdswichboardserver.h"
 #include <qobject.h>
 #include <qthread.h>
 
@@ -56,7 +57,7 @@ public:
 	~ParserSB(){printf ("MSN::ParserSB::log ## Parser deleted\n");}
 
 signals:
-       void chatArrivedMessage (int, QString, QString);
+       void chatArrivedMessage (int, QString, MSG);
        void chatInfo (int, QString, QString);
        void chatIsTyping (int, QString);
        void chatLeavedTheRoom(int, QString);

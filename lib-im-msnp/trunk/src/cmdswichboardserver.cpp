@@ -29,15 +29,37 @@ void ANS::addPassport (QString passport) {m_passport = passport;}
 void ANS::addTicket (QString ticket) {m_ticket = ticket;}
 void ANS::addSessId (QString sessId) {m_sessId = sessId;}
 
-MSG::MSG() : Command ("MSG", 0, "") {}
+MSG::MSG() : Command ("MSG", 0, "") {
+	m_color = "000000";
+	m_font = "Helvetica";
+}
 MSG::~MSG(){}
 Buffer MSG::makeCmd(){
-	// MSG vaticano666@hotmail.com pedro 126\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nhola
+	// MSG xxxxxxxxxx@hotmail.com xxxxxx 126\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nhola
 	Buffer res;
-	res << beginCmd() + " A " + QString::number(m_msg.size()) + "\r\n" + m_msg + endCmd();
+	QString msg = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=" + m_font + "; EF=" + m_bold + m_italic + m_underline + "; CO=" + m_color + "; CS=0; PF=22\r\n\r\n" + m_msg;
+	res << beginCmd() + " A " + QString::number(msg.size()) + "\r\n" + msg + endCmd();
 	return res;
 }
-void MSG::addMsg (QString msg) {m_msg = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\n" + msg;}
+void MSG::addColor (QString color) {m_color = color;}
+void MSG::addFont (QString font) {m_font = font.replace(" ", "%20");}
+void MSG::addEffect (Effect effect) {
+	switch(effect){
+		case EFFECT_ITALIC:
+			m_italic = "I";
+			break;
+		case EFFECT_BOLD:
+			m_bold = "B";
+			break;
+		case EFFECT_UNDERLINE:
+			m_underline = "U";
+			break;
+		default:
+			break;
+		}
+}
+	
+void MSG::addMsg (QString msg) {m_msg = msg;}
 
 USRchat::USRchat(int idtr) : Command ("USR", idtr) {}
 USRchat::~USRchat(){}
