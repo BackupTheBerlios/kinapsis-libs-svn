@@ -91,3 +91,5 @@ QT4_AUTOMOC(${liboscar_SRCS})
 # Enable the instalation of the library
 ADD_LIBRARY(oscar SHARED ${liboscar_SRCS})
 INSTALL(TARGETS oscar DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
+INSTALL(FILES ${liboscar_HDRS} DESTINATION
+	${CMAKE_INSTALL_PREFIX}/include/liboscar )
