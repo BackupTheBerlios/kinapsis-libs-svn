@@ -25,7 +25,7 @@
 #include "buffer.h"
 #include "tlv.h"
 #include "snac.h"
-#include <qptrlist.h>
+#include <qlist.h>
 
 namespace liboscar {
 
@@ -46,7 +46,7 @@ public:
 
 	void addTLV(TLV *tlv);
 	bool delTLV(TLV *tlv);
-	QPtrList<TLV> getTLVs();
+	QList<TLV *> getTLVs();
 
 	void addSNAC(SNAC *snac);
 	bool delSNAC();
@@ -64,7 +64,7 @@ private:
 	Word m_length;
 	Buffer m_data;
 
-	QPtrList<TLV> m_tlvs;
+	QList<TLV *> m_tlvs;
 	SNAC* m_snac;
 };
 

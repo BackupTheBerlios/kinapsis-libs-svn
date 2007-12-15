@@ -62,7 +62,7 @@ void Parser::parse(){
 		m_buf >> b;
 	
 		if (b != 0x2a){
-			qDebug(QString("Invalid FLAP header. Discarding data"));
+			qDebug("Invalid FLAP header. Discarding data");
 			m_buf.wipe();
 			return; 
 		}
@@ -101,7 +101,7 @@ void Parser::parse(){
 				parseCh5(buf);
 				break;
 			default:
-				qDebug(QString("FLAP on unknown channel: %1").arg(ch));
+				qDebug("FLAP on unknown channel: %d", ch);
 				break;
 		}
 	}
@@ -225,7 +225,7 @@ void Parser::parseCh2(Buffer& buf){
 			parseCh2NewUser(buf);
 			break;
 		default:
-			qDebug(QString("SNAC from an unknown family %1").arg(family));
+			qDebug("SNAC from an unknown family %d", family);
 			break;
 	}
 }
@@ -327,7 +327,7 @@ void Parser::parseCh2Service(Buffer& buf) {
 	switch (command) {
 		case SERVICE_SRV_SERVICE_ERR:
 			sse.parse(buf);
-			qDebug(QString("Error on channel 2 family 1: %1").arg(sse.getError()));
+			qDebug("Error on channel 2 family 1: %d", sse.getError());
 			break;
 		case SERVICE_SRV_FAMILIES:
 			sf.parse(buf); // Got families supported by server
@@ -413,7 +413,7 @@ void Parser::parseCh2Location(Buffer& buf) {
 	switch (command) {
 		case LOCATION_SRV_LOCATION_ERR:
 			sle.parse(buf);
-			qDebug(QString("Error on channel 2 family 2: %1").arg(sle.getError()));
+			qDebug("Error on channel 2 family 2: %d", sle.getError());
 			break;
 		case LOCATION_SRV_REPLYLOCATION:
 			srls.parse(buf);
@@ -466,7 +466,7 @@ void Parser::parseCh2Contact(Buffer& buf) {
 	switch (command) {
 		case CONTACT_SRV_CONTACT_ERR:
 			cse.parse(buf);
-			qDebug(QString("Error on channel 2 family 3: %1").arg(cse.getError()));
+			qDebug("Error on channel 2 family 3: %d", cse.getError());
 			break;
 		case CONTACT_SRV_REPLYBUDDY:
 			rbs.parse(buf);
@@ -520,7 +520,7 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 	switch (command) {
 		case ICBM_SRV_ICBM_ERR:
 			ise.parse(buf);
-			qDebug(QString("Error on channel 2 family 4: %1").arg(ise.getError()));
+			qDebug("Error on channel 2 family 4: %d", ise.getError());
 			break;
 		case ICBM_SRV_REPLYICBM:
 			irs.parse(buf);
@@ -731,7 +731,7 @@ void Parser::parseCh2ICQ(Buffer& buf) {
 	switch (command) {
 		case ICQ_SRV_ICQ_ERR:
 			ies.parse(buf);
-			qDebug(QString("Error on channel 2 family 15: %1").arg(ies.getError()));
+			qDebug("Error on channel 2 family 15: %d", ies.getError());
 			break;
 		case ICQ_SRV_METAREPLY:
 			mrs.parse(buf);

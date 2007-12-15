@@ -38,11 +38,15 @@ void Families::addFamily(Family f) {
 }
 
 void Families::delFamily(Word f){
-	m_data.erase(f);
+	FIterator it = m_data.find(f);
+	if (it != m_data.end())
+		m_data.erase(it); // delete ocurrence of "f".
 }
 
 void Families::updateVersion (Family family){
-	m_data.replace(family.id, family.version);
+	// As QMap insert() looks for an existing entry and if it exists update
+	// the value, we only have to call it here
+	this->addFamily(family);
 }
 
 Word Families::getVersion(Word family){

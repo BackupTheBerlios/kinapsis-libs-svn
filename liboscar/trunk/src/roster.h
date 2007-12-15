@@ -24,12 +24,11 @@
 
 #include "liboscar.h"
 #include "contact.h"
-#include <qptrlist.h>
+#include <qlist.h>
 #include <qmap.h>
 
 namespace liboscar {
 
-	typedef QPtrList<Contact>::iterator ContactIterator;
 	typedef QMap<QString, Byte> GroupMap;
 
 class Roster {
@@ -48,7 +47,7 @@ public:
 	void setGroupMap(GroupMap groups);
 
 	unsigned int len();
-	QPtrList<Contact>& getContacts();
+	QList<Contact *>& getContacts();
 
 	GroupMap getGroupMap();
 
@@ -56,7 +55,7 @@ public:
 	Contact* findContactByUin(UIN uin);
 
 private:
-	QPtrList<Contact> m_data;
+	QList<Contact *> m_data;
 	GroupMap m_groups;
 
 	DWord m_timestamp;

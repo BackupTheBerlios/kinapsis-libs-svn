@@ -23,7 +23,8 @@
 #define _BUFFER_H_
 
 #include "liboscar.h"
-#include <qvaluelist.h>
+#include <qlinkedlist.h>
+#include <qstring.h>
 
 namespace liboscar {
 
@@ -69,14 +70,14 @@ public:
 	virtual ~Buffer();
 
 private:
-	typedef QValueList<Byte>::iterator BIterator;
+	typedef QLinkedList<Byte>::iterator BIterator;
 
 	bool m_lendian;
 
 	Byte getByte();
 	Word getWord();
 
-	QValueList<Byte> m_data;
+	QLinkedList<Byte> m_data;
 	BIterator m_it;
 
 };

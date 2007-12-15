@@ -39,7 +39,6 @@ FLAP::FLAP(const Byte channel, const Word sequence, const Word length){
 
 void FLAP::initValues(){
 	m_snac = 0;
-	m_tlvs.setAutoDelete(true);
 }
 
 void FLAP::setChannel (const Byte channel){
@@ -63,10 +62,16 @@ void FLAP::addTLV(TLV *tlv){
 }
 
 bool FLAP::delTLV(TLV *tlv){
-	return m_tlvs.remove(tlv);
+	for (int i = 0; i < m_tlvs.size(); ++i) {
+	     if (m_tlvs.at(i) == tlv){
+		     m_tlvs.removeAt(i);
+		     return true; //found
+	     }
+	}
+	return false; // not found
 }
 
-QPtrList<TLV> FLAP::getTLVs(){
+QList<TLV*> FLAP::getTLVs(){
 	return m_tlvs;
 }
 
@@ -102,11 +107,8 @@ Buffer& FLAP::pack(){
 	if (m_snac)
 		m_data << m_snac->pack();
 	else {
-		TLV *t;
-
-		for (t = m_tlvs.first(); t; t = m_tlvs.next())
-			m_data << t->pack();
-		
+		for (int i = 0; i < m_tlvs.size(); i++)
+			m_data << m_tlvs[i]->pack();
 	}
 
 	m_data.prepend((Word)m_data.len()); //FIXME: think the length issue 
@@ -118,7 +120,7 @@ Buffer& FLAP::pack(){
 }
 
 FLAP::~FLAP(){ 
-	// Don't delete the TLVs (autodelete)
+	qDeleteAll(m_tlvs); // delete the TLVs
 	if (m_snac)
 		delete m_snac;
 }

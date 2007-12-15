@@ -30,7 +30,7 @@ TLVChain::~TLVChain(){
 	TLV* tlv;
 
 	for (i = m_map.begin(); i != m_map.end(); i++){
-		tlv = i.data();
+		tlv = i.value();
 		delete tlv;
 	}
 }

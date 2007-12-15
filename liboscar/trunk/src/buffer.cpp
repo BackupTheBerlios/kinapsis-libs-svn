@@ -73,10 +73,10 @@ Buffer& Buffer::operator<<(DWord dw) {
 
 Buffer& Buffer::operator<<(const QString& s){
 	unsigned int i;
-	char *c;
+	QByteArray c;
 //	bool wasEmpty = (m_data.count() == 0);
 
-	c = (char *) s.ascii();
+	c = s.toAscii();
 
 	for (i=0;i < s.length(); i++)
 		m_data << (Byte) c[i];
@@ -221,16 +221,16 @@ void Buffer::remove(unsigned int num){
 	if (num > len())
 		num = len();
 	for (i=0; i < num; i++)
-		m_it = m_data.remove(m_it);
+		m_it = m_data.erase(m_it);
 }
 
 void Buffer::removeFromBegin(){
-	m_it = m_data.erase(m_data.begin(), m_it);
+	m_it = m_data.erase(m_data.begin());
 }
 
 void Buffer::wipe(){
 	/* Removes all the data */
-	m_data.erase(m_data.begin(), m_data.end());
+	m_data.clear();
 }
 
 void Buffer::copy(Byte *bb){
@@ -255,10 +255,12 @@ void Buffer::gotoBegin(){
 	m_it = m_data.begin();
 }
 void Buffer::gotoEnd(){
-	m_it = m_data.fromLast();
+	m_it = m_data.end();
 }
 void Buffer::setPosition(unsigned int pos){
-	m_it = m_data.at(pos);
+	m_it = m_data.begin();
+	// FIXME: check data lenght
+	m_it += pos;
 }
 
 void Buffer::advance(int pos){
@@ -281,6 +283,5 @@ unsigned int Buffer::len(){
 }
 
 Buffer::~Buffer() { }
-
 
 }

@@ -23,7 +23,7 @@
 #define _CAPABILITIES_H_
 
 #include "liboscar.h"
-#include <qvaluelist.h>
+#include <qlinkedlist.h>
 
 namespace liboscar {
 
@@ -42,7 +42,7 @@ namespace liboscar {
 		Byte data[16];
 	} Capability;
 
-	typedef QValueList<Capability>::iterator CapIterator;
+	typedef QLinkedList<Capability>::iterator CapIterator;
 
 	// Wired Capabilities
 	
@@ -83,7 +83,7 @@ public:
 
 private:
 	CapIterator m_it;
-	QValueList<Capability> m_data;
+	QLinkedList<Capability> m_data;
 
 	Word m_maxcap;
 

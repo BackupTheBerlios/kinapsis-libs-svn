@@ -35,9 +35,7 @@ SNAC::SNAC(Word family, Word command, bool raw) {
 	m_raw = raw;
 }
 
-void SNAC::initValues(){
-	m_tlvs.setAutoDelete(true);
-}
+void SNAC::initValues(){ }
 
 Word SNAC::getFamily (){
 	return m_family;
@@ -64,10 +62,16 @@ void SNAC::addTLV(TLV *tlv){
 }
 
 bool SNAC::delTLV(TLV *tlv){
-	return m_tlvs.remove(tlv);
+	for (int i = 0; i < m_tlvs.size(); ++i) {
+	     if (m_tlvs.at(i) == tlv){
+		     m_tlvs.removeAt(i);
+		     return true; //found
+	     }
+	}
+	return false; // not found
 }
 
-QPtrList<TLV> SNAC::getTLVs(){
+QList<TLV*> SNAC::getTLVs(){
 	return m_tlvs;
 }
 
@@ -78,10 +82,8 @@ Buffer& SNAC::data(){
 Buffer& SNAC::pack(){ 
 
 	if (!m_raw){
-		TLV *t;
-	
-		for (t = m_tlvs.first(); t; t = m_tlvs.next())
-			m_data << t->pack();
+		for (int i = 0; i < m_tlvs.size(); i++)
+			m_data << m_tlvs[i]->pack();
 	}
 	
 	m_reference = ++SNAC::snac_sequence & SNAC_POSITIVE_MASK;
@@ -94,7 +96,9 @@ Buffer& SNAC::pack(){
 	return m_data;
 }
 
-SNAC::~SNAC(){ }
+SNAC::~SNAC(){ 
+	qDeleteAll(m_tlvs);
+}
 	
 
 }

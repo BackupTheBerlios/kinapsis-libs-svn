@@ -23,15 +23,12 @@
 
 namespace liboscar {
 
-SBLItem::SBLItem() { 
-	m_tlvs.setAutoDelete(true);
-}
+SBLItem::SBLItem() { }
 
 SBLItem::SBLItem(Contact* c) {  /* XXX: maybe not useful */
 	m_name = c->getUin().getId();
 	m_itemid = c->getId();
 	setTypeBuddy(false, c->getNickname());
-	m_tlvs.setAutoDelete(true);
 }
 
 
@@ -116,10 +113,16 @@ void SBLItem::addTLV(TLV *tlv){
 }
 
 bool SBLItem::delTLV(TLV *tlv){
-	return m_tlvs.remove(tlv);
+	for (int i = 0; i < m_tlvs.size(); ++i) {
+	     if (m_tlvs.at(i) == tlv){
+		     m_tlvs.removeAt(i);
+		     return true; //found
+	     }
+	}
+	return false; // not found
 }
 
-QPtrList<TLV> SBLItem::getTLVs(){
+QList<TLV*> SBLItem::getTLVs(){
 	return m_tlvs;
 }
 
@@ -129,17 +132,17 @@ void SBLItem::parse(Buffer& b) {
 
 Buffer& SBLItem::pack(){ 
 
-	TLV *t;
-	
-	for (t = m_tlvs.first(); t; t = m_tlvs.next())
-		m_data << t->pack();
+	for (int i = 0; i < m_tlvs.size(); i++)
+		m_data << m_tlvs[i]->pack();
 	
 	// TODO: prepend data
 	
 	return m_data;
 }
 
-SBLItem::~SBLItem(){ }
+SBLItem::~SBLItem(){
+	qDeleteAll(m_tlvs);
+}
 	
 
 }

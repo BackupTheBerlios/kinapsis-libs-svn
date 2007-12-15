@@ -68,7 +68,7 @@ ConnectionStatus Connection::connect(){
 	struct hostent *host;
 	struct sockaddr_in sockaddr;
 
-	if ((host = gethostbyname(m_server.ascii())) == NULL)
+	if ((host = gethostbyname(m_server.toAscii())) == NULL)
 		return clear();
 	memcpy(&sockaddr.sin_addr, *host->h_addr_list, host->h_length);
 

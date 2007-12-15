@@ -239,7 +239,7 @@ Buffer& Message::pack() {
 			tlv->data() << (Word) m_encoding;
 			tlv->data() << (Word) 0x0000; // Unknown
 			if (m_encoding == UCS2BE && m_msg.length()){
-				Word *ucs = (Word *) m_msg.ucs2();
+				Word *ucs = (Word *) m_msg.utf16();
 				while (*ucs){
 					tlv->data() << (Word) *ucs;
 					ucs++;
@@ -350,7 +350,7 @@ void Message::packCh2(){
 	tlv->data() << (Word) 0x0000; // status
 	tlv->data() << (Word) 0x0000; // prio
 
-	tlv->data() << m_msg.length() + 1;
+	tlv->data() << (Word) (m_msg.length() + 1);
 	tlv->data() << m_msg;
 	tlv->data() << (Byte) 0x00; // the string must be null terminated
 
@@ -505,7 +505,7 @@ void Message::parseCh1(Buffer &b) {
 			b >> strucs2[i++];
 		strucs2[i++] = 0;
 
-		m_msg = QString::fromUcs2(strucs2);
+		m_msg = QString::fromUtf16(strucs2);
 	}
 	else {
 		while (len--){
@@ -608,7 +608,7 @@ void Message::parseCh2(Buffer &b) {
 				m_ftd.setFileEncoding(s);
 				break;
 			default:
-				qDebug("Unknown TLV in channel 2 message: " + QString::number(tlv.getType()));
+				qDebug("Unknown TLV in channel 2 message: %d", tlv.getType());
 				break;
 		}
 		len -= (tlv.len() + 4);

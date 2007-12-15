@@ -44,7 +44,7 @@ void PasswordTLV::specPack(){
 	unsigned int i = 0;
 
 	for (i=0; i < m_pass.length(); i ++)
-		m_data << (Byte) (m_pass.ascii()[i] ^ PasswordTable[i%16]);
+		m_data << (Byte) (m_pass.toAscii()[i] ^ PasswordTable[i%16]);
 }
 
 void PasswordTLV::parse(Buffer& b){

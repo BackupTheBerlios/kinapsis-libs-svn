@@ -24,18 +24,25 @@
 namespace liboscar {
 
 Roster::Roster() { 
-	m_data.setAutoDelete(true);
 	m_timestamp = 0x00000000;
 }
 
-Roster::~Roster() { }
+Roster::~Roster() { 
+	qDeleteAll(m_data); // delete the contacts
+}
 
 void Roster::addContact(Contact* contact) {
 	m_data.append(contact);
 }
 
 bool Roster::delContact(Contact* contact) {
-	return m_data.remove(contact);
+	for (int i = 0; i < m_data.size(); ++i) {
+	     if (m_data.at(i) == contact){
+		     m_data.removeAt(i);
+		     return true; //found
+	     }
+	}
+	return false; // not found
 }
 
 void Roster::setTimestamp(DWord timestamp) {
@@ -50,7 +57,7 @@ unsigned int Roster::len() {
 	return m_data.count();
 }
 
-QPtrList<Contact>& Roster::getContacts() {
+QList<Contact *>& Roster::getContacts() {
 	return m_data;
 }
 
@@ -63,23 +70,27 @@ GroupMap Roster::getGroupMap(){
 }
 
 Contact* Roster::findContactById(Word id){
+	int i = 0;
 
-	Contact* tmp;
+	for (i=0;i<m_data.size();i++)
+		if (m_data[i]->getId() == id) break;
 
-	for (tmp = m_data.first(); tmp; tmp = m_data.next())
-		if (tmp->getId() == id) break;
-
-	return tmp;
+	if (i == m_data.size())
+		return NULL;
+	else
+		return m_data[i];
 }
 
 Contact* Roster::findContactByUin(UIN uin){
+	int i = 0;
 
-	Contact* tmp;
+	for (i=0;i<m_data.size();i++)
+		if (m_data[i]->getUin().getId() == uin.getId()) break;
 
-	for (tmp = m_data.first(); tmp; tmp = m_data.next())
-		if (tmp->getUin().getId() == uin.getId()) break;
-
-	return tmp;
+	if (i == m_data.size())
+		return NULL;
+	else
+		return m_data[i];
 }
 
 

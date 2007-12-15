@@ -396,11 +396,11 @@ void Client::rosterArrived(Roster r){
 
 	m_roster = r;
 
-	QPtrList<Contact> c = r.getContacts();
-	Contact *tmp;
+	QList<Contact *> c = r.getContacts();
 
-	for (tmp = c.first(); tmp; tmp = c.next())
-		emit notifyNewContact(tmp);
+	int i =0;
+	for (i=0; i<c.size(); i++)
+		emit notifyNewContact(c[i]);
 }
 
 void Client::messageArrived(Message message){

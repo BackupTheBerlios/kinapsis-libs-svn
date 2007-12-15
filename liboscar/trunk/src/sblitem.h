@@ -25,7 +25,7 @@
 #include "tlv.h"
 #include "buffer.h"
 #include "contact.h"
-#include <qptrlist.h>
+#include <qlist.h>
 
 namespace liboscar {
 
@@ -66,7 +66,7 @@ public:
 
 	void addTLV(TLV *tlv);
 	bool delTLV(TLV *tlv);
-	QPtrList<TLV> getTLVs();
+	QList<TLV *> getTLVs();
 
 	void parse(Buffer& b);
 	Buffer& pack();
@@ -79,7 +79,7 @@ private:
 	Word m_itemid;
 	SBLType m_type;
 
-	QPtrList<TLV> m_tlvs;
+	QList<TLV *> m_tlvs;
 };
 
 
