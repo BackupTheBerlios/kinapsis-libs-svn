@@ -41,7 +41,6 @@ void OFTParser::parse() {
 
 	len -= 6;
 
-
 }
 
 }

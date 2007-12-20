@@ -41,6 +41,8 @@ Connection::Connection(const QString server, int port, ParserBase* parser){
 	m_parser = parser;
 	m_socket = -1;
 	m_socketLocal = -1;
+	pthread_mutex_init(&m_rmutex, NULL);
+	pthread_cond_init(&m_rcond, NULL);
 	QObject::connect(this, SIGNAL(dataReceived()), m_parser, SLOT(parse()));
 	clear();
 }
@@ -108,10 +110,14 @@ ConnectionError Connection::listen(){
 	ConnectionError e;
 	while (!m_exit){
 		e = receive();
-		if (e != CONN_NO_ERROR )
+		if (e != CONN_NO_ERROR)
 			return e;
-		emit dataReceived(); 
+		if (!m_exit) // well, we're exiting so... who cares
+			emit dataReceived(); 
 	}
+	pthread_mutex_lock(&m_rmutex);
+	pthread_cond_signal(&m_rcond); // wake up client thread
+	pthread_mutex_unlock(&m_rmutex);
 	return CONN_NO_ERROR;
 }
 
@@ -185,6 +191,10 @@ ConnectionError Connection::send(Buffer &b){
 
 void Connection::disconnect(){
 	m_exit = true;
+	pthread_mutex_lock(&m_rmutex);
+	pthread_cond_wait(&m_rcond, &m_rmutex); // wait for the socket
+	pthread_mutex_unlock(&m_rmutex);
+	// now, that we're done we can clear things
 	clear();
 }
 

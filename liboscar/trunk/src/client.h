@@ -69,9 +69,9 @@ public:
 	ClientState state();
 
 	ConnectionResult connect();
-	void disconnect(ConnectionError err=CONN_NO_ERROR);
 
 	// Actions
+	void disconnect();
 	void sendMessage(UIN uin, QString message);
 	void sendMessage(Message message);
 	void setPresence(PresenceStatus status);

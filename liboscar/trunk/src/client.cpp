@@ -31,6 +31,10 @@
 
 namespace liboscar {
 
+	//
+	// CONSTRUCTORS & DESTRUCTORS
+	//
+	
 Client::Client(const ProtocolType type){
 	m_conn = m_logconn = 0;
 	m_parser = 0;
@@ -62,6 +66,14 @@ void Client::initvalues(){
 	m_awaymsg = "I'm away now.";
 }
 
+Client::~Client() { 
+	initvalues();
+}
+
+	//
+	// GETTERS & SETTERS
+	//
+	
 QString Client::getPassword(){
 	return m_password;
 }
@@ -115,30 +127,114 @@ ClientState Client::state(){
 	return m_state;
 }
 
+	//
+	// CONNECTION STUFF
+	//
+	
+ConnectionError Client::connAuth() {
+
+	ConnectionStatus s;
+	ConnectionError e;
+
+	if (!m_logconn){
+		if (m_type == ICQ)
+			m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, (ParserBase *) m_parser);
+		else if (m_type == AIM)
+			m_logconn = new Connection(AIM_LOGIN_SERVER, AIM_LOGIN_PORT, (ParserBase *) m_parser);
+	}
+
+// XXX XXX	m_state = CLI_AUTHING;
+
+	s = m_logconn->connect();
+	if (s != CONN_CONNECTED){
+		initvalues();
+		return CONN_ERR_LOGIN_CONN_FAILED;
+	}
+	e = m_logconn->listen();
+
+	qDebug("Disconnecting from Authorizer");
+
+	return e;
+}
+
+ConnectionError Client::connBOS() {
+
+	ConnectionStatus s;
+	ConnectionError e;
+
+	if (m_conn)
+		delete m_conn;
+
+	m_conn = new Connection(m_bos, m_bosport, m_parser);
+
+	qDebug("Connecting to BOS");
+	s = m_conn->connect();
+	if (s != CONN_CONNECTED){
+		initvalues();
+		return CONN_ERR_CONN_FAILED;
+	}
+
+	m_state = CLI_CONNECTED;
+
+	e = m_conn->listen();
+
+	qDebug("Disconnecting from BOS");
+
+	return e;
+
+}
+
+ConnectionResult Client::connect(){
+	/* FIXME: comprobar estado en que se queda despues de error */
+	ConnectionError e;
+
+	if (!m_parser){
+		m_parser = new Parser(this);
+		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
+		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
+				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
+		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
+		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
+		QObject::connect(m_parser, SIGNAL(newMessage(Message)), this, SLOT(messageArrived(Message)));
+		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
+		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
+		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), this, SLOT(authReq(UIN, QString)));
+		QObject::connect(m_parser, SIGNAL(awayMessageArrived(UIN, QString)), this, SLOT(newAwayMessage(UIN, QString)));
+		QObject::connect(m_parser, SIGNAL(typingEventArrived(UIN, IsTypingType)), this, SLOT(newTypingEvent(UIN, IsTypingType)));
+	}
+
+	e = connAuth();
+
+	if (e != CONN_NO_ERROR){
+		initvalues();
+		ConnectionResult res(false, e);
+		return res;
+	}
+
+	delete m_logconn;
+	m_logconn = 0;
+
+	m_state = CLI_CONNECTING;
+
+	/* login finished; connect to BOS */
+	while (!m_exit) // We can get reconnected several times
+		e = connBOS();
+
+	// Exiting
+	initvalues();
+	ConnectionResult res((e != CONN_NO_ERROR) ? false : true, e);
+	return res;
+}
+
+	//
+	// SENDING
+	//
+
 void Client::send(Buffer& b){
 	if (m_logconn)
 		m_logconn->send(b);
 	else if (m_conn)
 		m_conn->send(b);
-}
-
-void Client::disconnect(ConnectionError err){
-
-	if ((err == CONN_RECONNECT) || (err == CONN_NO_ERROR && m_state == CLI_AUTHING))
-		m_exit = false;
-	else
-		m_exit = true;
-
-	if ((err != CONN_NO_ERROR) && (err != CONN_ERR_USER_REQUEST) && m_logconn) // Got an error
-		m_middledisconnect = true;
-
-	if (m_state == CLI_AUTHING && m_logconn)
-		m_logconn->disconnect();
-	else if ((m_state == CLI_CONNECTING) || (m_state == CLI_CONNECTED) && m_conn){
-		m_conn->disconnect();
-		emit notifyDisconnect();
-	}
-
 }
 
 void Client::sendMessage(Message message) {
@@ -160,6 +256,21 @@ void Client::sendMessage(UIN uin, QString message) {
 		m.setEncoding(UCS2BE);
 	m.setType(TYPE_PLAIN);
 	this->sendMessage(m);
+}
+
+	// 
+	// USER ACTIONS
+	//
+	
+void Client::disconnect(){ // this function is ONLY for user requested disconnections
+
+	if (m_logconn)
+		m_logconn->disconnect();
+	else {
+		m_exit = true;
+		m_conn->disconnect();
+	}
+	emit notifyDisconnect(); // notify that we're now disconnected
 }
 
 void Client::setPresence(PresenceStatus status) {
@@ -239,121 +350,17 @@ void Client::rosterEditEnd() {
 	send(f.pack());
 }
 
-ConnectionError Client::connAuth() {
-
-	ConnectionStatus s;
-	ConnectionError e;
-
-	if (!m_logconn){
-		if (m_type == ICQ)
-			m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, (ParserBase *) m_parser);
-		else if (m_type == AIM)
-			m_logconn = new Connection(AIM_LOGIN_SERVER, AIM_LOGIN_PORT, (ParserBase *) m_parser);
-	}
-
-		
-	m_state = CLI_AUTHING;
-
-	s = m_logconn->connect();
-	if (s != CONN_CONNECTED){
-		initvalues();
-		return CONN_ERR_LOGIN_CONN_FAILED;
-	}
-	e = m_logconn->listen();
-
-	qDebug("Disconnecting from Authorizer");
-
-	return e;
-}
-
-ConnectionError Client::connBOS() {
-
-	ConnectionStatus s;
-	ConnectionError e;
-
-	if (m_conn)
-		delete m_conn;
-
-	m_conn = new Connection(m_bos, m_bosport, m_parser);
-
-	qDebug("Connecting to BOS");
-	s = m_conn->connect();
-	if (s != CONN_CONNECTED){
-		initvalues();
-		return CONN_ERR_CONN_FAILED;
-	}
-
-	m_state = CLI_CONNECTED;
-
-	e = m_conn->listen();
-
-	qDebug("Disconnecting from BOS");
-
-	return e;
-
-}
-
-ConnectionResult Client::connect(){
-	/* FIXME: comprobar estado en que se queda despues de error */
-	ConnectionError e;
-
-	if (!m_parser){
-		m_parser = new Parser(this);
-		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
-		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
-				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
-		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
-		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
-		QObject::connect(m_parser, SIGNAL(newMessage(Message)), this, SLOT(messageArrived(Message)));
-		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
-		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
-		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), this, SLOT(authReq(UIN, QString)));
-		QObject::connect(m_parser, SIGNAL(awayMessageArrived(UIN, QString)), this, SLOT(newAwayMessage(UIN, QString)));
-		QObject::connect(m_parser, SIGNAL(typingEventArrived(UIN, IsTypingType)), this, SLOT(newTypingEvent(UIN, IsTypingType)));
-	}
-
-	e = connAuth();
-
-	// TODO: think about disconnect reason
-	if (m_middledisconnect){
-		initvalues();
-		ConnectionResult res(false, CONN_ERR_LOGIN_CONN_FAILED);
-		return res;
-	}
-	if (e != CONN_NO_ERROR){
-		initvalues();
-		ConnectionResult res(false, e);
-		return res;
-	}
-
-	delete m_logconn;
-	m_logconn = 0;
-
-	m_state = CLI_CONNECTING;
-
-	/* login finished; connect to BOS */
-	while (!m_exit) // We can get reconnected several times
-		e = connBOS();
-
-	if (e != CONN_NO_ERROR){
-		initvalues();
-		ConnectionResult res(false, e);
-		return res;
-	}
-
-	initvalues();
-
-	ConnectionResult res(true, CONN_NO_ERROR);
-	return res;
-}
-
+	//
+	// SLOTS
+	//
+	
 void Client::getBOSInfo(QString server, QString port){
 	m_bos = server;
 	m_bosport = port.toUInt();
-	if (m_state == CLI_AUTHING)
-		disconnect();
-	else
-		disconnect(CONN_RECONNECT); // Got a serverpause and a migrationreq
+	if (m_logconn)
+		m_logconn->disconnect();
+/*	else
+ *		reconnect to the new BOS */
 }
 
 void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
@@ -385,7 +392,7 @@ void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
 			qDebug("Can't register try again later");
 			break;
 	}
-	disconnect(CONN_ERR_UNEXPECTED);
+	// XXX: maybe disconnect the Connection, or raise a onDisconnect()
 }
 
 void Client::finishedConnection(){
@@ -479,9 +486,10 @@ Capabilities& Client::getCapabilities(){
 	return m_cap;
 }
 
-
-// LISTENERS' STUFF
-
+	//
+	// LISTENERS' STUFF
+	//
+	
 void Client::addConnectionListener(ConnectionListener *cl) {
 	QObject::connect(this, SIGNAL(notifyConnect()), cl, SLOT(connectSlot()));
 	QObject::connect(this, SIGNAL(notifyDisconnect()), cl, SLOT(disconnectSlot()));
@@ -532,11 +540,6 @@ void Client::addIsTypingListener(IsTypingListener *tl) {
 void Client::delIsTypingListener(IsTypingListener *tl) {
 	QObject::disconnect(this, 0, tl, 0);
 }
-
-Client::~Client() { 
-	initvalues();
-}
-
 
 }
 

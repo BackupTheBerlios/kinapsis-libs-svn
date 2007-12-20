@@ -29,6 +29,7 @@
 #include <qstring.h>
 #include <qobject.h>
 #include <netdb.h>
+#include <pthread.h>
 
 namespace liboscar {
 
@@ -72,6 +73,10 @@ private:
 	ParserBase* m_parser;
 
 	struct sockaddr_in m_local;
+
+	pthread_mutex_t m_rmutex;
+	pthread_cond_t m_rcond;
+
 };
 
 }

@@ -358,7 +358,7 @@ void Parser::parseCh2Service(Buffer& buf) {
 			sf2.parse(buf); // Update families versions
 			break;
 		default:
-			qDebug("Unknown command on SNAC Service family");
+			qDebug("Unknown command on SNAC Service family: %02x", command);
 			break;
 	}
 	// React to commands
