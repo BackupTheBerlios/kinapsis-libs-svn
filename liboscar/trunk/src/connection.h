@@ -24,7 +24,7 @@
 
 #include "liboscar.h"
 #include "connectionresult.h"
-#include "parserbase.h"
+#include "parser.h"
 #include "buffer.h"
 #include <qstring.h>
 #include <qobject.h>

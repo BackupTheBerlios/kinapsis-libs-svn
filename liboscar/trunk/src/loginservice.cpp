@@ -20,7 +20,7 @@
 
 
 #include "loginservice.h"
-#include "parser.h"
+#include "oscarparser.h"
 
 namespace liboscar {
 

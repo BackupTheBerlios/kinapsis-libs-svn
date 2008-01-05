@@ -31,8 +31,6 @@
 
 namespace liboscar {
 
-//	Word Parser::m_seq = 0;
-	
 	//
 	// CONSTRUCTORS & DESTRUCTORS
 	//

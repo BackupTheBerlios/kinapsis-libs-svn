@@ -29,7 +29,7 @@
 #include "message.h"
 #include "roster.h"
 #include "userinfo.h"
-#include "parserbase.h"
+#include "parser.h"
 #include "snac_roster.h"
 #include "snac_bos.h"
 #include "snac_contact.h"

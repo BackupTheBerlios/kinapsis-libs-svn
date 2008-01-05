@@ -23,7 +23,7 @@
 #define _CLIENT_H_
 
 #include "uin.h"
-#include "parser.h"
+#include "oscarparser.h"
 #include "service.h"
 #include "connection.h"
 #include "oscarconnectionresult.h"

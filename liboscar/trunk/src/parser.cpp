@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 
-#include "parserbase.h"
+#include "parser.h"
 
 namespace liboscar {
 
@@ -36,4 +36,4 @@ Parser::~Parser() { }
 
 }
 
-#include "parserbase.moc"
+#include "parser.moc"

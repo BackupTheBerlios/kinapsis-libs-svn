@@ -22,7 +22,7 @@
 #ifndef _PROXYPARSER_H_
 #define _PROXYPARSER_H_
 
-#include "parserbase.h"
+#include "parser.h"
 #include "service.h"
 
 namespace liboscar {

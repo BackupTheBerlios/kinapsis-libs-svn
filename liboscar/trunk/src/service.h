@@ -23,7 +23,7 @@
 #define _SERVICE_H_
 
 #include "buffer.h"
-#include "parserbase.h"
+#include "parser.h"
 #include "connection.h"
 #include "connectionresult.h"
 #include <qthread.h>

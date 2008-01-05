@@ -22,7 +22,7 @@
 #ifndef _OFTPARSER_H_
 #define _OFTPARSER_H_
 
-#include "parserbase.h"
+#include "parser.h"
 #include "service.h"
 
 namespace liboscar {

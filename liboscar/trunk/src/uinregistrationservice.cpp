@@ -20,7 +20,7 @@
 
 
 #include "uinregistrationservice.h"
-#include "parser.h"
+#include "oscarparser.h"
 #include <qmetatype.h>
 
 namespace liboscar {

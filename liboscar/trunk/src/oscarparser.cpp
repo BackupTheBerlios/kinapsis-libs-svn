@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 
-#include "parser.h"
+#include "oscarparser.h"
 #include "flap.h"
 #include "errortlv.h"
 #include "servertlv.h"
@@ -626,4 +626,4 @@ OscarParser::~OscarParser() { }
 
 }
 
-#include "parser.moc"
+#include "oscarparser.moc"
