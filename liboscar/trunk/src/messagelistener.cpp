@@ -27,11 +27,6 @@ MessageListener::MessageListener() { }
 
 MessageListener::~MessageListener() { }
 
-void MessageListener::incomingSlot(Message message) {
-	this->incomingMessage(message);
-}
-
-
 }
 
 #include "messagelistener.moc"

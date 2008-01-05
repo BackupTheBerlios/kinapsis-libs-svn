@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -69,34 +69,51 @@ bool FTData::getProxyUsed(){
 }
 
 void FTData::setProxyIP(DWord i){ 
+	m_proxyip = QString::number(i);
+}
+
+void FTData::setProxyIP(QString i){ 
 	m_proxyip = i;
 }
 
-DWord FTData::getProxyIP() {
+
+QString FTData::getProxyIP() {
 	return m_proxyip;
 }
 
 void FTData::setClientIP(DWord i) {
+	m_clientip = QString::number(i);
+}
+
+void FTData::setClientIP(QString i) {
 	m_clientip = i;
 }
 
-DWord FTData::getClientIP() {
+QString FTData::getClientIP() {
 	return m_clientip;
 }
 
 void FTData::setExternalIP(DWord i) {
+	m_externalip = QString::number(i);
+}
+
+void FTData::setExternalIP(QString i) {
 	m_externalip = i;
 }
 
-DWord FTData::getExternalIP() {
+QString FTData::getExternalIP() {
 	return m_externalip;
 }
 
 void FTData::setListeningPort(QString p) {
+	m_listenport = p.toUInt();
+}
+
+void FTData::setListeningPort(int p) {
 	m_listenport = p;
 }
 
-QString FTData::getListeningPort() {
+unsigned int FTData::getListeningPort() {
 	return m_listenport;
 }
 

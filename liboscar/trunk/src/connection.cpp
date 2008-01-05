@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -21,185 +21,110 @@
 
 #include "connection.h"
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <errno.h>
-
-#ifdef DEBUG
-#include <stdio.h>
-#endif
-
-#define BUFLEN 1024
+#define POSITIVE_MASK 0x7fff
 
 namespace liboscar {
 
-Connection::Connection(const QString server, int port, ParserBase* parser){
+	Word Connection::m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
+
+Connection::Connection(const QString server, int port, Parser* parser){
 	m_server = server;
 	m_port = port;
-	m_exit = false;
 	m_parser = parser;
-	m_socket = -1;
-	m_socketLocal = -1;
-	pthread_mutex_init(&m_rmutex, NULL);
-	pthread_cond_init(&m_rcond, NULL);
+	m_socket = new QTcpSocket();
 	QObject::connect(this, SIGNAL(dataReceived()), m_parser, SLOT(parse()));
-	clear();
+
+	m_connected = false;
 }
 
-ConnectionStatus Connection::getStatus(){
-	return m_status;
+Connection::~Connection() { 
+	delete m_socket;
 }
 
-ConnectionStatus Connection::clear(){
-	m_status = CONN_DISCONNECTED;
-	if (m_socket != -1){
-		close(m_socket);
-		m_socket = -1;
-	}
-	return m_status;
+//
+// USER ACTIONS
+//
+
+void Connection::connect(){
+	QObject::connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleError(QAbstractSocket::SocketError)));
+	QObject::connect(m_socket, SIGNAL(connected()), this, SLOT(handleConnect()));
+	QObject::connect(m_socket, SIGNAL(disconnected()), this, SLOT(handleDisconnect()));
+	QObject::connect(m_socket, SIGNAL(readyRead()), this, SLOT(read()));
+	QObject::connect(m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(handleStateChanged(QAbstractSocket::SocketState)));
+
+	m_socket->connectToHost(m_server, m_port);
 }
 
-ConnectionStatus Connection::connect(){
-
-	if (m_socket != -1)
-		return m_status;
-
-	m_status = CONN_CONNECTING;
-
-	struct hostent *host;
-	struct sockaddr_in sockaddr;
-
-	if ((host = gethostbyname(m_server.toAscii())) == NULL)
-		return clear();
-	memcpy(&sockaddr.sin_addr, *host->h_addr_list, host->h_length);
-
-	m_socket = socket(PF_INET, SOCK_STREAM, 0);
-	if (m_socket < 0)
-		return clear();
-
-	m_socketLocal = socket(AF_INET, SOCK_STREAM, 0);
-	if (m_socketLocal < 0)
-		return clear();
-
-	sockaddr.sin_port = ntohs(m_port);
-	sockaddr.sin_family = AF_INET;
-
-	m_local.sin_family = AF_INET;
-	m_local.sin_addr.s_addr = INADDR_ANY;
-
-	bind(m_socketLocal, (struct sockaddr *) &m_local, sizeof (struct sockaddr));
-
-	if (!::connect(m_socket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)))
-		return CONN_CONNECTED;
-
-	return clear();
-
-}
-
-DWord Connection::getLocalIP(){
-	return ntohl(m_local.sin_addr.s_addr);
-}
-
-Word Connection::getPort(){
-	return ntohs(m_local.sin_port);
-}
-
-ConnectionError Connection::listen(){
-
-	ConnectionError e;
-	while (!m_exit){
-		e = receive();
-		if (e != CONN_NO_ERROR)
-			return e;
-		if (!m_exit) // well, we're exiting so... who cares
-			emit dataReceived(); 
-	}
-	pthread_mutex_lock(&m_rmutex);
-	pthread_cond_signal(&m_rcond); // wake up client thread
-	pthread_mutex_unlock(&m_rmutex);
-	return CONN_NO_ERROR;
-}
-
-ConnectionError Connection::receive(){
-	fd_set fset;
-	struct timeval t;
-
-	FD_ZERO(&fset);
-	FD_SET(m_socket, &fset);
-
-	while (!FD_ISSET(m_socket, &fset) && !m_exit){
-		t.tv_sec = 1; /* FIXME: provisional */
-		t.tv_usec = 0;
-		if (select(m_socket + 1, &fset, NULL, NULL, &t) == -1)
-			return CONN_INPUT_ERROR;
-	}
-	
-	if (m_exit)
-		return CONN_NO_ERROR;
-
-	int ret_val;
-	Byte buf[BUFLEN];
-
-	ret_val = recv(m_socket, buf, BUFLEN, 0);
-	
-	switch (ret_val){
-		case -1:
-			perror("recv");
-			return CONN_INPUT_ERROR;
-		case 0:
-			return CONN_ERR_USER_REQUEST;
-		default:
-			m_parser->add(buf, ret_val);
-	}
+void Connection::send(Buffer &b){
+	if (m_connected){
+		QByteArray a = b.toByteArray();
+		m_socket->write(a);
 //#ifdef DEBUG
-	unsigned int i;
-	fprintf (stderr, "RECEIVING: ");
-	for (i=0; i < ret_val; i++)
-		fprintf(stderr, "%02x ", buf[i]);
-	fprintf(stderr, "\n");
+		unsigned int i;
+		fprintf (stderr, "SENDING: ");
+		for (i=0; i < a.size(); i++)
+			fprintf(stderr, "%02x ",(unsigned char) a[i]);
+		fprintf(stderr, "\n");
 //#endif
-
-	return CONN_NO_ERROR;
-}
-
-ConnectionError Connection::send(Buffer &b){
-	/* Blocks until the data is sent */
-	Byte bbuff[b.len()];
-	unsigned int size = b.len();
-	unsigned int sent_data = 0;
-	int ret;
-
-	b.copy(bbuff);
-	b.wipe(); /* delete the buffer */
-
-//#ifdef DEBUG
-	unsigned int i;
-	fprintf (stderr, "SENDING: ");
-	for (i=0; i < size; i++)
-		fprintf(stderr, "%02x ", bbuff[i]);
-	fprintf(stderr, "\n");
-//#endif
-	while (sent_data < size){
-		if ((ret = ::send(m_socket, bbuff + sent_data, size - sent_data, 0)) < 0)
-			return CONN_OUTPUT_ERROR;
-		sent_data += ret;
 	}
-	return CONN_NO_ERROR;
-
+	qDebug("end send: ");
 }
 
 void Connection::disconnect(){
-	m_exit = true;
-	pthread_mutex_lock(&m_rmutex);
-	pthread_cond_wait(&m_rcond, &m_rmutex); // wait for the socket
-	pthread_mutex_unlock(&m_rmutex);
-	// now, that we're done we can clear things
-	clear();
+	if(m_connected)
+		m_socket->disconnectFromHost(); // this will raise the disconnect signal
 }
 
-Connection::~Connection() { }
+//
+// OTHERS
+//
 
+Word Connection::getNextSeqNumber(){
+	m_seq = ++m_seq & POSITIVE_MASK;
+	return m_seq;
+}
+
+// 
+// SLOTS
+//
+
+void Connection::handleStateChanged(QAbstractSocket::SocketState s) {
+#ifdef DEBUG
+	qDebug("Connection state changed: %d", (int)s);
+#endif
+}
+
+void Connection::handleError(QAbstractSocket::SocketError e) {
+	emit connError((SocketError)e);	
+}
+
+void Connection::handleConnect() {
+	m_connected = true;
+	emit connConnected();
+}
+
+void Connection::handleDisconnect() {
+	m_connected = false;
+	emit connDisconnected();
+}
+
+void Connection::read() {
+	QByteArray arr;
+
+	arr = m_socket->readAll();
+
+//#ifdef DEBUG
+	unsigned int i;
+	fprintf (stderr, "RECEIVING: ");
+	for (i=0; i < arr.size(); i++)
+		fprintf(stderr, "%02x ", (unsigned char) arr[i]);
+	fprintf(stderr, "\n");
+//#endif
+
+	m_parser->add(arr);
+	emit dataReceived();
+
+}
 
 }
 

@@ -33,12 +33,9 @@ public:
 	PresenceListener();
 	virtual ~PresenceListener();
 
+public slots:
 	virtual void presenceChanged(UIN uin, PresenceStatus status) = 0;
 	virtual void awayMessage(UIN uin, QString message) = 0;
-
-public slots:
-	void presenceChangedSlot(UIN uin, PresenceStatus status);
-	void awayMessageSlot(UIN uin, QString message);
 };
 
 

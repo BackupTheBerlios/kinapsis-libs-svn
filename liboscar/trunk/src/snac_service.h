@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -26,6 +26,7 @@
 #include "servertlv.h"
 #include "families.h"
 #include "userinfo.h"
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -46,7 +47,7 @@ namespace liboscar {
 	const Word SERVICE_SRV_MIGRATIONREQ = 0x0012;
 	const Word SERVICE_SRV_MOTD = 0x0013;
 	const Word SERVICE_CLI_FAMILIES = 0x0017;
-	const Word SERVICE_SRV_FAMILIES2 = 0x0018;
+	const Word SERVICE_SRV_VERSIONS = 0x0018;
 	const Word SERVICE_CLI_SETSTATUS = 0x001e;
 
 class SNAC_Service : public SNAC {
@@ -78,9 +79,11 @@ private:
 class SrvFamiliesSNAC : public SNAC_Service {
 
 public:
+	SrvFamiliesSNAC();
 	SrvFamiliesSNAC(Families* fam);
 	virtual ~SrvFamiliesSNAC();
 
+	void setFamilies(Families* fam);
 	void parse(Buffer &b);
 private:
 	Families* m_fam;
@@ -158,12 +161,14 @@ public:
 	void parse(Buffer &b);
 };
 
-class SrvFamilies2SNAC : public SNAC_Service {
+class SrvVersionsSNAC : public SNAC_Service {
 
 public:
-	SrvFamilies2SNAC(Families *fam);
-	virtual ~SrvFamilies2SNAC();
+	SrvVersionsSNAC();
+	SrvVersionsSNAC(Families *fam);
+	virtual ~SrvVersionsSNAC();
 
+	void setFamilies(Families* fam);
 	void parse(Buffer &b);
 private:
 	Families *m_fam;
@@ -261,5 +266,9 @@ public:
 };
 
 }
+
+Q_DECLARE_METATYPE(liboscar::SrvFamiliesSNAC)
+Q_DECLARE_METATYPE(liboscar::SrvVersionsSNAC)
+Q_DECLARE_METATYPE(liboscar::SrvRatesSNAC)
 
 #endif // _SNAC_SERVICE_H_

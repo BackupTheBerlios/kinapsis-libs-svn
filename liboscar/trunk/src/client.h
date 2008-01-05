@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,31 +24,40 @@
 
 #include "uin.h"
 #include "parser.h"
+#include "service.h"
 #include "connection.h"
-#include "connectionresult.h"
+#include "oscarconnectionresult.h"
 #include "liboscar.h"
 #include "message.h"
 #include "capabilities.h"
 #include "roster.h"
 #include "rosterlistener.h"
+#include "rosterprocess.h"
+#include "loginst2process.h"
+#include "servicesetupprocess.h"
+#include "offlinemessagesprocess.h"
+#include "presenceprocess.h"
+#include "loginservice.h"
 #include "connectionlistener.h"
 #include "messagelistener.h"
 #include "presencelistener.h"
-#include "uinregistrationlistener.h"
 #include "istypinglistener.h"
 #include <qobject.h>
+#include <qbytearray.h>
 
 namespace liboscar {
 
 	class UIN;
 	class Connection;
-	class ListenerManager;
-	class Parser;
+//	class Parser;
 
-class Client : public QObject {
+class Client : public Service {
 Q_OBJECT
 
-	friend class Parser;
+	friend class RosterProcess;
+	friend class ServiceSetupProcess;
+	friend class OfflineMessagesProcess;
+	friend class PresenceProcess;
 
 public:
 	Client(const ProtocolType type = ICQ);
@@ -66,20 +75,26 @@ public:
 	void setAwayMessage(QString message);
 	QString getAwayMessage();
 
-	ClientState state();
-
-	ConnectionResult connect();
+	void connect();
 
 	// Actions
 	void disconnect();
 	void sendMessage(UIN uin, QString message);
 	void sendMessage(Message message);
 	void setPresence(PresenceStatus status);
-	void registerNewUin(QString password);
-	void authorize(UIN uin, QString message, bool ack);
-	void addContact(UIN uin, bool reqAuth);
 	void sendTypingNotice(UIN uin, IsTypingType type);
-	void changeContactGroup(UIN contact, QString newgroupname);
+
+	// Process actions
+	
+		// RosterProcess
+	bool addContact(UIN uin);
+	bool delContact(UIN uin);
+	bool authorize(UIN uin, QString message, bool ack);
+
+
+	// Process resources
+	Roster* getRoster();
+	Capabilities& getCapabilities();
 
 	// Listener's connections
 	void addConnectionListener(ConnectionListener *cl);
@@ -90,86 +105,84 @@ public:
 	void delMessageListener(MessageListener *ml);
 	void addPresenceListener(PresenceListener *pl);
 	void delPresenceListener(PresenceListener *pl);
-	void addUINRegistrationListener(UINRegistrationListener *ul);
-	void delUINRegistrationListener(UINRegistrationListener *ul);
 	void addIsTypingListener(IsTypingListener *tl);
 	void delIsTypingListener(IsTypingListener *tl);
 
 	virtual ~Client();
 
 signals:
-	// Connection
+	// ConnectionListener
 	void notifyConnect();
-	void notifyDisconnect();
+	void notifyDisconnect(OscarConnectionResult);
 
-	// Roster
-	void notifyNewContact(Contact *c);
-	void notifyAuthRequest(UIN uin, QString reason);
-
-	// Message
+	// MessageListener
 	void notifyMessage(Message message);
-
-	// presence
-	void notifyPresence(UIN uin, PresenceStatus status);
-	void notifyAwayMessage(UIN uin, QString awaymsg);
-
-	// uinregistration
-	void notifyNewUin(UIN uin);
 
 	//istyping
 	void notifyTypingEvent(UIN uin, IsTypingType type);
 
 public slots:
 
-	void getBOSInfo(QString server, QString port);
-	void unexpectedDisconnect(QString reason, DisconnectReason error);
+	// From m_conn
+	void BOSConnected();
+	void BOSDisconnected();
+	void BOSError(SocketError);
+
+	// From loginservice
+	void loginServiceEnded(ConnectionResult);
+
+	// From rosterprocess
 	void finishedConnection();
-	void rosterArrived(Roster roster);
+
+	void getBOSInfo(QString server, QString port, QByteArray cookie);
+	void unexpectedDisconnect(QString reason, DisconnectReason error);
 	void messageArrived(Message message);
-	void statusChanged(UIN uin, PresenceStatus status);
-	void newUin(UIN uin);
-	void authReq(UIN uin, QString reason);
-	void newAwayMessage(UIN uin, QString awaymsg);
 	void newTypingEvent(UIN uin, IsTypingType type);
 
 protected:
-	DWord getLocalIP();
-	Word getPort();
 	FirewallConfiguration getFirewall();
-	Roster& getRoster();
-	Capabilities& getCapabilities();
+
+	void run(); // We use here our own run()
+
+//private slots:
+//	void disconnectSlot(); // When we finish, we'll get this to emit notifyDisconnect
 
 private:
-	void send(Buffer &b);
 	void initvalues();
+	void createProcess();
+	void createSupport();
+	void registerMeta(); // from Service
 
-	ConnectionError connAuth();
-	ConnectionError connBOS();
-
-	void rosterEditStart();
-	void rosterEditEnd();
-
-	QString m_bos;
-	int m_bosport;
+	void connBOS(QString bos, int port);
+	void create();
 
 	UIN m_uin;
 	QString m_password;
 	ProtocolType m_type;
 	QString m_awaymsg;
 
-	ClientState m_state;
-	bool m_middledisconnect;
-	bool m_exit;
-
+	ConnectionResult m_cr;
+	
 	FirewallConfiguration m_firewall;
 
-	Connection* m_conn;
-	Connection* m_logconn;
-	Parser* m_parser;
-
-	Roster m_roster;
+	Roster* m_roster;
 
 	Capabilities m_cap;
+
+	bool m_connected;
+	bool m_logged;
+
+	//
+	// Process
+	//
+	
+	RosterProcess* m_rp;
+	LoginSt2Process* m_l2p;
+	ServiceSetupProcess* m_ssp;
+	OfflineMessagesProcess* m_omp;
+	PresenceProcess* m_pp;
+
+	LoginService* m_ls;
 };
 
 }

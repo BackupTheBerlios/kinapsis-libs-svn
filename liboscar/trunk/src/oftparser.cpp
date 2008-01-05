@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,7 +23,7 @@
 
 namespace liboscar {
 
-OFTParser::OFTParser(Client *c) : ParserBase(c) { }
+OFTParser::OFTParser() { }
 
 OFTParser::~OFTParser() { }
 
@@ -35,7 +35,7 @@ void OFTParser::parse() {
 
 	m_buf >> dw;
 
-	if (dw != 0x4f465432) return; // this is a version we don't understand
+	if (dw != 0x4f465432) return; // this is a version we don't understand (OFT2)
 
 	m_buf >> len; // total len of data
 

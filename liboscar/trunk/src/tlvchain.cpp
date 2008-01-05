@@ -26,13 +26,18 @@ namespace liboscar {
 TLVChain::TLVChain() { }
 
 TLVChain::~TLVChain(){
-	TLVMap::iterator i;
+	// FIXME: segfaults
+/*	TLVMap::iterator i;
 	TLV* tlv;
 
-	for (i = m_map.begin(); i != m_map.end(); i++){
-		tlv = i.value();
-		delete tlv;
+	if (m_map.size()){
+		for (i = m_map.begin(); i != m_map.end(); i++){
+			tlv = i.value();
+			if (tlv)
+				delete tlv;
+		}
 	}
+	*/
 }
 	
 bool TLVChain::exists(Word type) {
@@ -47,8 +52,15 @@ void TLVChain::addItem(Buffer &b){
 	m_map[tlv->getType()] = tlv;
 }
 
+int TLVChain::len(){
+	return m_map.size();
+}
+
 void TLVChain::parse(Buffer& b, bool withcount) {
 
+	if (!b.len())
+		return;
+	
 	if (withcount){
 		Word count;
 		unsigned int i;

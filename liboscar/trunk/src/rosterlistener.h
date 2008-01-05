@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -33,12 +33,16 @@ public:
 	RosterListener();
 	virtual ~RosterListener();
 
-	virtual void onNewContact(Contact *c) = 0;
-	virtual void onAuthRequest(UIN uin, QString reason) = 0;
-
 public slots:
-	void onNewContactSlot(Contact *c);
-	void onAuthRequestSlot(UIN uin, QString reason);
+	virtual void onAddContact(Contact c) = 0;
+	virtual void onUpdateContact(Contact c) = 0;
+	virtual void onDelContact(UIN uin) = 0;
+
+	virtual void onAddGroup(QString name) = 0;
+	virtual void onUpdateGroup(QString oname, QString nname) = 0;
+	virtual void onDelGroup(QString name) = 0;
+
+	virtual void onAuthRequest(UIN uin, QString reason) = 0;
 };
 
 

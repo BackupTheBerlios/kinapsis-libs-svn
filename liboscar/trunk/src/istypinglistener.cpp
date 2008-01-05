@@ -27,11 +27,6 @@ IsTypingListener::IsTypingListener() { }
 
 IsTypingListener::~IsTypingListener() { }
 
-void IsTypingListener::isTypingEventSlot(UIN uin, IsTypingType type){
-	this->isTypingEvent(uin, type);
-}
-
-
 }
 
 #include "istypinglistener.moc"

@@ -57,6 +57,7 @@ public:
 
 private:
 
+	
 	void initValues();
 
 	Byte m_chan;

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,15 +23,24 @@
 
 namespace liboscar {
 
-Capabilities::Capabilities() { }
-Capabilities::~Capabilities() { }
-
-void Capabilities::addCapability(Capability cap) {
-	m_data.append(cap);
+Capabilities::Capabilities() { 
+	m_maxcap = 10;
 }
 
-void Capabilities::addCapability(CapName cap) {
+Capabilities::~Capabilities() { }
+
+bool Capabilities::addCapability(Capability cap) {
+	if (len() == m_maxcap)
+		return false;
+	m_data.append(cap);
+	return true;
+}
+
+bool Capabilities::addCapability(CapName cap) {
+	if (len() == m_maxcap)
+		return false;
 	m_data.append(wiredCaps[cap]);
+	return true;
 }
 
 void Capabilities::setDefault() {

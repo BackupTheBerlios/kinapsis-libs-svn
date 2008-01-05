@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,35 +19,34 @@
  ***************************************************************************/
 
 
-#ifndef _PARSERBASE_H_
-#define _PARSERBASE_H_
+#ifndef _PARSER_H_
+#define _PARSER_H_
 
 #include "buffer.h"
 #include <qobject.h>
 #include <qstring.h>
+#include <qbytearray.h>
 
 namespace liboscar {
 
 	class Buffer;
-	class Client;
 
-class ParserBase : public QObject {
+class Parser : public QObject {
 Q_OBJECT
 
 public:
-	ParserBase(Client *c);
+	Parser();
 
-	void add(Byte *data, int len);
-	virtual ~ParserBase();
+	void add(QByteArray data);
+	virtual ~Parser();
 
 public slots:
 	virtual void parse() = 0;
 
 protected:
 	Buffer m_buf;
-	Client *m_client;
 };
 
 }
 
-#endif // _PARSERBASE_H_
+#endif // _PARSER_H_

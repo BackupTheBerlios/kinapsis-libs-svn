@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -30,6 +30,7 @@ class Contact {
 
 public:
 	Contact();
+	Contact(Contact * c);
 	Contact(UIN uin, QString nick, QString group);
 	virtual ~Contact();
 	
@@ -55,5 +56,7 @@ private:
 
 
 }
+
+Q_DECLARE_METATYPE(liboscar::Contact)
 
 #endif // _CONTACT_H_

@@ -33,8 +33,7 @@ Message::Message() {
 	m_type = TYPE_PLAIN;
 	m_flags = FLAG_NORMAL;
 
-	m_cookiehigh = 0x00000000; 
-	m_cookielow = 0x00000000; 
+	m_cookie = 0; 
 
 	m_ch2cookie = 0x0000;
 	m_ch2req = REQUEST;
@@ -54,8 +53,7 @@ void Message::fromMessage(Message &m){
 	m_type = m.m_type;
 	m_flags = m.m_flags;
 
-	m_cookiehigh = m.m_cookiehigh; 
-	m_cookielow = m.m_cookielow; 
+	m_cookie = m.m_cookie; 
 
 	m_ch2cookie = m.m_ch2cookie;
 	m_ch2req = m.m_ch2req;
@@ -131,20 +129,12 @@ void Message::setTime(QDateTime time){
 	m_time = time;
 }
 
-DWord Message::getCookieHigh(){
-	return m_cookiehigh;
+QWord Message::getCookie(){
+	return m_cookie;
 }
 
-void Message::setCookieHigh(DWord h){
-	m_cookiehigh = h;
-}
-	
-DWord Message::getCookieLow(){
-	return m_cookielow;
-}
-
-void Message::setCookieLow(DWord l){
-	m_cookielow = l;
+void Message::setCookie(QWord c){
+	m_cookie = c;
 }
 	
 Word Message::getCh2Cookie(){
@@ -218,8 +208,7 @@ Buffer& Message::pack() {
 	UnformattedTLV* tlvm;
 	UnformattedTLV* tlv;
 
-	m_data << (DWord) m_cookiehigh;
-	m_data << (DWord) m_cookielow;
+	m_data << (QWord) m_cookie;
 
 	m_data << m_format;
 	m_uin.appendUin(m_data);
@@ -282,6 +271,7 @@ Buffer& Message::pack() {
 void Message::packCh2(){
 
 	// This code sucks
+	// TODO: FT packing ????
 	
 	UnformattedTLV* tlvm;
 	UnformattedTLV* tlv;
@@ -289,8 +279,7 @@ void Message::packCh2(){
 	tlvm = new UnformattedTLV(0x0005);
 
 	tlvm->data() << (Word) m_ch2req;
-	tlvm->data() << (DWord) m_cookiehigh;
-	tlvm->data() << (DWord) m_cookielow;
+	tlvm->data() << (QWord) m_cookie;
 
 	// FIXME: wired capability. Seems to be the one all people use. why?
 	tlvm->data() << (DWord) 0x09461349;
@@ -367,8 +356,7 @@ void Message::parse(Buffer &b) {
 
 	m_time = QDateTime::currentDateTime(); // No date info for online messages
 
-	b >> m_cookiehigh;
-	b >> m_cookielow;
+	b >> m_cookie;
 
 	b >> w;
 	m_format = w;
@@ -600,7 +588,7 @@ void Message::parseCh2(Buffer &b) {
 				}
 				else{
 					// real message :-)
-					parse2711(tlv.data()); // FIXME: different for FT
+					parse2711(tlv.data());
 				}
 				break;
 			case 0x2712: // File name encoding

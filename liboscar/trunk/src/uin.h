@@ -22,8 +22,9 @@
 #ifndef _UIN_H_
 #define _UIN_H_
 
-#include <qstring.h>
 #include "buffer.h"
+#include <qstring.h>
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -49,5 +50,7 @@ private:
 
 
 }
+
+Q_DECLARE_METATYPE(liboscar::UIN)
 
 #endif // _UIN_H_

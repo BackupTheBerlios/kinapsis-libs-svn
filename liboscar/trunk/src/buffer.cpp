@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -27,17 +27,25 @@ Buffer::Buffer(){
 	m_lendian = false;
 }
 
-Buffer& Buffer::operator<<(Byte b){
-//	bool wasEmpty = (m_data.count() == 0);
-	m_data << b;
+/*Buffer::Buffer(const Buffer& other){
+	m_lendian = false;
+	unsigned int i = 0;
+	Byte b;
 
-//	if (wasEmpty) emit dataAvailable();
+	other.gotoBegin();
+	for (i=0; i < other.len(); i++){
+		other >> b;
+		m_data << b;
+	}
+}*/
+
+Buffer& Buffer::operator<<(Byte b){
+	m_data << b;
 
 	return *this;
 }
 
 Buffer& Buffer::operator<<(Word w){
-//	bool wasEmpty = (m_data.count() == 0);
 	if (m_lendian){
 		m_data << (w & 0xFF);
 		m_data << ((w >> 8) & 0xFF);
@@ -47,13 +55,10 @@ Buffer& Buffer::operator<<(Word w){
 		m_data << (w & 0xFF);
 	}
 
-	//if (wasEmpty) emit dataAvailable();
-
 	return *this;
 }
 
 Buffer& Buffer::operator<<(DWord dw) {
-//	bool wasEmpty = (m_data.count() == 0);
 	if (m_lendian){
 		m_data << (dw & 0xFF);
 		m_data << ((dw >> 8) & 0xFF);
@@ -67,21 +72,44 @@ Buffer& Buffer::operator<<(DWord dw) {
 		m_data << (dw & 0xFF);
 	}
 
-	//if (wasEmpty) emit dataAvailable();
 	return *this;
 }
+
+Buffer& Buffer::operator<<(QWord qw) {
+	if (m_lendian){
+		m_data << (qw & 0xFF);
+		m_data << ((qw >> 8) & 0xFF);
+		m_data << ((qw >> 16) & 0xFF);
+		m_data << ((qw >> 24) & 0xFF);
+		m_data << ((qw >> 32) & 0xFF);
+		m_data << ((qw >> 40) & 0xFF);
+		m_data << ((qw >> 48) & 0xFF);
+		m_data << ((qw >> 56) & 0xFF);
+	}
+	else{
+		m_data << ((qw >> 56) & 0xFF);
+		m_data << ((qw >> 48) & 0xFF);
+		m_data << ((qw >> 40) & 0xFF);
+		m_data << ((qw >> 32) & 0xFF);
+		m_data << ((qw >> 24) & 0xFF);
+		m_data << ((qw >> 16) & 0xFF);
+		m_data << ((qw >> 8) & 0xFF);
+		m_data << (qw & 0xFF);
+	}
+
+	return *this;
+}
+
 
 Buffer& Buffer::operator<<(const QString& s){
 	unsigned int i;
 	QByteArray c;
-//	bool wasEmpty = (m_data.count() == 0);
 
 	c = s.toAscii();
 
 	for (i=0;i < s.length(); i++)
 		m_data << (Byte) c[i];
 
-	//if (wasEmpty) emit dataAvailable();
 
 	return *this;
 }
@@ -96,6 +124,16 @@ Buffer& Buffer::operator<<(Buffer &other){
 		other >> b;
 		m_data << b;
 	}
+	return *this;
+}
+
+Buffer& Buffer::operator<<(QByteArray &a){
+	unsigned int i = 0;
+	Byte b;
+
+	for (i=0; i < a.size(); i++)
+		m_data << a[i];
+
 	return *this;
 }
 
@@ -135,7 +173,7 @@ Word Buffer::getWord(){
 
 Buffer& Buffer::operator>>(Word &w){
 
-	if (m_data.count() < 2)
+	if (m_data.size() < 2)
 		w = (Word) -1;
 	else 
 		w = getWord();
@@ -148,42 +186,77 @@ void Buffer::readString(QString &s){
 
 	len = getWord();
 
-	if (m_data.count() >= len){
+	if (!len)
+		return;
+
+	if (m_data.size() >= len){
 		while (len--)
 			s.append(getByte());
 	}
 }
 
 void Buffer::readString(QString &s, Word len){
-	if (m_data.count() >= len){
+	if (m_data.size() >= len){
 		while (len--)
 			s.append(getByte());
 	}
 }
 
-Buffer& Buffer::operator>>(DWord &dw){
+DWord Buffer::getDWord(){
+	DWord dw;
 	Word w1; /* low word */
 	Word w2; /* high word */
 
-	if (m_data.count() < 4)
+	if  (m_lendian){
+		w2 = getWord();
+		w1 = getWord();
+	}
+	else {
+		w1 = getWord();
+		w2 = getWord();
+	}
+
+	dw = w1;
+	dw <<= 16;
+	dw |= (0xFFFFFFFF & w2);
+	return dw;
+}
+
+Buffer& Buffer::operator>>(DWord &dw){
+
+	if (m_data.size() < 4)
 		dw = (DWord) -1;
+	else 
+		dw = getDWord();
+
+	return *this;
+}
+
+Buffer& Buffer::operator>>(QWord &qw){
+	DWord d1; /* low dword */
+	DWord d2; /* high dword */
+
+	if (m_data.size() < 8)
+		qw = (QWord) -1;
 	else {
 		if  (m_lendian){
-			w2 = getWord();
-			w1 = getWord();
+			d2 = getDWord();
+			d1 = getDWord();
 		}
 		else {
-			w1 = getWord();
-			w2 = getWord();
+			d1 = getDWord();
+			d2 = getDWord();
 		}
 
-		dw = w1;
-		dw <<= 16;
-		dw |= (0xFFFFFFFF & w2);
+		QWord mask = 0xFFFFFFFF; // TODO: create mask
+		qw = d1;
+		qw <<= 32;
+		qw |= (mask & d2);
 	}
 
 	return *this;
 }
+
 
 void Buffer::prepend(Byte b){
 	m_data.push_front(b);
@@ -225,7 +298,7 @@ void Buffer::remove(unsigned int num){
 }
 
 void Buffer::removeFromBegin(){
-	m_it = m_data.erase(m_data.begin());
+	m_it = m_data.erase(m_data.begin(), m_it);
 }
 
 void Buffer::wipe(){
@@ -237,10 +310,23 @@ void Buffer::copy(Byte *bb){
 	BIterator it = m_data.begin();
 	unsigned int i;
 
-	for (i = 0; i < m_data.count(); i++){
+	for (i = 0; i < m_data.size(); i++){
 		bb[i] = *it;
 		it++;
 	}
+}
+
+QByteArray Buffer::toByteArray(){
+	QByteArray arr;
+
+	BIterator it = m_data.begin();
+	unsigned int i;
+
+	for (i = 0; i < m_data.size(); i++){
+		arr[i] = *it;
+		it++;
+	}
+	return arr;
 }
 
 void Buffer::setLittleEndian(){
@@ -269,7 +355,7 @@ void Buffer::advance(int pos){
 
 void Buffer::setLength(unsigned int length){
 	unsigned int i;
-	unsigned int len = m_data.count();
+	unsigned int len = m_data.size();
 
 	if (length > len)
 		return ;
@@ -279,9 +365,10 @@ void Buffer::setLength(unsigned int length){
 }
 
 unsigned int Buffer::len(){
-	return m_data.count();
+	return m_data.size();
 }
 
 Buffer::~Buffer() { }
 
 }
+

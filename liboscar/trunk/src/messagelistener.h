@@ -34,10 +34,8 @@ public:
 	MessageListener();
 	virtual ~MessageListener();
 
-	virtual void incomingMessage(Message message) = 0;
-
 public slots:
-	void incomingSlot(Message message);
+	virtual void incomingMessage(Message message) = 0;
 };
 
 

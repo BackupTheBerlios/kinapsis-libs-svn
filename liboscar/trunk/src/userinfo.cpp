@@ -82,6 +82,9 @@ void UserInfo::parse(Buffer& b) {
 	CapabilitiesTLV *ct = 0;
 	StatusTLV st;
 
+//	b.removeFromBegin();
+//	b.gotoBegin();
+
 	m_uin.parse(b);
 
 	b >> m_warn;

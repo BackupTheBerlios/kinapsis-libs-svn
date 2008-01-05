@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -37,12 +37,12 @@ SrvReplyListsSNAC::SrvReplyListsSNAC()
 
 SrvReplyListsSNAC::~SrvReplyListsSNAC() { }
 
-void SrvReplyListsSNAC::parse(Buffer &b) {
-	UnformattedTLV tlv(TLV_TYPE_GENERIC);
-	unsigned int i= 0;
+TLVChain SrvReplyListsSNAC::getTLVs() {
+	return tch;
+}
 
-	for (i = 0; i < 4; i++)
-		tlv.parse(b);
+void SrvReplyListsSNAC::parse(Buffer &b) {
+	tch.parse(b);
 }
 
 	// SrvReplyRosterSNAC
@@ -51,12 +51,10 @@ SrvReplyRosterSNAC::SrvReplyRosterSNAC()
 
 SrvReplyRosterSNAC::~SrvReplyRosterSNAC() { }
 
-Roster SrvReplyRosterSNAC::getRoster(){
-	return m_roster;
-}
-
 void SrvReplyRosterSNAC::parse(Buffer &b) {
 
+
+	// XXX FIXME TODO: DELETE THIS WHEN THE TESTS ARE DONE
 	UnformattedTLV tlv(TLV_TYPE_GENERIC);
 	Byte by;
 	Word count, len, group, id, type;
@@ -85,7 +83,6 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 		b >> type;
 		b >> len;
 		while (len){
-			// TODO: handle more TLVs and groups and ...
 			tlv.parse(b);
 			switch (tlv.getType()){
 				case 0x0131:
@@ -118,12 +115,12 @@ void SrvReplyRosterSNAC::parse(Buffer &b) {
 	// SrvUpdateAckSNAC
 SrvUpdateAckSNAC::SrvUpdateAckSNAC()
 	: SNAC_Roster ( ROSTER_SRV_UPDATEACK, true) {
-	m_err = false;	
+	m_err = ACK_OK;	
 }
 
 SrvUpdateAckSNAC::~SrvUpdateAckSNAC() { }
 
-bool SrvUpdateAckSNAC::getError(){
+RosterModifyAck SrvUpdateAckSNAC::getAck(){
 	return m_err;
 }
 
@@ -133,7 +130,7 @@ void SrvUpdateAckSNAC::parse(Buffer &b) {
 	b >> w;
 	b.removeFromBegin();
 
-	m_err = (w != 0);
+	m_err = (RosterModifyAck) w;
 }
 
 	// SrvReplyRosterOkSNAC
@@ -279,10 +276,10 @@ CliReqRosterSNAC::CliReqRosterSNAC()
 CliReqRosterSNAC::~CliReqRosterSNAC() { }
 
 	//CliCheckRosterSNAC
-CliCheckRosterSNAC::CliCheckRosterSNAC(Roster& roster)
+CliCheckRosterSNAC::CliCheckRosterSNAC(Roster* roster)
 	: SNAC_Roster(ROSTER_CLI_CHECKROSTER, true) {
-	m_data << roster.getTimestamp();
-	m_data << roster.len();
+	m_data << roster->getTimestamp();
+	m_data << roster->len();
 }
 
 CliCheckRosterSNAC::~CliCheckRosterSNAC() { }
@@ -294,24 +291,25 @@ CliRosterAckSNAC::CliRosterAckSNAC()
 CliRosterAckSNAC::~CliRosterAckSNAC() { }
 
 	//CliRosterAddSNAC
-CliRosterAddSNAC::CliRosterAddSNAC()
+CliRosterAddSNAC::CliRosterAddSNAC(SBLItem i)
 	: SNAC_Roster(ROSTER_CLI_ROSTERADD, false) {
-		//TODO
+
+	m_data << i.pack();
 }
 CliRosterAddSNAC::~CliRosterAddSNAC() { }
 
 	//CliRosterUpdateSNAC
-CliRosterUpdateSNAC::CliRosterUpdateSNAC(SBLItem item)
+CliRosterUpdateSNAC::CliRosterUpdateSNAC(SBLItem i)
 	: SNAC_Roster(ROSTER_CLI_ROSTERUPDATE, false) {
 
-	m_data << item.pack(); /* the item must have the correct info */
+	m_data << i.pack(); /* the item must have the correct info */
 }
 CliRosterUpdateSNAC::~CliRosterUpdateSNAC() { }
 
 	//CliRosterDeleteSNAC
-CliRosterDeleteSNAC::CliRosterDeleteSNAC()
+CliRosterDeleteSNAC::CliRosterDeleteSNAC(SBLItem i)
 	: SNAC_Roster(ROSTER_CLI_ROSTERDELETE, true) {
-		//TODO
+	m_data << i.pack();
 }
 CliRosterDeleteSNAC::~CliRosterDeleteSNAC() { }
 

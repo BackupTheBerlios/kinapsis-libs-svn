@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -26,6 +26,7 @@
 #include "uin.h"
 #include "userinfo.h"
 #include "capabilities.h"
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -123,5 +124,8 @@ public:
 
 
 }
+
+Q_DECLARE_METATYPE(liboscar::SrvReplyLocationSNAC)
+Q_DECLARE_METATYPE(liboscar::SrvUserInfoSNAC)
 
 #endif // _SNAC_LOCATION_H_

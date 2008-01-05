@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2008 by Luis Cidoncha                                   *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,9 +24,10 @@
 namespace liboscar {
 
 ConnectionResult::ConnectionResult(){
-	ConnectionResult(true, CONN_ERR_USER_REQUEST);
+	ConnectionResult(false, UNKNOWN_ERROR);
 }
-ConnectionResult::ConnectionResult(bool successful, ConnectionError error){
+
+ConnectionResult::ConnectionResult(bool successful, SocketError error){
 	m_successful = successful;
 	m_error = error;
 }
@@ -34,16 +35,20 @@ ConnectionResult::ConnectionResult(bool successful, ConnectionError error){
 ConnectionResult::~ConnectionResult(){
 }
 
+void ConnectionResult::fromCR(ConnectionResult cr){
+	m_successful = cr.successful();
+	m_error = cr.errorReason();
+}
+
 bool ConnectionResult::successful(){
 	return m_successful;
 }
 
-ConnectionError ConnectionResult::errorReason(){
+SocketError ConnectionResult::errorReason(){
 	if (!m_successful)
 		return m_error;
 	else
-		return (ConnectionError)-1;
+		return SOCK_NO_ERROR;
 }
-
 
 }

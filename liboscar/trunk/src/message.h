@@ -27,6 +27,7 @@
 #include "userinfo.h"
 #include "ftdata.h"
 #include <qdatetime.h>
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -68,11 +69,9 @@ public:
 
 	Buffer& pack();
 
-	DWord getCookieHigh();
-	DWord getCookieLow();
+	QWord getCookie();
 
-	void setCookieHigh(DWord h);
-	void setCookieLow(DWord l);
+	void setCookie(QWord c);
 
 	void setCh2Cookie(Word cookie);
 	Word getCh2Cookie();
@@ -106,8 +105,7 @@ private:
 	MessageType m_type;
 	MessageFlags m_flags;
 
-	DWord m_cookiehigh;
-	DWord m_cookielow;
+	QWord m_cookie;
 
 	Word m_ch2cookie;
 	MessageRequest m_ch2req;
@@ -119,5 +117,7 @@ private:
 
 
 }
+
+Q_DECLARE_METATYPE(liboscar::Message)
 
 #endif // _MESSAGE_H_

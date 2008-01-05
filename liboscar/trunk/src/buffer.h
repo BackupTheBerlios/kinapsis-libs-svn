@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -25,6 +25,8 @@
 #include "liboscar.h"
 #include <qlinkedlist.h>
 #include <qstring.h>
+#include <qbytearray.h>
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -32,16 +34,20 @@ class Buffer {
 
 public:
 	Buffer();
+	//Buffer(const Buffer&);
 
 	Buffer& operator<<(Byte);
 	Buffer& operator<<(Word);
 	Buffer& operator<<(DWord);
+	Buffer& operator<<(QWord);
 	Buffer& operator<<(const QString&);
 	Buffer& operator<<(Buffer&);
+	Buffer& operator<<(QByteArray&);
 
 	Buffer& operator>>(Byte &);
 	Buffer& operator>>(Word &);
 	Buffer& operator>>(DWord &);
+	Buffer& operator>>(QWord &);
 	void readString(QString &);
 	void readString(QString &, Word);
 
@@ -64,6 +70,7 @@ public:
 	void wipe();
 
 	void copy(Byte * bb);
+	QByteArray toByteArray();
 
 	unsigned int len();
 
@@ -76,6 +83,7 @@ private:
 
 	Byte getByte();
 	Word getWord();
+	DWord getDWord();
 
 	QLinkedList<Byte> m_data;
 	BIterator m_it;
@@ -83,5 +91,8 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(liboscar::Buffer)
+
 
 #endif // _BUFFER_H_

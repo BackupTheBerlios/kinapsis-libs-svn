@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                              *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,11 +23,11 @@
 #define _OFTPARSER_H_
 
 #include "parserbase.h"
-#include <qstring.h>
+#include "service.h"
 
 namespace liboscar {
 
-class OFTParser : public ParserBase {
+class OFTParser : public Parser {
 Q_OBJECT
 
 public:
@@ -37,8 +37,6 @@ public:
 
 public slots:
 	void parse();
-
-private:
 
 };
 

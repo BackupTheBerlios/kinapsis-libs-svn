@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -26,6 +26,7 @@
 #include "uin.h"
 #include "roster.h"
 #include "sblitem.h"
+#include "tlvchain.h"
 
 namespace liboscar {
 
@@ -51,6 +52,16 @@ namespace liboscar {
 	const Word ROSTER_SRV_AUTHREPLY = 0x001b; 
 	const Word ROSTER_SRV_ADDEDYOU = 0x001c; 
 
+	enum RosterModifyAck {
+		ACK_OK = 0x0000,
+		ACK_NOT_FOUND = 0x0002,
+		ACK_EXISTS = 0x0003,
+		ACK_INVALID = 0x000a,
+		ACK_LIMIT = 0x000c,
+		ACK_ADDING_ICQ_TO_AIM = 0x000d,
+		ACK_REQ_AUTH = 0x000e
+	};
+
 class SNAC_Roster : public SNAC {
 
 public:
@@ -67,6 +78,10 @@ public:
 	virtual ~SrvReplyListsSNAC();
 
 	void parse(Buffer &b);
+	TLVChain getTLVs();
+
+private:
+	TLVChain tch;
 };
 
 class SrvReplyRosterSNAC : public SNAC_Roster {
@@ -75,7 +90,6 @@ public:
 	SrvReplyRosterSNAC();
 	virtual ~SrvReplyRosterSNAC();
 
-	Roster getRoster();
 	void parse(Buffer &b);
 private:
 	Roster m_roster;
@@ -87,10 +101,10 @@ public:
 	SrvUpdateAckSNAC();
 	virtual ~SrvUpdateAckSNAC();
 
-	bool getError();
+	RosterModifyAck getAck();
 	void parse(Buffer &b);
 private:
-	bool m_err;
+	RosterModifyAck m_err;
 };
 
 class SrvReplyRosterOkSNAC : public SNAC_Roster {
@@ -180,7 +194,7 @@ public:
 class CliCheckRosterSNAC : public SNAC_Roster {
 
 public:
-	CliCheckRosterSNAC(Roster& roster);
+	CliCheckRosterSNAC(Roster* roster);
 	virtual ~CliCheckRosterSNAC();
 
 	void parse(Buffer &b) {return ; };
@@ -198,7 +212,7 @@ public:
 class CliRosterAddSNAC : public SNAC_Roster {
 
 public:
-	CliRosterAddSNAC();
+	CliRosterAddSNAC(SBLItem i);
 	virtual ~CliRosterAddSNAC();
 
 	void parse(Buffer &b) {return ; };
@@ -207,7 +221,7 @@ public:
 class CliRosterUpdateSNAC : public SNAC_Roster {
 
 public:
-	CliRosterUpdateSNAC(SBLItem item);
+	CliRosterUpdateSNAC(SBLItem i);
 	virtual ~CliRosterUpdateSNAC();
 
 	void parse(Buffer &b) {return ; };
@@ -216,7 +230,7 @@ public:
 class CliRosterDeleteSNAC : public SNAC_Roster {
 
 public:
-	CliRosterDeleteSNAC();
+	CliRosterDeleteSNAC(SBLItem i);
 	virtual ~CliRosterDeleteSNAC();
 
 	void parse(Buffer &b) {return ; };

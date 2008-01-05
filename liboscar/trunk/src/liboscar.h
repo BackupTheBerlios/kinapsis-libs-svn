@@ -28,22 +28,42 @@
 #define AIM_LOGIN_SERVER "login.oscar.aol.com"
 #define AIM_LOGIN_PORT 5190
 
+#include <qmetatype.h>
+
 namespace liboscar {
 
 	typedef unsigned char Byte;
 	typedef unsigned short int Word;
 	typedef unsigned int DWord;
+	typedef unsigned long long QWord;
 
 	enum ProtocolType {
 		AIM,
 		ICQ
 	};
 
-	enum ConnectionStatus {
+	enum SocketError {
+		CONN_REFUSED,
+		REMOTE_HOST_CLOSED,
+		HOST_NOT_FOUND,
+		SOCKET_ACCESS,
+		SOCKET_RESOURCE,
+		SOCKET_TIMEOUT,
+		DATAGRAM_TOO_LARGE,
+		NETWORK_ERROR,
+		ADDR_IN_USE,
+		ADDR_NOT_AVAIL,
+		UNSUPPORTED_OP,
+		PROXY_AUTH_NEEDED,
+		UNKNOWN_ERROR = -1,
+		SOCK_NO_ERROR = -2
+	};
+
+	/*enum ConnectionStatus {
 		CONN_DISCONNECTED,
 		CONN_CONNECTED,
 		CONN_CONNECTING
-	};
+	};*/
 
 	enum ConnectionError {
 		CONN_ERR_LOGIN_CONN_FAILED,
@@ -56,13 +76,13 @@ namespace liboscar {
 		CONN_RECONNECT
 	};
 
-	enum ClientState {
+	/*enum ClientState {
 		CLI_NO_STATE,
 		CLI_AUTHING,
 		CLI_CONNECTING,
 		CLI_CONNECTED,
 		CLI_REQUESTING_UIN
-	};
+	};*/
 
 	enum SNACError {
 		ERROR_HEADER,
@@ -206,6 +226,10 @@ namespace liboscar {
 		CLASS_UNKNOWN400,
 		CLASS_UNKNOWN800
 	};
+
 }
+
+Q_DECLARE_METATYPE(liboscar::SocketError)
+Q_DECLARE_METATYPE(liboscar::DisconnectReason)
 
 #endif // _LIBOSCAR_H_

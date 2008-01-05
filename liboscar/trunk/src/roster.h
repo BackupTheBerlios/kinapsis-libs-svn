@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -26,22 +26,28 @@
 #include "contact.h"
 #include <qlist.h>
 #include <qmap.h>
+#include <qobject.h>
 
 namespace liboscar {
 
 	typedef QMap<QString, Byte> GroupMap;
 
-class Roster {
+class Roster : public QObject {
+Q_OBJECT
 
 public:
 	Roster();
 	virtual ~Roster();
 
 	void addContact(Contact* contact);
+	void updateContact (Contact* contact);
 	bool delContact(Contact* contact);
 
-	void setTimestamp(DWord timestamp);
+	void addGroup(QString name, int gid);
+	bool delGroup(QString name);
+	bool delGroup(int gid);
 
+	void setTimestamp(DWord t);
 	DWord getTimestamp();
 
 	void setGroupMap(GroupMap groups);
@@ -53,6 +59,17 @@ public:
 
 	Contact* findContactById(Word id);
 	Contact* findContactByUin(UIN uin);
+
+	void parse(Buffer &b);
+
+signals:
+	void contactAdded(Contact c);
+	void contactUpdated(Contact c);
+	void contactDeleted(UIN uin);
+
+	void groupAdded(QString name);
+	void groupUpdated(QString oldname, QString newname); // TODO: the params may change
+	void groupDeleted(QString name);
 
 private:
 	QList<Contact *> m_data;

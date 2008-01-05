@@ -24,6 +24,7 @@
 
 #include "snac.h"
 #include "message.h"
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -167,4 +168,7 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(liboscar::SrvReplyICBMSNAC)
+
 #endif // _SNAC_ICBM_H_

@@ -27,14 +27,6 @@ PresenceListener::PresenceListener() { }
 
 PresenceListener::~PresenceListener() { }
 
-void PresenceListener::presenceChangedSlot(UIN uin, PresenceStatus status) {
-	this->presenceChanged(uin, status);
-}
-
-void PresenceListener::awayMessageSlot(UIN uin, QString message) {
-	this->awayMessage(uin, message);
-}
-
 }
 
 #include "presencelistener.moc"

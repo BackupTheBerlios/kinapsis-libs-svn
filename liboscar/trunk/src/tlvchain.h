@@ -37,6 +37,7 @@ public:
 	
 	bool exists(Word type);
 	void parse(Buffer& b, bool withcount = false);
+	int len();
 	TLV * & operator[] (Word type);
 
 private:

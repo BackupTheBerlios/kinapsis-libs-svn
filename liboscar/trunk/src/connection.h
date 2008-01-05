@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -28,54 +28,53 @@
 #include "buffer.h"
 #include <qstring.h>
 #include <qobject.h>
+#include <qtcpsocket.h>
 #include <netdb.h>
-#include <pthread.h>
 
 namespace liboscar {
 
-	class ParserBase;
 	class Buffer;
 
-class Connection : public QObject{
+class Connection : public QObject {
 Q_OBJECT
 
 public:
-	Connection(const QString server, int port, ParserBase* parser);
+	Connection(const QString server, int port, Parser* parser);
 	virtual ~Connection();
 
-	ConnectionStatus getStatus();
-	ConnectionStatus connect();
-	ConnectionError listen();
-	ConnectionError send(Buffer& b);
+	void connect();
 
-	DWord getLocalIP();
-	Word getPort();
+	void send(Buffer& b);
+
+	static Word getNextSeqNumber();
 
 	void disconnect();
 
+public slots:
+	void handleError(QAbstractSocket::SocketError);
+	void handleConnect();
+	void handleDisconnect();
+	void handleStateChanged(QAbstractSocket::SocketState);
+	void read();
+
 signals:
+	// Auto connected to m_parser
 	void dataReceived();
+	// must be connected by using object
+	void connError(SocketError);
+	void connDisconnected();
+	void connConnected();
 
 private:
-	ConnectionStatus clear();
-	ConnectionError receive();
-
-	ConnectionStatus m_status;
-
 	QString m_server;
 	int m_port;
+	bool m_connected;
 
-	int m_socket;
-	int m_socketLocal;
+	QTcpSocket* m_socket;
 
-	bool m_exit;
+	Parser* m_parser;
 
-	ParserBase* m_parser;
-
-	struct sockaddr_in m_local;
-
-	pthread_mutex_t m_rmutex;
-	pthread_cond_t m_rcond;
+	static Word m_seq;
 
 };
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2006 by Luis Cidoncha                              *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,40 +19,92 @@
  ***************************************************************************/
 
 
-#ifndef _PARSER_H_
-#define _PARSER_H_
+#ifndef _OSCARPARSER_H_
+#define _OSCARPARSER_H_
 
 #include "buffer.h"
 #include "client.h"
+#include "service.h"
 #include "families.h"
 #include "message.h"
 #include "roster.h"
 #include "userinfo.h"
 #include "parserbase.h"
+#include "snac_roster.h"
+#include "snac_bos.h"
+#include "snac_contact.h"
+#include "snac_icbm.h"
+#include "snac_service.h"
+#include "snac_location.h"
+#include "snac_icq.h"
 #include <qstring.h>
+#include <qbytearray.h>
 
 namespace liboscar {
 
-class Parser : public ParserBase {
+class OscarParser : public Parser {
 Q_OBJECT
 
 public:
-	Parser(Client *c);
+	OscarParser();
 
-	Word getNextSeqNumber();
-	virtual ~Parser();
+	virtual ~OscarParser();
 
 signals:
-	void receivedBOS(QString server, QString port);
 	void serverDisconnected(QString reason, DisconnectReason error);
-	void loginSequenceFinished();
-	void rosterInfo(Roster r);
 	void newMessage(Message msg);
-	void statusChanged(UIN uin, PresenceStatus status);
-	void newUin(UIN uin);
-	void authReq(UIN uin, QString reason);
-	void awayMessageArrived(UIN uin, QString awaymsg);
 	void typingEventArrived(UIN uin, IsTypingType type);
+
+	//
+	// To LoginSt1Process && LoginSt2Process signals
+	//
+	void recvHello();
+
+	//
+	// To LoginSt1Process signals
+	//
+	void receivedBOS(QString server, QString port, QByteArray cookie);
+
+	//
+	// To RosterProcess signals
+	//
+	void rosterArrived(Buffer buf);
+	void rosterServerAck(RosterModifyAck a);
+	void authReq(UIN uin, QString reason);
+	void addedYou(UIN uin);
+	
+	//
+	// To LoginSt2Process signals
+	//
+	void serverFamilies(SrvFamiliesSNAC sf);
+	void serverServicesVersion(SrvVersionsSNAC svs);
+	void serverRateLimits(SrvRatesSNAC sra);
+
+	//
+	// To ServiceSetupProcess signals
+	//
+	void locationLimits(SrvReplyLocationSNAC srl);
+	void BLMLimits(SrvReplyBuddySNAC srb);
+	void ICBMLimits(SrvReplyICBMSNAC sri);
+	void PRMLimits(SrvReplyBOSSNAC srb);
+	void SSILimits(SrvReplyListsSNAC srr);
+	
+	//
+	// To OfflineMessagesProcess signals
+	//
+	void serverMetaReply(SrvMetaReplySNAC mrs);
+
+	//
+	// To PresenceProcess signals
+	// 
+	void statusChanged(UIN uin, PresenceStatus status);
+	void awayMessageArrived(UIN uin, QString awaymsg);
+	void serverUserInfo(SrvUserInfoSNAC suis);
+
+	//
+	// To UinRegistrationProcess signals
+	//
+	void newUin(UIN uin);
 
 public slots:
 	void parse();
@@ -75,14 +127,10 @@ private:
 
 	void sendKeepAlive();
 
-	Word m_seq; /* FLAP's sequence number */
 	Families m_fam;
 
-	Buffer m_cookie;
-
-	bool m_inlogin;
 };
 
 }
 
-#endif // _PARSER_H_
+#endif // _OSCARPARSER_H_

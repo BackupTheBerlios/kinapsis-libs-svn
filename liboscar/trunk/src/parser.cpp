@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2006 by Luis Cidoncha                              *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -22,7 +22,6 @@
 #include "parser.h"
 #include "flap.h"
 #include "errortlv.h"
-#include "passwordtlv.h"
 #include "servertlv.h"
 #include "snac_service.h"
 #include "snac_location.h"
@@ -41,13 +40,11 @@
 
 namespace liboscar {
 
-Parser::Parser(Client *c) : ParserBase(c) { 
+OscarParser::OscarParser() : Parser() { 
 	srand(time(NULL));
-	m_seq = (Word) POSITIVE_MASK * (rand()/RAND_MAX); /* Keep it positive */
-	m_inlogin = true;
 }
 
-void Parser::parse(){
+void OscarParser::parse(){
 	Byte b = 0, ch = 0;
 	Word w = 0;
 	Buffer buf;
@@ -107,91 +104,22 @@ void Parser::parse(){
 	}
 }
 
-void Parser::parseCh1(Buffer& buf){
-	FLAP f(0x01, getNextSeqNumber(), 0); // Unknown length
+void OscarParser::parseCh1(Buffer& buf){
 	DWord dw = 0;
-	UnformattedTLV *tlv;
-	PasswordTLV* pt;
 
 	buf >> dw;
 
 	if (dw != 0x00000001){
-		qDebug("Unknown header on channel 1");
+		qDebug("Unknown header on channel 1: %d", dw);
 		return ;
 	}
 
-	f.data() << (DWord) 0x00000001; // Hello header
+	qDebug("emit hello");
+	emit recvHello();
 
-	if (m_client->state() == CLI_CONNECTED){ // Send cookie
-		tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
-		m_cookie.gotoBegin();
-		tlv->data() << m_cookie;
-		f.addTLV(tlv);
-	}
-
-	if ((m_client->state() == CLI_AUTHING) || (m_client->state() == CLI_CONNECTED)){
-
-		// UIN
-		tlv = new UnformattedTLV(TLV_TYPE_UIN);
-		tlv->data() << m_client->getUIN().getId();
-		f.addTLV(tlv);
-
-		// Password
-		pt = new PasswordTLV();
-		pt->setPassword(m_client->m_password);
-		f.addTLV(pt);
-		
-		// Version
-		tlv = new UnformattedTLV(TLV_TYPE_VERSION);
-		tlv->data() << TLV_VERSION_ICQ2003B;
-		f.addTLV(tlv); 
-
-		// ClientId
-		tlv = new UnformattedTLV(TLV_TYPE_CLIENTID);
-		tlv->data() << (Word) 0x010a;
-		f.addTLV(tlv); 
-
-		// Versionmajor
-		tlv = new UnformattedTLV(TLV_TYPE_VERMAJOR);
-		tlv->data() << TLV_VERMAJOR;
-		f.addTLV(tlv); 
-
-		// Versionminor
-		tlv = new UnformattedTLV(TLV_TYPE_VERMINOR);
-		tlv->data() << TLV_VERMINOR_ICQ2003B;
-		f.addTLV(tlv); 
-
-		// Lesser
-		tlv = new UnformattedTLV(TLV_TYPE_LESSER);
-		tlv->data() << TLV_LESSER;
-		f.addTLV(tlv); 
-
-		// Build
-		tlv = new UnformattedTLV(TLV_TYPE_BUILD);
-		tlv->data() << TLV_BUILD_ICQ2003B;
-		f.addTLV(tlv); 
-
-		// Distrib
-		tlv = new UnformattedTLV(TLV_TYPE_DISTRIBUTION);
-		tlv->data() << TLV_DISTRIBUTION;
-		f.addTLV(tlv); 
-
-		// Language
-		tlv = new UnformattedTLV(TLV_TYPE_LANGUAGE);
-		tlv->data() << (Word) 0x656e; // en
-		f.addTLV(tlv); 
-
-		// Country
-		tlv = new UnformattedTLV(TLV_TYPE_COUNTRY);
-		tlv->data() << (Word) 0x7573; // us
-		f.addTLV(tlv); 
-
-	}
-
-	m_client->send(f.pack());
 }
 
-void Parser::parseCh2(Buffer& buf){
+void OscarParser::parseCh2(Buffer& buf){
 	Word family;
 
 	buf >> family;
@@ -230,7 +158,7 @@ void Parser::parseCh2(Buffer& buf){
 	}
 }
 
-void Parser::parseCh4(Buffer& buf){
+void OscarParser::parseCh4(Buffer& buf){
 
 	Word id, l, err, w;
 	Byte b;
@@ -239,6 +167,7 @@ void Parser::parseCh4(Buffer& buf){
 
 	ErrorTLV errt;
 	ServerTLV servt;
+	QByteArray cookie;
 
 	while (buf.len()){
 		buf >> id;
@@ -264,7 +193,7 @@ void Parser::parseCh4(Buffer& buf){
 			case 0x0006:
 				for (i=0; i < l; i++){
 					buf >> b;
-					m_cookie << b;
+					cookie.append((char)b);
 				}
 				buf.removeFromBegin();
 				break;
@@ -290,20 +219,19 @@ void Parser::parseCh4(Buffer& buf){
 		}
 	}
 
-	if (servt.getServer().isEmpty()){ // Got an unexpected disconnection
+	if (servt.getServer().isEmpty()) // Got an unexpected disconnection
 		emit serverDisconnected(reason, errt.getError());
-	}
 	else // We got the BOS && cookie info :-)
-		emit receivedBOS(servt.getServer(), servt.getPort());
+		emit receivedBOS(servt.getServer(), servt.getPort(), cookie);
 }
 
-void Parser::parseCh5(Buffer& buf){
+void OscarParser::parseCh5(Buffer& buf){
 	if (buf.len() != 0)
 		qDebug("Unknown extra data on channel 5");
 	sendKeepAlive();
 }
 
-void Parser::parseCh2Service(Buffer& buf) {
+void OscarParser::parseCh2Service(Buffer& buf) {
 	Word command, flags;
 	DWord reference;
 
@@ -316,11 +244,19 @@ void Parser::parseCh2Service(Buffer& buf) {
 	SrvReplyInfoSNAC sri;
 	SrvMigrationReqSNAC smr;
 	SrvMOTDSNAC smotd;
-	SrvFamilies2SNAC sf2(&m_fam);
+	SrvVersionsSNAC svs(&m_fam);
 
 	buf >> command;
 	buf >> flags;
 	buf >> reference;
+
+	if (flags == 0x8000){ // unknown extra data TODO: parse it in SNAC
+		Word len;
+		Byte by;
+
+		buf >> len;
+		while (len--) buf >> by;
+	}
 
 	buf.removeFromBegin();
 
@@ -331,12 +267,14 @@ void Parser::parseCh2Service(Buffer& buf) {
 			break;
 		case SERVICE_SRV_FAMILIES:
 			sf.parse(buf); // Got families supported by server
+			emit serverFamilies(sf);
 			break;
 		case SERVICE_SRV_REDIRECT:
 			srd.parse(buf);
 			break;
 		case SERVICE_SRV_RATES:
 			sra.parse(buf);
+			emit serverRateLimits(sra);
 			break;
 		case SERVICE_SRV_RATEEXCEEDED:
 			sre.parse(buf);
@@ -349,53 +287,22 @@ void Parser::parseCh2Service(Buffer& buf) {
 			break;
 		case SERVICE_SRV_MIGRATIONREQ:
 			smr.parse(buf);
-			emit receivedBOS(smr.getServer(), smr.getPort());
+			emit receivedBOS(smr.getServer(), smr.getPort(), QByteArray());
 			break;
 		case SERVICE_SRV_MOTD:
 			smotd.parse(buf);
 			break;
-		case SERVICE_SRV_FAMILIES2:
-			sf2.parse(buf); // Update families versions
+		case SERVICE_SRV_VERSIONS:
+			svs.parse(buf); // Update families versions
+			emit serverServicesVersion(svs);
 			break;
 		default:
 			qDebug("Unknown command on SNAC Service family: %02x", command);
 			break;
 	}
-	// React to commands
-	if (command == SERVICE_SRV_FAMILIES) {
-		// Got family list: request versions numbers
-		FLAP f(0x02, getNextSeqNumber(), 0);
-		CliFamiliesSNAC *clis = new CliFamiliesSNAC; // TODO: make this get Families info
-		f.addSNAC(clis);
-		m_client->send(f.pack());
-	}
-	else if (command == SERVICE_SRV_MOTD){
-		// Request rates
-		FLAP f(0x02, getNextSeqNumber(), 0);
-		CliRatesRequestSNAC *clir = new CliRatesRequestSNAC;
-		f.addSNAC(clir);
-		m_client->send(f.pack());
-	}
-	else if (command == SERVICE_SRV_RATES){
-		// Ack rates
-		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliAckRatesSNAC *clia = new CliAckRatesSNAC;
-		f->addSNAC(clia);
-		m_client->send(f->pack());
-		delete f;
-		if (m_inlogin){
-			// Continue login sequence
-			f = new FLAP(0x02, getNextSeqNumber(), 0);
-			CliReqLocationSNAC *creqloc = new CliReqLocationSNAC;
-			f->addSNAC(creqloc);
-			m_client->send(f->pack());
-			delete f;
-		}
-	}
-
 }
 
-void Parser::parseCh2Location(Buffer& buf) {
+void OscarParser::parseCh2Location(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -417,36 +324,19 @@ void Parser::parseCh2Location(Buffer& buf) {
 			break;
 		case LOCATION_SRV_REPLYLOCATION:
 			srls.parse(buf);
-			m_client->getCapabilities().setMaxCap(srls.getMaxCap());
+			emit locationLimits(srls);
 			break;
 		case LOCATION_SRV_USERINFO:
 			suis.parse(buf);
-			// TODO: handle user info :-)
+			emit serverUserInfo(suis);
 			break;
 		default:
 			qDebug("Unknown command on SNAC Location family");
 			break;
 	}
-	// React to commands
-	if (command == LOCATION_SRV_REPLYLOCATION && m_inlogin) {
-		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliSetUserInfoSNAC *cuinfo = new CliSetUserInfoSNAC(m_client->getCapabilities(), m_client->getAwayMessage());
-		f->addSNAC(cuinfo);
-		m_client->send(f->pack());
-		delete f;
-		f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliReqBuddySNAC *creqb = new CliReqBuddySNAC;
-		f->addSNAC(creqb);
-		m_client->send(f->pack());
-		delete f;
-	}
-	else if (command == LOCATION_SRV_USERINFO) {
-		if (suis.getType() == AWAY_MESSAGE)
-			emit awayMessageArrived(suis.getUserOnlineInfo().getUin(), suis.getAwayMessage());
-	}
 }
 
-void Parser::parseCh2Contact(Buffer& buf) {
+void OscarParser::parseCh2Contact(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -470,7 +360,7 @@ void Parser::parseCh2Contact(Buffer& buf) {
 			break;
 		case CONTACT_SRV_REPLYBUDDY:
 			rbs.parse(buf);
-			// XXX Ignoring limitations
+			emit BLMLimits(rbs);
 			break;
 		case CONTACT_SRV_REFUSED:
 			// TODO: report refused event
@@ -488,17 +378,9 @@ void Parser::parseCh2Contact(Buffer& buf) {
 			qDebug("Unknown command on SNAC Contact family");
 			break;
 	}
-	// React to commands
-	if (command == CONTACT_SRV_REPLYBUDDY && m_inlogin) {
-		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliReqICBMSNAC *creqi = new CliReqICBMSNAC;
-		f->addSNAC(creqi);
-		m_client->send(f->pack());
-		delete f;
-	}
 }
 
-void Parser::parseCh2ICBM(Buffer& buf) {
+void OscarParser::parseCh2ICBM(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -524,7 +406,7 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 			break;
 		case ICBM_SRV_REPLYICBM:
 			irs.parse(buf);
-			// TODO: report
+			emit ICBMLimits(irs);
 			break;
 		case ICBM_SRV_RECVMSG:
 			irm.parse(buf);
@@ -539,6 +421,8 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 			break;
 		case ICBM_CLI_ACKMSG:
 			cam.parse(buf);
+			// TODO: more checks
+			emit awayMessageArrived(cam.getMessage().getUin(), cam.getMessage().getText());
 			break;
 		case ICBM_SRV_CLI_TYPING:
 			scts.parse(buf);
@@ -548,24 +432,9 @@ void Parser::parseCh2ICBM(Buffer& buf) {
 			qDebug("Unknown command on SNAC ICBM family");
 			break;
 	}
-	// React to commands
-	if (command == ICBM_SRV_REPLYICBM && m_inlogin) {
-		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliSetICBMSNAC *cseti = new CliSetICBMSNAC;
-		f->addSNAC(cseti);
-		m_client->send(f->pack());
-		delete f;
-		f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliReqBOSSNAC *creqbos = new CliReqBOSSNAC;
-		f->addSNAC(creqbos);
-		m_client->send(f->pack());
-		delete f;
-	}
-	else if (command == ICBM_CLI_ACKMSG) // TODO: more checks
-		emit awayMessageArrived(cam.getMessage().getUin(), cam.getMessage().getText());
 }
 
-void Parser::parseCh2BOS(Buffer& buf) {
+void OscarParser::parseCh2BOS(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -581,22 +450,15 @@ void Parser::parseCh2BOS(Buffer& buf) {
 	switch (command) {
 		case BOS_SRV_REPLYBOS:
 			brb.parse(buf);
+			PRMLimits(brb);
 			break;
 		default:
 			qDebug("Unknown command on SNAC BOS family");
 			break;
 	}
-	// React to commands
-	if (command == BOS_SRV_REPLYBOS && m_inlogin) {
-		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliReqListsSNAC *creql = new CliReqListsSNAC;
-		f->addSNAC(creql);
-		m_client->send(f->pack());
-		delete f;
-	}
 }
 
-void Parser::parseCh2Interval(Buffer& buf) {
+void OscarParser::parseCh2Interval(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -620,7 +482,7 @@ void Parser::parseCh2Interval(Buffer& buf) {
 	}
 }
 
-void Parser::parseCh2Roster(Buffer& buf) {
+void OscarParser::parseCh2Roster(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -651,18 +513,23 @@ void Parser::parseCh2Roster(Buffer& buf) {
 		// TODO: handle things && report
 		case ROSTER_SRV_REPLYLISTS:
 			srl.parse(buf);
+			emit SSILimits(srl);
 			break;
 		case ROSTER_SRV_REPLYROSTER:
-			srr.parse(buf);
-			emit rosterInfo(srr.getRoster());
+			emit rosterArrived(buf);
 			break;
 		case ROSTER_SRV_UPDATEACK:
+			// Response from the server to one of our actions.
 			sua.parse(buf);
+			emit rosterServerAck(sua.getAck());
 			break;
 		case ROSTER_SRV_REPLYROSTEROK:
+			// FIXME: well, this should never arrive, but do it well
 			srro.parse(buf);
+			emit rosterArrived(buf);
 			break;
 		case ROSTER_SRV_AUTHREQ:
+			// Someone is asking for auth to add us to his/her roster
 			sar.parse(buf);
 			emit authReq(sar.getUin(), sar.getReason());
 			break;
@@ -671,50 +538,15 @@ void Parser::parseCh2Roster(Buffer& buf) {
 			break;
 		case ROSTER_SRV_ADDEDYOU:
 			say.parse(buf);
+			emit addedYou(say.getUin());
 			break;
 		default:
 			qDebug("Unknown command on SNAC Roster family");
 			break;
 	}
-	// React to commands
-	if (command == ROSTER_SRV_REPLYLISTS && m_inlogin) {
-		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliCheckRosterSNAC *ccr = new CliCheckRosterSNAC(m_client->getRoster());
-		f->addSNAC(ccr);
-		m_client->send(f->pack());
-		delete f;
-	}
-	else if (command == ROSTER_SRV_REPLYROSTER || command == ROSTER_SRV_REPLYROSTEROK){
-		FLAP *f = new FLAP(0x02, getNextSeqNumber(), 0);
-		CliRosterAckSNAC *cra = new CliRosterAckSNAC;
-		f->addSNAC(cra);
-		m_client->send(f->pack());
-		delete f;
-		if (m_inlogin) {
-			m_client->setPresence(STATUS_ONLINE);
-			f = new FLAP(0x02, getNextSeqNumber(), 0);
-			CliReadySNAC *crs = new CliReadySNAC;
-			f->addSNAC(crs);
-			m_client->send(f->pack());
-			delete f;
-
-			//Finished login sequence
-			m_inlogin = false;
-			emit loginSequenceFinished();
-
-			// Request offline messages
-			if (m_client->getType() == ICQ){
-				f = new FLAP(0x02, getNextSeqNumber(), 0);
-				CliMetaReqOfflineSNAC *cmr = new CliMetaReqOfflineSNAC(m_client->getUIN().getId().toUInt());
-				f->addSNAC(cmr);
-				m_client->send(f->pack());
-				delete f;
-			}
-		}
-	}
 }
 
-void Parser::parseCh2ICQ(Buffer& buf) {
+void OscarParser::parseCh2ICQ(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -735,34 +567,15 @@ void Parser::parseCh2ICQ(Buffer& buf) {
 			break;
 		case ICQ_SRV_METAREPLY:
 			mrs.parse(buf);
+			emit serverMetaReply(mrs);
 			break;
 		default:
 			qDebug("Unknown command on SNAC ICQ family");
 			break;
 	}
-	// React to commands
-	if (command == ICQ_SRV_METAREPLY) {
-		FLAP *f;
-		CliMetaReqOfflineDeleteSNAC *cmrod;
-		switch (mrs.getType()){
-			case OFFLINE_MESSAGE:
-				emit newMessage(mrs.getMessage());
-				break;
-			case END_OFFLINE_MESSAGES:
-				f = new FLAP(0x02, getNextSeqNumber(), 0);
-				cmrod = new CliMetaReqOfflineDeleteSNAC(m_client->getUIN().getId().toUInt());
-				f->addSNAC(cmrod);
-				m_client->send(f->pack());
-				delete f;
-				break;
-			case META_INFO_RESPONSE:
-				// TODO
-				break;
-		}
-	}
 }
 
-void Parser::parseCh2NewUser(Buffer& buf) {
+void OscarParser::parseCh2NewUser(Buffer& buf) {
 
 	Word command, flags;
 	DWord reference;
@@ -802,17 +615,13 @@ void Parser::parseCh2NewUser(Buffer& buf) {
 	}
 }
 
-void Parser::sendKeepAlive(){
-	FLAP f(0x05, getNextSeqNumber(), 0);
-	m_client->send(f.pack());
+void OscarParser::sendKeepAlive(){
+	// TODO: 
+	FLAP f(0x05, Connection::getNextSeqNumber(), 0);
+	//m_client->send(f.pack());
 }
 
-Word Parser::getNextSeqNumber(){
-	m_seq = ++m_seq & POSITIVE_MASK;
-	return m_seq;
-}
-
-Parser::~Parser() { }
+OscarParser::~OscarParser() { }
 
 
 }

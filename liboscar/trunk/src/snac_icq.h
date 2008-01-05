@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,6 +24,7 @@
 
 #include "snac.h"
 #include "message.h"
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -107,4 +108,7 @@ public:
 };
 
 }
+
+Q_DECLARE_METATYPE(liboscar::SrvMetaReplySNAC)
+
 #endif // _SNAC_ICQ_H_

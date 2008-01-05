@@ -25,6 +25,7 @@
 #include "snac.h"
 #include "uin.h"
 #include "userinfo.h"
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -141,5 +142,7 @@ public:
 };
 
 }
+
+Q_DECLARE_METATYPE(liboscar::SrvReplyBuddySNAC)
 
 #endif // _SNAC_CONTACT_H_

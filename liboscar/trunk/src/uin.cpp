@@ -58,6 +58,8 @@ void UIN::parse(Buffer &b){
 	Byte len, by;
 	unsigned int i;
 
+	//b.removeFromBegin();
+	//b.gotoBegin();
 	b >> len;
 
 	for (i=0; i < len; i++){

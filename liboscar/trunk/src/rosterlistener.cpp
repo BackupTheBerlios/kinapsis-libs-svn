@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -26,14 +26,6 @@ namespace liboscar {
 RosterListener::RosterListener() { }
 
 RosterListener::~RosterListener() { }
-
-void RosterListener::onNewContactSlot(Contact *c){
-	this->onNewContact(c);
-}
-
-void RosterListener::onAuthRequestSlot(UIN uin, QString reason){
-	this->onAuthRequest(uin, reason);
-}
 
 }
 

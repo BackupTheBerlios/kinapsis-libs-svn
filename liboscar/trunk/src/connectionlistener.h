@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -22,6 +22,7 @@
 #ifndef _CONNECTIONLISTENER_H_
 #define _CONNECTIONLISTENER_H_
 
+#include "oscarconnectionresult.h"
 #include <qobject.h>
 
 namespace liboscar {
@@ -32,12 +33,9 @@ public:
 	ConnectionListener();
 	virtual ~ConnectionListener();
 
-	virtual void onConnect() = 0;
-	virtual void onDisconnect() = 0;
-
 public slots:
-	void connectSlot();
-	void disconnectSlot();
+	virtual void connectSlot() = 0;
+	virtual void disconnectSlot(OscarConnectionResult) = 0;
 };
 
 

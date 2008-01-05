@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -139,12 +139,21 @@ void SrvServiceErrSNAC::parse(Buffer& b) {
 }
 
 	// SrvFamilies SNAC
+SrvFamiliesSNAC::SrvFamiliesSNAC()
+	: SNAC_Service(SERVICE_SRV_FAMILIES, true) { 
+	m_fam = 0;
+}
+
 SrvFamiliesSNAC::SrvFamiliesSNAC(Families *fam)
 	: SNAC_Service(SERVICE_SRV_FAMILIES, true) { 
-	m_fam = fam;
+	this->setFamilies(fam);
 }
 
 SrvFamiliesSNAC::~SrvFamiliesSNAC() { }
+
+void SrvFamiliesSNAC::setFamilies(Families* fam){
+	m_fam =fam;
+}
 
 void SrvFamiliesSNAC::parse(Buffer &b) {
 
@@ -256,16 +265,25 @@ void SrvMOTDSNAC::parse(Buffer &b){
 	b.wipe (); //Unknown content
 }
 
-	// SrvFamilies2SNAC
+	// SrvVersionsSNAC
 
-SrvFamilies2SNAC::SrvFamilies2SNAC(Families* fam)
-	: SNAC_Service(SERVICE_SRV_FAMILIES2, true) { 
+SrvVersionsSNAC::SrvVersionsSNAC()
+	: SNAC_Service(SERVICE_SRV_VERSIONS, true) { 
+	m_fam = 0;
+}
+
+SrvVersionsSNAC::SrvVersionsSNAC(Families* fam)
+	: SNAC_Service(SERVICE_SRV_VERSIONS, true) { 
+	this->setFamilies(fam);
+}
+
+SrvVersionsSNAC::~SrvVersionsSNAC() { }
+
+void SrvVersionsSNAC::setFamilies(Families* fam){
 	m_fam = fam;
 }
 
-SrvFamilies2SNAC::~SrvFamilies2SNAC() { }
-
-void SrvFamilies2SNAC::parse(Buffer &b){
+void SrvVersionsSNAC::parse(Buffer &b){
 	Word fam, v;
 	Family f;
 

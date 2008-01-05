@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -28,6 +28,15 @@ Contact::Contact() {
 	m_group = "";
 	m_auth = true;
 }
+
+Contact::Contact(Contact *c) {
+	m_uin = c->getUin();
+	m_id = c->getId();
+	m_nick = c->getNickname();
+	m_group = c->getGroup();
+	m_auth = c->getAuth();
+}
+
 
 Contact::Contact(UIN uin, QString nick, QString group) {
 	m_uin = uin;

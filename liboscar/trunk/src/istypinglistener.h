@@ -33,10 +33,8 @@ public:
 	IsTypingListener();
 	virtual ~IsTypingListener();
 
-	virtual void isTypingEvent(UIN uin, IsTypingType type) = 0;
-
 public slots:
-	void isTypingEventSlot(UIN uin, IsTypingType type);
+	virtual void isTypingEvent(UIN uin, IsTypingType type) = 0;
 };
 
 

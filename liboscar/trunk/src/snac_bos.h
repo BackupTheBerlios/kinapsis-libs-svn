@@ -23,6 +23,7 @@
 #define _SNAC_BOS_H_
 
 #include "snac.h"
+#include <qmetatype.h>
 
 namespace liboscar {
 
@@ -98,4 +99,7 @@ public:
 };
 
 }
+
+Q_DECLARE_METATYPE(liboscar::SrvReplyBOSSNAC)
+
 #endif // _SNAC_BOS_H_

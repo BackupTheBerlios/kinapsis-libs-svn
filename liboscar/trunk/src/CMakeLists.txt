@@ -5,6 +5,8 @@
 INCLUDE(${QT_USE_FILE})
 
 # the variable "LibImMsnP_SRCS" contains all .cpp files of this project
+SET(CMAKE_BUILD_TYPE Debug)
+
 SET(liboscar_SRCS
 	buffer.cpp
 	capabilities.cpp
@@ -19,18 +21,32 @@ SET(liboscar_SRCS
 	families.cpp
 	flap.cpp
 	ftdata.cpp
+	ftstatus.cpp
+	filetransferprocess.cpp
+	filereceiveservice.cpp
 	istypinglistener.cpp
+	loginservice.cpp
+	loginst1process.cpp
+	loginst2process.cpp
 	message.cpp
 	messagelistener.cpp
-	#	oftparser.cpp
+	oftparser.cpp
+	offlinemessagesprocess.cpp
+	oscarconnectionresult.cpp
 	parserbase.cpp
 	parser.cpp
 	passwordtlv.cpp
 	presencelistener.cpp
+	presenceprocess.cpp
+	proxyparser.cpp
+	#	process.cpp
 	roster.cpp
 	rosterlistener.cpp
+	rosterprocess.cpp
 	sblitem.cpp
 	servertlv.cpp
+	service.cpp
+	servicesetupprocess.cpp
 	snac_bos.cpp
 	snac_contact.cpp
 	snac.cpp
@@ -46,6 +62,8 @@ SET(liboscar_SRCS
 	tlv.cpp
 	uin.cpp
 	uinregistrationlistener.cpp
+	uinregistrationservice.cpp
+	uinregistrationprocess.cpp
 	userinfo.cpp
 )
 
@@ -62,15 +80,36 @@ SET(liboscar_HDRS
 	ftdata.h
 	istypinglistener.h 
 	liboscar.h 
+	loginservice.h
+	loginst1process.h
+	loginst2process.h
 	message.h 
 	messagelistener.h 
 	roster.h
 	rosterlistener.h 
+	rosterprocess.h 
+	service.h
+	servicesetupprocess.h
+	offlinemessagesprocess.h
+	oscarconnectionresult.h
 	parserbase.h 
 	parser.h 
 	presencelistener.h 
+	presenceprocess.h 
 	sblitem.h 
+	servertlv.h
+	snac_bos.h
+	snac_contact.h
+	snac.h
+	snac_icbm.h
+	snac_icq.h
+	snac_interval.h
+	snac_location.h
+	snac_newuser.h
+	snac_roster.h
+	snac_service.h
 	tlv.h 
+	tlvchain.h 
 	uin.h
 	uinregistrationlistener.h 
 	userinfo.h

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -21,23 +21,23 @@
 
 #include "client.h"
 #include "flap.h"
-#include "sblitem.h"
 #include "snac_icbm.h"
 #include "snac_service.h"
 #include "snac_newuser.h"
 #include "snac_roster.h"
 #include "snac_location.h"
 #include <qtextcodec.h>
+#include <qmetatype.h>
 
 namespace liboscar {
 
+//	Word Parser::m_seq = 0;
+	
 	//
 	// CONSTRUCTORS & DESTRUCTORS
 	//
-	
+
 Client::Client(const ProtocolType type){
-	m_conn = m_logconn = 0;
-	m_parser = 0;
 	m_type = type;
 	initvalues();
 }
@@ -45,29 +45,71 @@ Client::Client(const ProtocolType type){
 Client::Client(const UIN& uin, const QString& password, const ProtocolType type){
 	m_uin = uin;
 	m_password = password;
-	m_conn = m_logconn = 0;
-	m_parser = 0;
 	m_type = type;
 	initvalues();
 }
 
 void Client::initvalues(){
-	m_bos = "";
-	m_bosport = -1;
-	delete m_conn;
-	delete m_logconn;
-	m_conn = m_logconn = 0;
-	delete m_parser;
-	m_parser = 0;
-	m_state = CLI_NO_STATE;
-	m_middledisconnect = false;
-	m_exit = false;
+	m_connected = false;
+	m_logged = false;
 	m_cap.setDefault();
 	m_awaymsg = "I'm away now.";
+	registerMeta();
+	createSupport();
+	createProcess();
+}
+
+void Client::registerMeta() {
+	qRegisterMetaType<Message>("Message");
+	qRegisterMetaType<UIN>("UIN");
+	qRegisterMetaType<Buffer>("Buffer");
+	qRegisterMetaType<Contact>("Contact");
+	qRegisterMetaType<SrvFamiliesSNAC>("SrvFamiliesSNAC");
+	qRegisterMetaType<SrvVersionsSNAC>("SrvVersionsSNAC");
+	qRegisterMetaType<SrvRatesSNAC>("SrvRatesSNAC");
+	qRegisterMetaType<SrvReplyLocationSNAC>("SrvReplyLocationSNAC");
+	qRegisterMetaType<SrvReplyBuddySNAC>("SrvReplyBuddySNAC");
+	qRegisterMetaType<SrvReplyICBMSNAC>("SrvReplyICBMSNAC");
+	qRegisterMetaType<SrvReplyBOSSNAC>("SrvReplyBOSSNAC");
+	qRegisterMetaType<SrvReplyListsSNAC>("SrvReplyListsSNAC");
+	qRegisterMetaType<SrvMetaReplySNAC>("SrvMetaReplySNAC");
+	qRegisterMetaType<SrvUserInfoSNAC>("SrvUserInfoSNAC");
+}
+
+void Client::createSupport() {
+	m_roster = new Roster();
+}
+
+void Client::createProcess() {
+	m_rp = new RosterProcess(this);
+	m_l2p = new LoginSt2Process(this);
+	m_ssp = new ServiceSetupProcess(this);
+	m_omp = new OfflineMessagesProcess(this);
+	m_pp = new PresenceProcess(this);
+
+	// Connect processes between them
+	QObject::connect(m_l2p, SIGNAL(stage2finished()), m_ssp, SLOT(requestServiceSetup()));
+
+	// Connect processes to client
+		//RosterProcess
+	QObject::connect(m_rp, SIGNAL(rosterAcked()), this, SLOT(finishedConnection()));
+		//OfflineMessagesProcess
+	QObject::connect(m_omp, SIGNAL(newOfflineMessage(Message)), this, SLOT(messageArrived(Message)));
 }
 
 Client::~Client() { 
-	initvalues();
+	if (m_roster)
+		delete m_roster;
+	if (m_rp)
+		delete m_rp;
+	if (m_l2p)
+		delete m_l2p;
+	if (m_ssp)
+		delete m_ssp;
+	if (m_omp)
+		delete m_omp;
+	if (m_pp)
+		delete m_pp;
 }
 
 	//
@@ -91,10 +133,6 @@ UIN Client::getUIN(){
 }
 
 void Client::setUIN(const UIN& uin){
-/*	TODO: if (m_conn){
-		if (m_conn->state() == CONN_CONNECTED)
-			;
-	} OJO */
 	m_uin = uin;
 }
 
@@ -106,139 +144,90 @@ QString Client::getAwayMessage(){
 	return m_awaymsg;
 }
 
-DWord Client::getLocalIP() {
-	if (m_conn)
-		return m_conn->getLocalIP();
-	return 0;
-}
-
-Word Client::getPort() {
-	if (m_conn)
-		return m_conn->getPort();
-	return 0;
-}
-
 FirewallConfiguration Client::getFirewall() {
 	// TODO: hacer que esto rule
 	return NORMAL;
-}
-
-ClientState Client::state(){
-	return m_state;
 }
 
 	//
 	// CONNECTION STUFF
 	//
 	
-ConnectionError Client::connAuth() {
+void Client::run(){
 
-	ConnectionStatus s;
-	ConnectionError e;
+	m_ls = new LoginService(m_uin, m_password);	
 
-	if (!m_logconn){
-		if (m_type == ICQ)
-			m_logconn = new Connection(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT, (ParserBase *) m_parser);
-		else if (m_type == AIM)
-			m_logconn = new Connection(AIM_LOGIN_SERVER, AIM_LOGIN_PORT, (ParserBase *) m_parser);
-	}
+	QObject::connect(m_ls, SIGNAL(BOSInfo(QString, QString, QByteArray)), this, SLOT(getBOSInfo(QString,QString,QByteArray)));
+	QObject::connect(m_ls, SIGNAL(serviceEnded(ConnectionResult)), this, SLOT(loginServiceEnded(ConnectionResult)));
 
-// XXX XXX	m_state = CLI_AUTHING;
+	if (m_type == ICQ)
+		m_ls->connect(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT);
+	else if (m_type == AIM)
+		m_ls->connect(AIM_LOGIN_SERVER, AIM_LOGIN_PORT);
 
-	s = m_logconn->connect();
-	if (s != CONN_CONNECTED){
-		initvalues();
-		return CONN_ERR_LOGIN_CONN_FAILED;
-	}
-	e = m_logconn->listen();
 
-	qDebug("Disconnecting from Authorizer");
-
-	return e;
+	this->exec();
+	qDebug("[Client]: exiting");
 }
 
-ConnectionError Client::connBOS() {
-
-	ConnectionStatus s;
-	ConnectionError e;
+void Client::connBOS(QString bos, int port) {
 
 	if (m_conn)
 		delete m_conn;
 
-	m_conn = new Connection(m_bos, m_bosport, m_parser);
+	m_conn = new Connection(bos, port, m_parser);
 
-	qDebug("Connecting to BOS");
-	s = m_conn->connect();
-	if (s != CONN_CONNECTED){
-		initvalues();
-		return CONN_ERR_CONN_FAILED;
-	}
-
-	m_state = CLI_CONNECTED;
-
-	e = m_conn->listen();
-
-	qDebug("Disconnecting from BOS");
-
-	return e;
-
+	QObject::connect(m_conn, SIGNAL(connConnected()), this, SLOT(BOSConnected()));
+	QObject::connect(m_conn, SIGNAL(connDisconnected()), this, SLOT(BOSDisconnected()));
+	QObject::connect(m_conn, SIGNAL(connError(SocketError)), this, SLOT(BOSError(SocketError)));
+	m_conn->connect();
 }
 
-ConnectionResult Client::connect(){
-	/* FIXME: comprobar estado en que se queda despues de error */
-	ConnectionError e;
+void Client::connect(){
+	this->start();
+}
+
+void Client::create() {
 
 	if (!m_parser){
-		m_parser = new Parser(this);
-		QObject::connect(m_parser, SIGNAL(receivedBOS(QString, QString)), this, SLOT(getBOSInfo(QString, QString)));
+		m_parser = new OscarParser();
+		// Client signals
+			//Parser
 		QObject::connect(m_parser, SIGNAL(serverDisconnected(QString, DisconnectReason)), 
 				this, SLOT(unexpectedDisconnect(QString, DisconnectReason)));
-		QObject::connect(m_parser, SIGNAL(loginSequenceFinished()), this, SLOT(finishedConnection()));
-		QObject::connect(m_parser, SIGNAL(rosterInfo(Roster)), this, SLOT(rosterArrived(Roster)));
 		QObject::connect(m_parser, SIGNAL(newMessage(Message)), this, SLOT(messageArrived(Message)));
-		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), this, SLOT(statusChanged(UIN, PresenceStatus)));
-		QObject::connect(m_parser, SIGNAL(newUin(UIN)), this, SLOT(newUin(UIN)));
-		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), this, SLOT(authReq(UIN, QString)));
-		QObject::connect(m_parser, SIGNAL(awayMessageArrived(UIN, QString)), this, SLOT(newAwayMessage(UIN, QString)));
 		QObject::connect(m_parser, SIGNAL(typingEventArrived(UIN, IsTypingType)), this, SLOT(newTypingEvent(UIN, IsTypingType)));
+
+		// RosterProcess (m_rp) signals
+		QObject::connect(m_parser, SIGNAL(rosterArrived(Buffer)), m_rp, SLOT(rosterArrivedSlot(Buffer)));
+		QObject::connect(m_parser, SIGNAL(rosterServerAck(RosterModifyAck)), m_rp, SLOT(handleUpdateAck(RosterModifyAck)));
+		QObject::connect(m_parser, SIGNAL(authReq(UIN, QString)), m_rp, SLOT(authReq(UIN, QString)));
+		QObject::connect(m_parser, SIGNAL(addedYou(UIN)), m_rp, SLOT(addedMe(UIN)));
+		// LoginSt2Process (m_l2p) signals
+		QObject::connect(m_parser, SIGNAL(recvHello()), m_l2p, SLOT(recvHello()));
+		QObject::connect(m_parser, SIGNAL(serverFamilies(SrvFamiliesSNAC)), m_l2p, SLOT(recvFamilies(SrvFamiliesSNAC)));
+		QObject::connect(m_parser, SIGNAL(serverServicesVersion(SrvVersionsSNAC)), m_l2p, SLOT(recvVersions(SrvVersionsSNAC)));
+		QObject::connect(m_parser, SIGNAL(serverRateLimits(SrvRatesSNAC)), m_l2p, SLOT(recvRates(SrvRatesSNAC)));
+		// ServiceSetupProcess (m_ssp) signals
+		QObject::connect(m_parser, SIGNAL(locationLimits(SrvReplyLocationSNAC)), m_ssp, 
+				SLOT(locationLimits(SrvReplyLocationSNAC)));
+		QObject::connect(m_parser, SIGNAL(BLMLimits(SrvReplyBuddySNAC)), m_ssp, SLOT(BLMLimits(SrvReplyBuddySNAC)));
+		QObject::connect(m_parser, SIGNAL(ICBMLimits(SrvReplyICBMSNAC)), m_ssp, SLOT(ICBMLimits(SrvReplyICBMSNAC)));
+		QObject::connect(m_parser, SIGNAL(PRMLimits(SrvReplyBOSSNAC)), m_ssp, SLOT(PRMLimits(SrvReplyBOSSNAC)));
+		QObject::connect(m_parser, SIGNAL(SSILimits(SrvReplyListsSNAC)), m_ssp, SLOT(SSILimits(SrvReplyListsSNAC)));
+		// PresenceProcess (m_pp) signals
+		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), m_pp, SLOT(statusChanged(UIN, PresenceStatus)));
+		QObject::connect(m_parser, SIGNAL(serverUserInfo(SrvUserInfoSNAC)), m_pp, SLOT(newAwayMessage(SrvUserInfoSNAC)));
 	}
 
-	e = connAuth();
-
-	if (e != CONN_NO_ERROR){
-		initvalues();
-		ConnectionResult res(false, e);
-		return res;
-	}
-
-	delete m_logconn;
-	m_logconn = 0;
-
-	m_state = CLI_CONNECTING;
-
-	/* login finished; connect to BOS */
-	while (!m_exit) // We can get reconnected several times
-		e = connBOS();
-
-	// Exiting
-	initvalues();
-	ConnectionResult res((e != CONN_NO_ERROR) ? false : true, e);
-	return res;
 }
 
 	//
 	// SENDING
 	//
 
-void Client::send(Buffer& b){
-	if (m_logconn)
-		m_logconn->send(b);
-	else if (m_conn)
-		m_conn->send(b);
-}
-
 void Client::sendMessage(Message message) {
-	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
 	CliSendMsgSNAC *s = new CliSendMsgSNAC(message);
 	f.addSNAC(s);
 	send(f.pack());
@@ -263,18 +252,12 @@ void Client::sendMessage(UIN uin, QString message) {
 	//
 	
 void Client::disconnect(){ // this function is ONLY for user requested disconnections
-
-	if (m_logconn)
-		m_logconn->disconnect();
-	else {
-		m_exit = true;
-		m_conn->disconnect();
-	}
-	emit notifyDisconnect(); // notify that we're now disconnected
+	// TODO: add disconnect to loginService !!!!
+	m_conn->disconnect();
 }
 
 void Client::setPresence(PresenceStatus status) {
-	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
 	SNAC *s;
 
 	if (m_type == ICQ) // FIXME: wired values
@@ -286,81 +269,75 @@ void Client::setPresence(PresenceStatus status) {
 	send(f.pack());
 }
 
-void Client::registerNewUin(QString password) {
-
-	if (m_state == CLI_NO_STATE) ; // TODO: make a connection requesting a UIN
-	else {
-		FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-		CliReqUINSNAC *s = new CliReqUINSNAC(password);
-		f.addSNAC(s);
-		send(f.pack());
-	}
-}
-
-void Client::authorize(UIN uin, QString message, bool auth) {
-	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-	CliAuthorizeSNAC *s = new CliAuthorizeSNAC(uin, auth, message);
-	f.addSNAC(s);
-	send(f.pack());
-}
-
-void Client::addContact(UIN uin, bool reqAuth) {
-	// TODO:
-}
-
 void Client::sendTypingNotice(UIN uin, IsTypingType type) {
-	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
+	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
 	SrvCliTypingSNAC *s = new SrvCliTypingSNAC(uin, type);
 	f.addSNAC(s);
 	send(f.pack());
 }
 
-void Client::changeContactGroup(UIN contact, QString newgroupname) {
-	GroupMap map = m_roster.getGroupMap();
-	Contact *c = m_roster.findContactByUin(contact);
-	SBLItem item(c);
+	//
+	// PROCESS ACTIVATION ACTIONS (DONE BY USER)
+	//
 	
-	if (!map[newgroupname]) return; /* Inexistent group FIXME: create it */
+		//
+		// ROSTERPROCESS
+		//
 
-	item.setGroupId(map[newgroupname]);
-
-	rosterEditStart();
-
-	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-	CliRosterUpdateSNAC *s = new CliRosterUpdateSNAC(item);
-	f.addSNAC(s);
-	send(f.pack());
-
-	rosterEditEnd();
-
-	/* FIXME: server send SNAC(0x13,0x0e) that ACKs the change. Wait for it */
+bool Client::addContact(UIN uin) {
+	return m_rp->addContact(uin, false);
 }
 
-void Client::rosterEditStart() {
-	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-	CliAddStartSNAC *s = new CliAddStartSNAC();
-	f.addSNAC(s);
-	send(f.pack());
+bool Client::delContact(UIN uin) {
+	return m_rp->delContact(uin);
 }
 
-void Client::rosterEditEnd() {
-	FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-	CliAddEndSNAC *s = new CliAddEndSNAC();
-	f.addSNAC(s);
-	send(f.pack());
+bool Client::authorize(UIN uin, QString message, bool auth) {
+	return m_rp->authorize(uin, message, auth);
 }
+
 
 	//
 	// SLOTS
 	//
 	
-void Client::getBOSInfo(QString server, QString port){
-	m_bos = server;
-	m_bosport = port.toUInt();
-	if (m_logconn)
-		m_logconn->disconnect();
-/*	else
- *		reconnect to the new BOS */
+
+void Client::BOSConnected() {
+	qDebug("Connected to BOS");
+	m_connected = true;
+}
+
+void Client::BOSDisconnected() {
+	m_connected=false;
+	emit notifyDisconnect(OscarConnectionResult(true, CONN_NO_ERROR));
+	this->exit();
+}
+
+void Client::BOSError(SocketError e) {
+	m_connected=false;
+	emit notifyDisconnect(OscarConnectionResult(false, CONN_ERR_CONN_FAILED));
+	this->exit();
+}
+
+void Client::getBOSInfo(QString server, QString port, QByteArray cookie){
+	m_logged = true;
+	m_l2p->setCookie(cookie);
+	
+	//
+	// So... we got a BOS and Stage1 must be ended, continue to stage2
+	//
+	
+	qDebug("BOS Arrived, connecting...");
+	create();
+	connBOS(server, port.toUInt());
+
+}
+
+void Client::loginServiceEnded(ConnectionResult r) {
+	if (!m_logged){ // Something happened to LoginService :-(
+		emit notifyDisconnect(OscarConnectionResult(false, CONN_ERR_LOGIN_CONN_FAILED));
+		this->exit();
+	}
 }
 
 void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
@@ -396,25 +373,24 @@ void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
 }
 
 void Client::finishedConnection(){
+	setPresence(STATUS_ONLINE);
+
+	// We're ready now (at last)
+	FLAP* f = new FLAP(0x02, Connection::getNextSeqNumber(), 0);
+	CliReadySNAC *crs = new CliReadySNAC;
+	f->addSNAC(crs);
+	send(f->pack());
+
+	// Request possible offline messages
+	m_omp->requestOfflineMessages();
+	
 	emit notifyConnect();
-}
-
-void Client::rosterArrived(Roster r){
-
-	m_roster = r;
-
-	QList<Contact *> c = r.getContacts();
-
-	int i =0;
-	for (i=0; i<c.size(); i++)
-		emit notifyNewContact(c[i]);
 }
 
 void Client::messageArrived(Message message){
 	// TODO: handle more message stuff here
 	if (message.getFormat() == 0x0002 && message.getRequest() == REQUEST){
 		if (message.getType() >= TYPE_AUTOAWAY){
-			qDebug("Request :-)");
 			Message m;
 
 			m.fromMessage(message);
@@ -426,59 +402,11 @@ void Client::messageArrived(Message message){
 		emit notifyMessage(message);
 }
 
-void Client::statusChanged(UIN uin, PresenceStatus status){
-	if (status == STATUS_DND || status == STATUS_AWAY ||
-			status == STATUS_NA || status == STATUS_OCUPPIED){
-		if (m_type == AIM){
-			// Request away message
-			FLAP f(0x02, m_parser->getNextSeqNumber(), 0);
-			CliReqUserInfoSNAC *s = new CliReqUserInfoSNAC(uin, AWAY_MESSAGE);
-			f.addSNAC(s);
-			send(f.pack());
-		}
-		else {
-			Message m;
-			m.setFormat(0x0002);
-			m.setUin(uin);
-			switch(status){
-				case STATUS_DND:
-					m.setType(TYPE_AUTODND);
-					break;
-				default:
-				case STATUS_AWAY:
-					m.setType(TYPE_AUTOAWAY);
-					break;
-				case STATUS_NA:
-					m.setType(TYPE_AUTONA);
-					break;
-				case STATUS_OCUPPIED:
-					m.setType(TYPE_AUTOBUSY);
-					break;
-			}
-			m.setRequest(REQUEST);
-			sendMessage(m);
-		}
-	}
-	emit notifyPresence(uin, status);
-}
-
-void Client::newUin(UIN uin){
-	emit notifyNewUin(uin);
-}
-
-void Client::authReq(UIN uin, QString reason){
-	emit notifyAuthRequest(uin, reason);
-}
-
-void Client::newAwayMessage(UIN uin, QString away) {
-	emit notifyAwayMessage(uin, away);
-}
-
 void Client::newTypingEvent(UIN uin, IsTypingType type) {
 	emit notifyTypingEvent(uin, type);
 }
 
-Roster& Client::getRoster(){
+Roster* Client::getRoster(){
 	return m_roster;
 }
 
@@ -492,7 +420,7 @@ Capabilities& Client::getCapabilities(){
 	
 void Client::addConnectionListener(ConnectionListener *cl) {
 	QObject::connect(this, SIGNAL(notifyConnect()), cl, SLOT(connectSlot()));
-	QObject::connect(this, SIGNAL(notifyDisconnect()), cl, SLOT(disconnectSlot()));
+	QObject::connect(this, SIGNAL(notifyDisconnect(OscarConnectionResult)), cl, SLOT(disconnectSlot(OscarConnectionResult))); // if we stopped...
 }
 
 void Client::delConnectionListener(ConnectionListener *cl) {
@@ -500,8 +428,13 @@ void Client::delConnectionListener(ConnectionListener *cl) {
 }
 
 void Client::addRosterListener(RosterListener *rl) {
-	QObject::connect(this, SIGNAL(notifyNewContact(Contact *)), rl, SLOT(onNewContactSlot(Contact *)));
-	QObject::connect(this, SIGNAL(notifyAuthRequest(UIN, QString)), rl, SLOT(onAuthRequestSlot(UIN, QString)));
+	QObject::connect(m_roster, SIGNAL(contactAdded(Contact)), rl, SLOT(onAddContact(Contact)));
+	QObject::connect(m_roster, SIGNAL(contactUpdated(Contact)), rl, SLOT(onUpdateContact(Contact)));
+	QObject::connect(m_roster, SIGNAL(contactDeleted(UIN)), rl, SLOT(onDelContact(UIN)));
+	QObject::connect(m_roster, SIGNAL(groupAdded(QString)), rl, SLOT(onAddGroup(QString)));
+	QObject::connect(m_roster, SIGNAL(groupUpdated(QString,QString)), rl, SLOT(onUpdateGroup(QString,QString)));
+	QObject::connect(m_roster, SIGNAL(groupDeleted(QString)), rl, SLOT(onDelGroup(QString)));
+	QObject::connect(m_rp, SIGNAL(notifyAuthRequest(UIN, QString)), rl, SLOT(onAuthRequest(UIN, QString)));
 }
 
 void Client::delRosterListener(RosterListener *rl) {
@@ -509,7 +442,7 @@ void Client::delRosterListener(RosterListener *rl) {
 }
 
 void Client::addMessageListener(MessageListener *ml) {
-	QObject::connect(this, SIGNAL(notifyMessage(Message)), ml, SLOT(incomingSlot(Message)));
+	QObject::connect(this, SIGNAL(notifyMessage(Message)), ml, SLOT(incomingMessage(Message)));
 }
 
 void Client::delMessageListener(MessageListener *ml) {
@@ -517,24 +450,16 @@ void Client::delMessageListener(MessageListener *ml) {
 }
 
 void Client::addPresenceListener(PresenceListener *pl) {
-	QObject::connect(this, SIGNAL(notifyPresence(UIN, PresenceStatus)), pl, SLOT(presenceChangedSlot(UIN, PresenceStatus)));
-	QObject::connect(this, SIGNAL(notifyAwayMessage(UIN, QString)), pl, SLOT(awayMessageSlot(UIN, QString)));
+	QObject::connect(m_pp, SIGNAL(notifyPresence(UIN, PresenceStatus)), pl, SLOT(presenceChanged(UIN, PresenceStatus)));
+	QObject::connect(m_pp, SIGNAL(notifyAwayMessage(UIN, QString)), pl, SLOT(awayMessage(UIN, QString)));
 }
 
 void Client::delPresenceListener(PresenceListener *pl) {
 	QObject::disconnect(this, 0, pl, 0);
 }
 
-void Client::addUINRegistrationListener(UINRegistrationListener *ul) {
-	QObject::connect(this, SIGNAL(notifyNewUin(UIN)), ul, SLOT(newUinSlot(UIN)));
-}
-
-void Client::delUINRegistrationListener(UINRegistrationListener *ul) {
-	QObject::disconnect(this, 0, ul, 0);
-}
-
 void Client::addIsTypingListener(IsTypingListener *tl) {
-	QObject::connect(this, SIGNAL(notifyTypingEvent(UIN, IsTypingType)), tl, SLOT(isTypingEventSlot(UIN, IsTypingType)));
+	QObject::connect(this, SIGNAL(notifyTypingEvent(UIN, IsTypingType)), tl, SLOT(isTypingEvent(UIN, IsTypingType)));
 }
 
 void Client::delIsTypingListener(IsTypingListener *tl) {

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,6 +24,7 @@
 
 #include <qstring.h>
 #include "liboscar.h"
+#include "uin.h"
 
 namespace liboscar {
 
@@ -49,16 +50,20 @@ public:
 	bool getProxyUsed();
 
 	void setProxyIP(DWord i);
-	DWord getProxyIP();
+	void setProxyIP(QString i);
+	QString getProxyIP();
 
 	void setClientIP(DWord i);
-	DWord getClientIP();
+	void setClientIP(QString i);
+	QString getClientIP();
 
 	void setExternalIP(DWord i);
-	DWord getExternalIP();
+	void setExternalIP(QString i);
+	QString getExternalIP();
 
 	void setListeningPort(QString p);
-	QString getListeningPort();
+	void setListeningPort(int p);
+	unsigned int getListeningPort();
 
 	void setMultiple(bool m);
 	bool getMultiple();
@@ -73,6 +78,7 @@ public:
 	QString getFileName();
 
 private:
+
 	QString m_msg;
 	QString m_loc;
 	QString m_enc;
@@ -80,10 +86,10 @@ private:
 
 	bool m_proxyused;
 
-	DWord m_clientip;
-	DWord m_proxyip;
-	DWord m_externalip;
-	QString m_listenport;
+	QString m_clientip;
+	QString m_proxyip;
+	QString m_externalip;
+	unsigned int m_listenport;
 
 	bool m_mul;
 

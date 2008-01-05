@@ -232,36 +232,6 @@ CliSendMsgSNAC::CliSendMsgSNAC(Message message)
 	: SNAC_ICBM(ICBM_CLI_SENDMSG, false) {
 
 	m_data << message.pack();
-/*
-	UnformattedTLV *tlv;
-	UnformattedTLV *tlvm;
-	
-	// FIXME: message types (make message class?)
-	m_data << (DWord) 0x67c31501;
-	m_data << (DWord) 0x3d3a3721;
-
-	m_data << (Word) 0x0001; // Type-1
-	uin.appendUin(m_data);
-
-	tlvm = new UnformattedTLV(TLV_TYPE_PASSWORD);
-
-	tlv = new UnformattedTLV(TLV_TYPE_CAPABILITIES2);
-	tlv->data() << (Word) 0x0106;
-
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
-	tlv = new UnformattedTLV(TLV_TYPE_MESSAGE);
-	tlv->data() << (Word) 0x0000; // ASCII
-	tlv->data() << (Word) 0x0000; // Unknown
-	tlv->data() << message;
-
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
-	addTLV(tlvm);
-	tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
-	addTLV(tlv); */
 }
 
 CliSendMsgSNAC::~CliSendMsgSNAC() { }
