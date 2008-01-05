@@ -33,7 +33,7 @@ SET(liboscar_SRCS
 	oftparser.cpp
 	offlinemessagesprocess.cpp
 	oscarconnectionresult.cpp
-	parserbase.cpp
+	oscarparser.cpp
 	parser.cpp
 	passwordtlv.cpp
 	presencelistener.cpp
@@ -92,7 +92,7 @@ SET(liboscar_HDRS
 	servicesetupprocess.h
 	offlinemessagesprocess.h
 	oscarconnectionresult.h
-	parserbase.h 
+	oscarparser.h 
 	parser.h 
 	presencelistener.h 
 	presenceprocess.h 
