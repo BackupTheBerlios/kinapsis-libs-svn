@@ -39,7 +39,6 @@ void LoginSt2Process::setCookie(QByteArray cookie){
 //
 
 void LoginSt2Process::recvHello() {
-	qDebug("recvHello");
 	FLAP f(0x01, Connection::getNextSeqNumber(), 0);
 	f.data() << (DWord) 0x00000001;
 	UnformattedTLV* tlv = new UnformattedTLV(TLV_TYPE_COOKIE);

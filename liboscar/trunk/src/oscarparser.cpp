@@ -114,7 +114,6 @@ void OscarParser::parseCh1(Buffer& buf){
 		return ;
 	}
 
-	qDebug("emit hello");
 	emit recvHello();
 
 }

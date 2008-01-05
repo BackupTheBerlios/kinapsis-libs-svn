@@ -67,7 +67,6 @@ void Connection::send(Buffer &b){
 		fprintf(stderr, "\n");
 //#endif
 	}
-	qDebug("end send: ");
 }
 
 void Connection::disconnect(){

@@ -51,7 +51,6 @@ void Service::send(Buffer& b) {
 }
 
 void Service::run(){
-	qDebug("%d", QThread::currentThreadId());
 
 	this->create(); // this MUST create m_parser
 	this->registerMeta(); 
