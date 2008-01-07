@@ -36,12 +36,17 @@ public:
 
 	virtual ~OFTParser();
 
+	void setRaw(bool);
+
 public slots:
 	void parse();
 
 signals:
 	void headerArrived(OFTHeader);
+	void rawData(Buffer);
 
+private:
+	bool m_raw;
 };
 
 }
