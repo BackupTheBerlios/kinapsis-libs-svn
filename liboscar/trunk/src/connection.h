@@ -50,6 +50,8 @@ public:
 
 	void disconnect();
 
+	void changeParser(Parser* nparser);
+
 public slots:
 	void handleError(QAbstractSocket::SocketError);
 	void handleConnect();

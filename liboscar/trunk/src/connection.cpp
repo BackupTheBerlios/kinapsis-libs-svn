@@ -83,6 +83,12 @@ Word Connection::getNextSeqNumber(){
 	return m_seq;
 }
 
+void Connection::changeParser(Parser* nparser){
+	QObject::disconnect(this, 0, m_parser, 0);
+	m_parser = nparser;
+	QObject::connect(this, SIGNAL(dataReceived()), m_parser, SLOT(parse()));
+}
+
 // 
 // SLOTS
 //

@@ -59,8 +59,10 @@ void Service::run(){
 	this->create(); // this MUST create m_parser
 	this->registerMeta(); 
 	
-	if (!m_parser)
+	if (!m_parser){
+		qDebug("[Service [id=%d]]: trying to run without parser. Ending service.", m_id);
 		this->exit(); // parser must be created in create()
+	}
 
 	if (!m_conn)
 		m_conn = new Connection(m_server, m_port, m_parser);
