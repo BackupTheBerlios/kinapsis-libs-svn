@@ -21,7 +21,7 @@
 
 #include "filereceiveservice.h"
 #include "oftparser.h"
-#include "proxyparser.h"
+#include "oftproxyparser.h"
 
 namespace liboscar {
 
@@ -36,7 +36,7 @@ void FileReceiveService::registerMeta() { }
 void FileReceiveService::create() {
 	if (!m_parser){ 
 		if (m_proxy)
-			m_parser = new ProxyParser();
+			m_parser = new OFTProxyParser();
 		else
 			m_parser = new OFTParser();
 	}
