@@ -156,7 +156,7 @@ void Client::run(){
 	m_ls = new LoginService(m_uin, m_password);	
 
 	QObject::connect(m_ls, SIGNAL(BOSInfo(QString, QString, QByteArray)), this, SLOT(getBOSInfo(QString,QString,QByteArray)));
-	QObject::connect(m_ls, SIGNAL(serviceEnded(ConnectionResult)), this, SLOT(loginServiceEnded(ConnectionResult)));
+	QObject::connect(m_ls, SIGNAL(serviceEnded(unsigned int, ConnectionResult)), this, SLOT(loginServiceEnded(unsigned int, ConnectionResult)));
 
 	if (m_type == ICQ)
 		m_ls->connect(ICQ_LOGIN_SERVER, ICQ_LOGIN_PORT);
@@ -307,13 +307,13 @@ void Client::BOSConnected() {
 
 void Client::BOSDisconnected() {
 	m_connected=false;
-	emit notifyDisconnect(OscarConnectionResult(true, CONN_NO_ERROR));
+	emit notifyDisconnect(OscarConnectionResult(CONN_NO_ERROR, NO_ERROR));
 	this->exit();
 }
 
 void Client::BOSError(SocketError e) {
 	m_connected=false;
-	emit notifyDisconnect(OscarConnectionResult(false, CONN_ERR_CONN_FAILED));
+	emit notifyDisconnect(OscarConnectionResult(CONN_ERR_CONN_FAILED, NO_ERROR));
 	this->exit();
 }
 
@@ -331,15 +331,18 @@ void Client::getBOSInfo(QString server, QString port, QByteArray cookie){
 
 }
 
-void Client::loginServiceEnded(ConnectionResult r) {
+void Client::loginServiceEnded(unsigned int id, ConnectionResult r) {
 	if (!m_logged){ // Something happened to LoginService :-(
-		emit notifyDisconnect(OscarConnectionResult(false, CONN_ERR_LOGIN_CONN_FAILED));
+		emit notifyDisconnect(OscarConnectionResult((r.errorReason() == UNEXPECTED_DISC) ? CONN_ERR_UNEXPECTED : 
+					CONN_ERR_LOGIN_CONN_FAILED, r.getUnexpectedDisconnectReason()));
 		this->exit();
 	}
 }
 
 void Client::unexpectedDisconnect(QString reason, DisconnectReason error){
 	qDebug("Unexpected disconnect from server");
+
+	m_reason = error;
 
 	switch (error) {
 		case MULTIPLE_LOGINS:

@@ -37,6 +37,7 @@ void LoginService::registerMeta() {
 
 void LoginService::unexpectedDisconnect(QString reason, DisconnectReason error){
 	qDebug("Unexpected disconnect from server");
+	m_reason = error;
 
 	switch (error) {
 		case MULTIPLE_LOGINS:

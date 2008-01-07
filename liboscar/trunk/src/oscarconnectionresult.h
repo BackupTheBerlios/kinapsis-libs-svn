@@ -30,7 +30,7 @@ class OscarConnectionResult {
 
 public:
 	OscarConnectionResult();
-	OscarConnectionResult(bool succesful, ConnectionError error);
+	OscarConnectionResult(ConnectionError error, DisconnectReason rea);
 	virtual ~OscarConnectionResult();
 
 	void fromOCR(OscarConnectionResult cr);
@@ -38,9 +38,11 @@ public:
 	bool successful();
 	ConnectionError errorReason();
 
+	DisconnectReason getUnexpectedDisconnectReason();
+
 private:
-	bool m_successful;
 	ConnectionError m_error;
+	DisconnectReason m_reason;
 };
 
 }

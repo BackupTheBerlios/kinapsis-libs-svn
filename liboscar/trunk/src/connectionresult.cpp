@@ -24,31 +24,32 @@
 namespace liboscar {
 
 ConnectionResult::ConnectionResult(){
-	ConnectionResult(false, UNKNOWN_ERROR);
+	ConnectionResult(UNKNOWN_ERROR, NO_ERROR);
 }
 
-ConnectionResult::ConnectionResult(bool successful, SocketError error){
-	m_successful = successful;
+ConnectionResult::ConnectionResult(SocketError error, DisconnectReason reason){
 	m_error = error;
+	m_reason = reason;
 }
 
 ConnectionResult::~ConnectionResult(){
 }
 
 void ConnectionResult::fromCR(ConnectionResult cr){
-	m_successful = cr.successful();
 	m_error = cr.errorReason();
+	m_reason = cr.getUnexpectedDisconnectReason();
 }
 
 bool ConnectionResult::successful(){
-	return m_successful;
+	return (m_error == SOCK_NO_ERROR);
 }
 
 SocketError ConnectionResult::errorReason(){
-	if (!m_successful)
-		return m_error;
-	else
-		return SOCK_NO_ERROR;
+	return m_error;
+}
+
+DisconnectReason ConnectionResult::getUnexpectedDisconnectReason(){
+	return m_reason;
 }
 
 }

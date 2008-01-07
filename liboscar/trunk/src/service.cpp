@@ -23,13 +23,17 @@
 
 namespace liboscar {
 
+	unsigned int Service::m_seq = 0;
+
 Service::Service() {
 	m_conn = 0;
 	m_parser = 0;
 	m_port = -1;
 	m_server = "";
-	m_exitok = false;
 	m_err = UNKNOWN_ERROR;
+	m_reason = NO_ERROR;
+
+	m_id = m_seq++;
 
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(finishedSlot()));
 
@@ -70,6 +74,10 @@ void Service::run(){
 	this->exec(); // event-driven
 }
 
+unsigned int Service::getId(){
+	return m_id;
+}
+
 //
 // SLOTS
 //
@@ -79,19 +87,20 @@ void Service::handleConnect() {
 }
 
 void Service::handleDisconnect(){
-	m_exitok = true;
-	m_err = SOCK_NO_ERROR;
+	if (m_reason != NO_ERROR)
+		m_err = UNEXPECTED_DISC;
+	else
+		m_err = SOCK_NO_ERROR;
 	this->exit();
 }
 
 void Service::handleConnError(SocketError e) {
-	m_exitok = false;
 	m_err = e;
 	this->exit();
 }
 
 void Service::finishedSlot() {
-	emit serviceEnded(ConnectionResult(m_exitok, m_err));
+	emit serviceEnded(m_id, ConnectionResult(m_err, m_reason));
 }
 
 }

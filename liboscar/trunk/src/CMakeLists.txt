@@ -20,6 +20,7 @@ SET(liboscar_SRCS
 	errortlv.cpp
 	families.cpp
 	flap.cpp
+	ftcaptlv.cpp
 	ftdata.cpp
 	ftstatus.cpp
 	filetransferprocess.cpp
@@ -30,7 +31,10 @@ SET(liboscar_SRCS
 	loginst2process.cpp
 	message.cpp
 	messagelistener.cpp
+	oftheader.cpp
 	oftparser.cpp
+	oftproxycommand.cpp
+	oftproxyparser.cpp
 	offlinemessagesprocess.cpp
 	oscarconnectionresult.cpp
 	oscarparser.cpp
@@ -38,7 +42,6 @@ SET(liboscar_SRCS
 	passwordtlv.cpp
 	presencelistener.cpp
 	presenceprocess.cpp
-	proxyparser.cpp
 	#	process.cpp
 	roster.cpp
 	rosterlistener.cpp

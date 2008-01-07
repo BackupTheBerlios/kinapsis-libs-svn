@@ -50,6 +50,7 @@ public:
 	Buffer& operator>>(QWord &);
 	void readString(QString &);
 	void readString(QString &, Word);
+	void readArray(QByteArray &, Word);
 
 	void prepend(Byte);
 	void prepend(Word);
@@ -60,7 +61,7 @@ public:
 	void gotoBegin();
 	void gotoEnd();
 	void setPosition(unsigned int pos);
-	void advance(int pos);
+	void advance(int npos);
 
 	void setLength(unsigned int length);
 

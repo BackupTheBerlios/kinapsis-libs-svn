@@ -129,7 +129,7 @@ public slots:
 	void BOSError(SocketError);
 
 	// From loginservice
-	void loginServiceEnded(ConnectionResult);
+	void loginServiceEnded(unsigned int, ConnectionResult);
 
 	// From rosterprocess
 	void finishedConnection();

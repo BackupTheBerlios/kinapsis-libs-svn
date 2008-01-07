@@ -42,8 +42,10 @@ public:
 
 	void send(Buffer& b);
 
+	unsigned int getId();
+
 signals:
-	void serviceEnded(ConnectionResult);
+	void serviceEnded(unsigned int, ConnectionResult);
 
 public slots:
 	void handleConnect();
@@ -62,6 +64,8 @@ protected:
 	QString m_server;
 	int m_port;
 
+	DisconnectReason m_reason;
+
 private slots:
 	void finishedSlot();
 
@@ -69,8 +73,11 @@ private:
 
 	virtual void registerMeta() = 0;
 
-	bool m_exitok;
 	SocketError m_err;
+
+	unsigned int m_id;
+
+	static unsigned int m_seq;
 };
 
 }

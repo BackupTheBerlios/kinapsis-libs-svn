@@ -34,6 +34,7 @@ namespace liboscar {
 	const Word TLV_TYPE_GENERIC = 0x0000;
 
 	const Word TLV_TYPE_UIN = 0x0001;
+	const Word TLV_TYPE_FTCAP = 0x0001;
 	const Word TLV_TYPE_PASSWORD = 0x0002;
 	const Word TLV_TYPE_VERSION = 0x0003;
 	const Word TLV_TYPE_DESCRIPTION = 0x0004;

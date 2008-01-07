@@ -24,31 +24,32 @@
 namespace liboscar {
 
 OscarConnectionResult::OscarConnectionResult(){
-	OscarConnectionResult(true, CONN_ERR_USER_REQUEST);
+	OscarConnectionResult(CONN_NO_ERROR);
 }
-OscarConnectionResult::OscarConnectionResult(bool successful, ConnectionError error){
-	m_successful = successful;
+
+OscarConnectionResult::OscarConnectionResult(ConnectionError error, DisconnectReason rea){
 	m_error = error;
+	m_reason = rea;
 }
 
 OscarConnectionResult::~OscarConnectionResult(){
 }
 
 void OscarConnectionResult::fromOCR(OscarConnectionResult cr){
-	m_successful = cr.successful();
 	m_error = cr.errorReason();
+	m_reason = cr.getUnexpectedDisconnectReason();
 }
 
 bool OscarConnectionResult::successful(){
-	return m_successful;
+	return (m_error == CONN_NO_ERROR);
 }
 
 ConnectionError OscarConnectionResult::errorReason(){
-	if (!m_successful)
-		return m_error;
-	else
-		return (ConnectionError)-1;
+	return m_error;
 }
 
+DisconnectReason OscarConnectionResult::getUnexpectedDisconnectReason(){
+	return m_reason;
+}
 
 }

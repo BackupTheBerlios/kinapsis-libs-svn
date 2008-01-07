@@ -202,6 +202,13 @@ void Buffer::readString(QString &s, Word len){
 	}
 }
 
+void Buffer::readArray(QByteArray &a, Word len){
+	if (m_data.size() >= len){
+		while (len--)
+			a.append(getByte());
+	}
+}
+
 DWord Buffer::getDWord(){
 	DWord dw;
 	Word w1; /* low word */
@@ -349,8 +356,8 @@ void Buffer::setPosition(unsigned int pos){
 	m_it += pos;
 }
 
-void Buffer::advance(int pos){
-	m_it += pos;
+void Buffer::advance(int npos){
+	m_it += npos;
 }
 
 void Buffer::setLength(unsigned int length){

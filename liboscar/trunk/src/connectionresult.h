@@ -30,7 +30,7 @@ class ConnectionResult {
 
 public:
 	ConnectionResult();
-	ConnectionResult(bool succesful, SocketError error);
+	ConnectionResult(SocketError error, DisconnectReason reason);
 	virtual ~ConnectionResult();
 
 	void fromCR(ConnectionResult cr);
@@ -38,9 +38,11 @@ public:
 	bool successful();
 	SocketError errorReason();
 
+	DisconnectReason getUnexpectedDisconnectReason();
+
 private:
-	bool m_successful;
 	SocketError m_error;
+	DisconnectReason m_reason;
 };
 
 }
