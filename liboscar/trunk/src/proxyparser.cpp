@@ -19,19 +19,19 @@
  ***************************************************************************/
 
 
-#include "proxyparser.h"
+#include "oftproxyparser.h"
 
 namespace liboscar {
 
-ProxyParser::ProxyParser() { }
+OFTProxyParser::OFTProxyParser() { }
 
-ProxyParser::~ProxyParser() { }
+OFTProxyParser::~OFTProxyParser() { }
 
-void ProxyParser::parse() {
-	// Parses an Proxy command
-
-}
+void OFTProxyParser::parse() {
+	// Parses an OFTProxy command
 
 }
 
-#include "proxyparser.moc"
+}
+
+#include "oftproxyparser.moc"

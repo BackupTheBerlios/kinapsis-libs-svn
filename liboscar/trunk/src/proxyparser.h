@@ -19,21 +19,21 @@
  ***************************************************************************/
 
 
-#ifndef _PROXYPARSER_H_
-#define _PROXYPARSER_H_
+#ifndef _OFTPROXYPARSER_H_
+#define _OFTPROXYPARSER_H_
 
 #include "parser.h"
 #include "service.h"
 
 namespace liboscar {
 
-class ProxyParser : public Parser {
+class OFTProxyParser : public Parser {
 Q_OBJECT
 
 public:
-	ProxyParser();
+	OFTProxyParser();
 
-	virtual ~ProxyParser();
+	virtual ~OFTProxyParser();
 
 public slots:
 	void parse();
@@ -42,4 +42,4 @@ public slots:
 
 }
 
-#endif // _PROXYPARSER_H_
+#endif // _OFTPROXYPARSER_H_
