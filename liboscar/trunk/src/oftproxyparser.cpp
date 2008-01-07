@@ -29,6 +29,62 @@ OFTProxyParser::~OFTProxyParser() { }
 
 void OFTProxyParser::parse() {
 	// Parses an OFTProxy command
+	// everybody's in the place? let's go
+	
+	Word len, w;
+	Buffer b;
+
+	while (m_buf.len()){
+		m_buf.gotoBegin();
+
+		m_buf >> len;
+
+		/* Copy command to local buffer */
+		b.wipe();
+		b << m_buf;
+
+		b.setLength(len);
+		b.setPosition(2);
+		b.removeFromBegin();
+		b.gotoBegin();
+	
+		/* remove the command from the parser buffer */
+		m_buf.gotoBegin();
+
+		b >> w;
+		if (w != 0x044a)
+			qDebug("[OFTProxyParser]: strange, the version is not 0x044a: %02x", w);
+
+		Byte cmd;
+		b >> cmd;
+
+		OFTProxyError operr;
+		OFTProxyAck opack;
+		OFTProxyReady oprea;
+
+		switch (cmd){
+			case OPID_ERROR:
+				operr.parse(b);
+				emit proxyError(operr);
+				break;
+			case OPID_ACK:
+				opack.parse(b);
+				emit proxyAck(opack);
+				break;
+			case OPID_READY:
+				oprea.parse(b);
+				emit proxyReady(oprea);
+				break;
+			case OPID_INITSEND:
+			case OPID_INITRECV:
+				qDebug("[OFTProxyParser]: strange, got an client proxy command from the server: %02x", cmd);
+				break;
+			default:
+				qDebug("[OFTProxyParser]: got an unknown proxy command: %02x", cmd);
+				return;
+		}
+
+	}
 
 }
 

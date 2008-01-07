@@ -24,6 +24,7 @@
 
 #include "parser.h"
 #include "service.h"
+#include "oftproxycommand.h"
 
 namespace liboscar {
 
@@ -38,6 +39,10 @@ public:
 public slots:
 	void parse();
 
+signals:
+	void proxyError(OFTProxyError);
+	void proxyAck(OFTProxyAck);
+	void proxyReady(OFTProxyReady);
 };
 
 }
