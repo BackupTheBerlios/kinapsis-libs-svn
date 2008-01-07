@@ -20,6 +20,7 @@
 
 
 #include "oftparser.h"
+#include "qtextcodec.h"
 
 namespace liboscar {
 
@@ -30,8 +31,12 @@ OFTParser::~OFTParser() { }
 void OFTParser::parse() {
 	// Parses an OFT command
 
-	DWord dw;
+	OFTHeader head;
+	Byte b;
 	Word w, len;
+	DWord dw;
+	QWord qw;
+
 
 	m_buf >> dw;
 
@@ -41,6 +46,87 @@ void OFTParser::parse() {
 
 	len -= 6;
 
+	m_buf >> w; // the type of this header
+	head.setType(w);
+
+	m_buf >> qw; // cookie 
+	head.setCookie(qw);
+
+	m_buf.advance(4); //encrypt & compress
+
+	m_buf >> w; //File total
+	head.setTotalFiles(w);
+
+	m_buf >> w; //File left
+	head.setFilesLeft(w);
+
+	m_buf >> w; //Parts total
+	head.setTotalParts(w);
+
+	m_buf >> w; //Parts left
+	head.setPartsLeft(w);
+
+	m_buf >> dw; // total Size
+	head.setTotalSize(dw);
+
+	m_buf >> dw; // Size left
+	head.setSizeLeft(dw);
+
+	m_buf.advance(4); //mod time
+
+	m_buf >> dw; //checksum
+	head.setChecksum(dw);
+
+	m_buf.advance(16); // another ckecksum, fork size, creation time ...
+
+	m_buf >> dw; // bytes recv
+	head.setBytesReceived(dw);
+
+	m_buf >> dw; // recv chk
+	head.setReceivedChk(dw);
+
+	m_buf.advance(32); // IDString, unknown meaning
+
+	m_buf >> b; head.setFlags(b); //flags
+
+	m_buf.advance(87); // list offset, dummy block, and macfileinfo
+
+	m_buf >> w; // encoding
+	head.setEncoding(w);
+
+	m_buf.advance(2); // subencoding (always 0x0000)
+
+	int l = len - 192; // lenght of the filename. The total lenght minus 192 bytes we readed
+	QByteArray fname;
+
+	m_buf.readArray(fname, l); //raw data of the filename
+
+	while (fname.endsWith((char) 0x00)) // remove null bytes
+		fname.chop(1);
+
+	QTextCodec *c;
+
+	switch(head.getEncoding()) {
+		case ASCII:
+			c = QTextCodec::codecForName("ASCII");
+			break;
+		case UCS2BE:
+			c = QTextCodec::codecForName("UTF-16BE");
+			break;
+		case LOCAL:
+			c = QTextCodec::codecForName("ISO-8859-1");
+			break;
+		default:
+			qDebug("Wrong enconding on OFT header");
+			break;
+	}
+
+	if (c)
+		head.setFilename(c->toUnicode(fname));
+	else
+		head.setFilename(fname); // who cares? ...
+
+	emit headerArrived(head);
 }
 
 }

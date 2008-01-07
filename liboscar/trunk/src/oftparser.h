@@ -24,6 +24,7 @@
 
 #include "parser.h"
 #include "service.h"
+#include "oftheader.h"
 
 namespace liboscar {
 
@@ -37,6 +38,9 @@ public:
 
 public slots:
 	void parse();
+
+signals:
+	void headerArrived(OFTHeader);
 
 };
 
