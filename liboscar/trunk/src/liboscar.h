@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005 by Luis Cidoncha                                   *
+ *   Copyright (C) 2005-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -31,11 +31,6 @@
 #include <qmetatype.h>
 
 namespace liboscar {
-
-	/*typedef unsigned char Byte;
-	typedef unsigned short int Word;
-	typedef unsigned int DWord;
-	typedef unsigned long long QWord;*/
 
 	typedef quint8 Byte;
 	typedef quint16 Word;
