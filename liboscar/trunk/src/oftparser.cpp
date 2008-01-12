@@ -78,7 +78,8 @@ void OFTParser::parse() {
 		m_buf >> dw; // Size left
 		head.setSizeLeft(dw);
 	
-		m_buf.advance(4); //mod time
+		m_buf >> dw; //mod time 
+		head.setModTime(dw);
 	
 		m_buf >> dw; //checksum
 		head.setChecksum(dw);
@@ -91,7 +92,7 @@ void OFTParser::parse() {
 		m_buf >> dw; // recv chk
 		head.setReceivedChk(dw);
 	
-		m_buf.advance(32); // IDString, unknown meaning
+		m_buf.advance(32); // IDString
 	
 		m_buf >> b; head.setFlags(b); //flags
 	

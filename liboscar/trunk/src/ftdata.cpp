@@ -149,4 +149,12 @@ QString FTData::getFileName() {
 	return m_filename;
 }
 
+void FTData::setCookie(QWord c){
+	m_cookie = c;
+}
+
+QWord FTData::getCookie(){
+	return m_cookie;
+}
+
 }

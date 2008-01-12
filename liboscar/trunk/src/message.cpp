@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -129,6 +129,14 @@ void Message::setTime(QDateTime time){
 	m_time = time;
 }
 
+Word Message::getReqNumber(){
+	return m_rnum;
+}
+
+void Message::setReqNumber(Word w){
+	m_rnum = w;
+}
+
 QWord Message::getCookie(){
 	return m_cookie;
 }
@@ -216,6 +224,7 @@ Buffer& Message::pack() {
 	switch (m_format) {
 		default:
 		case 0x0001:
+			// Channel-1 message
 			tlvm = new UnformattedTLV(TLV_TYPE_PASSWORD);
 		
 			tlv = new UnformattedTLV(TLV_TYPE_CAPABILITIES2);
@@ -244,9 +253,11 @@ Buffer& Message::pack() {
 			delete tlvm;
 			break;
 		case 0x0002:
+			// Channel-2 message
 			packCh2();
 			break;
 		case 0x0004:
+			// Channel-4 message
 			tlvm = new UnformattedTLV(TLV_TYPE_SERVER);
 			tlvm->data().setLittleEndian();
 			tlvm->data() << (DWord) m_uin.getId().toUInt(); // XXX: port
@@ -260,10 +271,12 @@ Buffer& Message::pack() {
 			break;
 	}
 
-	// Request offline storage TODO: we don't want to store it ever
-	tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
-	m_data << tlv->pack(); 
-	delete tlv;
+	if (m_type != TYPE_FILEREQ){
+		// Request offline storage TODO: we don't want to store it ever
+		tlv = new UnformattedTLV(TLV_TYPE_COOKIE);
+		m_data << tlv->pack(); 
+		delete tlv;
+	}
 
 	return m_data;
 }
@@ -276,76 +289,118 @@ void Message::packCh2(){
 	UnformattedTLV* tlvm;
 	UnformattedTLV* tlv;
 
-	tlvm = new UnformattedTLV(0x0005);
+	tlvm = new UnformattedTLV(0x0005); // This TLV contains all the stuff
 
 	tlvm->data() << (Word) m_ch2req;
 	tlvm->data() << (QWord) m_cookie;
 
-	// FIXME: wired capability. Seems to be the one all people use. why?
-	tlvm->data() << (DWord) 0x09461349;
+	// FIXME: FT cap. add it to the capabilities
+	// XXX: what happens if it's not a FT message?
+	tlvm->data() << (DWord) 0x09461343;
 	tlvm->data() << (DWord) 0x4c7f11d1;
 	tlvm->data() << (DWord) 0x82224445;
 	tlvm->data() << (DWord) 0x53540000;
 
-	tlv = new UnformattedTLV(0x0003);
-	tlv->data() << (DWord) 0x00000000; // FIXME: internal IP. Add it
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
-	tlv = new UnformattedTLV(0x0005);
-	tlv->data() << (Word) 0x0000; // FIXME: listen port. Add it
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
-	tlv = new UnformattedTLV(0x000a);
-	tlv->data() << (Word) 0x0001;
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
-	tlv = new UnformattedTLV(0x000b);
-	tlv->data() << (Word) 0x0000;
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
-	tlv = new UnformattedTLV(0x000f);
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
-	// Message stuff
-	tlv = new UnformattedTLV(0x2711);
-	tlv->data().setLittleEndian();
-	tlv->data() << (Word) 0x001b; // 27
-	tlv->data() << (Word) 0x0008;
-
-	for (unsigned int i = 0; i < 16; i++)
-		tlv->data() << (Byte) 0x00; //plugin
-
-	tlv->data() << (Word) 0x0000;
-	tlv->data() << (DWord) 0x00000003; //capabilities: as seen in doc
-	tlv->data() << (Byte) 0x00;
-
-	tlv->data() << m_ch2cookie;
-
-	tlv->data() << (Word) 0x000e; //len: 14
-	tlv->data() << m_ch2cookie; // again :-?
-	for (unsigned int i = 0; i < 12; i++)
-		tlv->data() << (Byte) 0x00; // I hate the OSCAR guys
-
-	// Let's go for the fucking real message
+	if (m_ch2req == REQUEST) { // Requests have a looot of info
+		tlv = new UnformattedTLV(0x000a);
+		tlv->data() << (Word) m_rnum;
+		tlvm->data() << tlv->pack();
+		delete tlv;
 	
-	tlv->data() << typeToByte(m_type);
-	tlv->data() << flagsToByte(m_flags);
-
-	tlv->data() << (Word) 0x0000; // status
-	tlv->data() << (Word) 0x0000; // prio
-
-	tlv->data() << (Word) (m_msg.length() + 1);
-	tlv->data() << m_msg;
-	tlv->data() << (Byte) 0x00; // the string must be null terminated
-
-	tlvm->data() << tlv->pack();
-	delete tlv;
-
+		tlv = new UnformattedTLV(0x000f);
+		tlvm->data() << tlv->pack();
+		delete tlv;
+	
+		tlv = new UnformattedTLV(0x0003);
+		tlv->data() << m_ftd.getClientIP(); // internal IP
+		tlvm->data() << tlv->pack();
+		delete tlv;
+	
+		tlv = new UnformattedTLV(0x0005);
+		tlv->data() << (Word) m_ftd.getListeningPort(); // listen port
+		tlvm->data() << tlv->pack();
+		delete tlv;
+	
+		tlv = new UnformattedTLV(0x0017);
+		tlv->data() << (~m_ftd.getListeningPort()); // port check
+		tlvm->data() << tlv->pack();
+		delete tlv;
+	
+		if (m_ftd.getProxyUsed()) {
+			tlv = new UnformattedTLV(0x0010); // proxy flag
+			tlvm->data() << tlv->pack();
+			delete tlv;
+	
+			tlv = new UnformattedTLV(0x0002);
+			tlv->data() << m_ftd.getProxyIP(); // proxy ip
+			tlvm->data() << tlv->pack();
+			delete tlv;
+	
+			tlv = new UnformattedTLV(0x0016);
+			tlv->data() << (DWord) ~(m_ftd.getProxyIP().toLong()); // proxy ip check
+			tlvm->data() << tlv->pack();
+			delete tlv;
+	
+		}
+		tlv = new UnformattedTLV(0x000b);
+		tlv->data() << (Word) 0x0000;
+		tlvm->data() << tlv->pack();
+		delete tlv;
+	
+		// Message stuff
+		tlv = new UnformattedTLV(0x2711);
+		if (m_type == TYPE_FILEREQ) {
+			tlv->data() << (Word) (m_ftd.getFileCount() > 1 ? 0x0002 : 0x0001);
+			tlv->data() << m_ftd.getFileCount();
+			tlv->data() << m_ftd.getFileSize();
+			// FIXME: check encoding ...
+			tlv->data() << m_ftd.getFileName();
+			tlv->data() << (Byte) 0x00; // NULL-terminated strings
+	
+			tlvm->data() << tlv->pack();
+			delete tlv;
+	
+			tlv = new UnformattedTLV(0x2712); // file encoding stuff FIXME: as above
+			tlv->data() << "us-ascii";
+			tlvm->data() << tlv->pack();
+			delete tlv;
+		}
+		else {
+			tlv->data().setLittleEndian();
+			tlv->data() << (Word) 0x001b; // 27
+			tlv->data() << (Word) 0x0008;
+		
+			for (unsigned int i = 0; i < 16; i++)
+				tlv->data() << (Byte) 0x00; //plugin
+		
+			tlv->data() << (Word) 0x0000;
+			tlv->data() << (DWord) 0x00000003; //capabilities: as seen in doc
+			tlv->data() << (Byte) 0x00;
+		
+			tlv->data() << m_ch2cookie;
+		
+			tlv->data() << (Word) 0x000e; //len: 14
+			tlv->data() << m_ch2cookie; // again :-?
+			for (unsigned int i = 0; i < 12; i++)
+				tlv->data() << (Byte) 0x00; // I hate the OSCAR guys
+		
+			// Let's go for the fucking real message
+			
+			tlv->data() << typeToByte(m_type);
+			tlv->data() << flagsToByte(m_flags);
+		
+			tlv->data() << (Word) 0x0000; // status
+			tlv->data() << (Word) 0x0000; // prio
+		
+			tlv->data() << (Word) (m_msg.length() + 1);
+			tlv->data() << m_msg;
+			tlv->data() << (Byte) 0x00; // the string must be null terminated
+		
+			tlvm->data() << tlv->pack();
+			delete tlv;
+		}
+	}
+	
 	m_data << tlvm->pack();
 	delete tlvm;
 }
@@ -635,6 +690,8 @@ void Message::parse2711file(Buffer& b){
 	Word w;
 	DWord dw;
 	QString s;
+
+	m_ftd.setCookie(m_cookie); // copy the cookie, we'll need it
 
 	b >> w;
 

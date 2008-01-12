@@ -29,17 +29,24 @@
 #include <qstring.h>
 #include <qobject.h>
 #include <qtcpsocket.h>
+#include <qtcpserver.h>
 #include <netdb.h>
 
 namespace liboscar {
 
 	class Buffer;
 
+	typedef enum ConnectionType {
+		CONN_INCOMING,
+		CONN_OUTGOING
+	};
+
 class Connection : public QObject {
 Q_OBJECT
 
 public:
 	Connection(const QString server, int port, Parser* parser);
+	Connection(int port, Parser* parser);
 	virtual ~Connection();
 
 	void connect();
@@ -57,6 +64,7 @@ public slots:
 	void handleConnect();
 	void handleDisconnect();
 	void handleStateChanged(QAbstractSocket::SocketState);
+	void handleNewConn();
 	void read();
 
 signals:
@@ -68,11 +76,16 @@ signals:
 	void connConnected();
 
 private:
+
+	void doSocketConnections();
 	QString m_server;
 	int m_port;
 	bool m_connected;
 
 	QTcpSocket* m_socket;
+	QTcpServer* m_srv;
+
+	ConnectionType m_type;
 
 	Parser* m_parser;
 

@@ -65,6 +65,9 @@ public:
 	QDateTime getTime();
 	void setTime(QDateTime time);
 
+	Word getReqNumber();
+	void setReqNumber(Word);
+
 	void parse(Buffer &b);
 
 	Buffer& pack();
@@ -109,6 +112,7 @@ private:
 
 	Word m_ch2cookie;
 	MessageRequest m_ch2req;
+	Word m_rnum;
 
 	QDateTime m_time;
 

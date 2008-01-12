@@ -48,7 +48,7 @@ signals:
 	void serviceEnded(unsigned int, ConnectionResult);
 
 public slots:
-	void handleConnect();
+	virtual void handleConnect();
 	void handleDisconnect();
 	void handleConnError(SocketError);
 

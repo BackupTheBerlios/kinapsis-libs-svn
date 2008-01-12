@@ -25,14 +25,19 @@
 #include "liboscar.h"
 #include "service.h"
 #include "message.h"
-#include "filereceiveservice.h"
 #include "ftstatus.h"
 #include <qobject.h>
 #include <qmap.h>
 
 namespace liboscar {
 
-	typedef QMap<QWord, FTStatus> FTMap;
+	typedef struct FTMapItem {
+		Service* serv;
+		FTStatus stat;
+	};
+
+	typedef QMap<QWord, FTStatus> UFTMap;
+	typedef QMap<unsigned int, FTMapItem> FTMap;
 
 class FileTransferProcess : public QObject {
 Q_OBJECT
@@ -46,18 +51,28 @@ public:
 public slots:
 	void messageArrived(Message);
 
-	void ftconnEnded(ConnectionResult);
-	void ftconnSuccessful();
-	void ftconnProgress(int);
+	void ftconnProgress(unsigned int,int,int);
+	void fileEnded(unsigned int);
+	void ftconnSuccessful(unsigned int);
+	void proxyAckArrived(unsigned int, QHostAddress, Word);
+	void proxyReadyArrived(unsigned int);
 
+	void handleServiceEnd(unsigned int, ConnectionResult);
 signals:
 	void notifyNewFTRequest(QWord cookie, UIN uin, QString filename);
 
-private:
-	Service* m_parent;
-	FTMap m_transfers;
+	void ftConnected(QWord);
+	void ftProgress(QWord, int, int);
+	void ftEnded(QWord);
 
-	FileReceiveService* m_frs;
+private:
+	void cancelFT(FTStatus);
+	void acceptFT(FTStatus);
+	void startFT(FTStatus);
+	unsigned int addNewReceive(FTStatus);
+	Service* m_parent;
+	UFTMap m_pending; // Not accepted by USER
+	FTMap m_transfers; // running transfers
 };
 
 }

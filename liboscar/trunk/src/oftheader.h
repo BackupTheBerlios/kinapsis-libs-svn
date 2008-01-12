@@ -23,6 +23,7 @@
 #define _OFTHEADER_H_
 
 #include "liboscar.h"
+#include "buffer.h"
 
 namespace liboscar {
 
@@ -47,6 +48,7 @@ public:
 	virtual ~OFTHeader();
 
 	void setType(Word w);
+	void setType(OFTType t);
 	void setCookie(QWord qw);
 	void setTotalFiles(Word w);
 	void setFilesLeft(Word w);
@@ -57,6 +59,7 @@ public:
 	void setChecksum(DWord dw);
 	void setBytesReceived(DWord dw);
 	void setReceivedChk(DWord dw);
+	void setModTime(DWord dw);
 	void setFlags(Byte b);
 	void setEncoding(Word w);
 	void setFilename(QString s);
@@ -76,6 +79,8 @@ public:
 	MessageEncoding getEncoding();
 	QString getFilename();
 
+	Buffer& pack();
+
 private:
 	OFTType m_type;
 	QWord m_cookie;
@@ -87,6 +92,8 @@ private:
 	DWord m_totsize;
 	DWord m_leftsize;
 
+	DWord m_modtime;
+
 	DWord m_chk;
 	DWord m_recvchk;
 	
@@ -96,6 +103,7 @@ private:
 	MessageEncoding m_enc;
 	QString m_fname;
 
+	Buffer m_buf;
 };
 
 

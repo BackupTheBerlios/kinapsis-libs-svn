@@ -32,8 +32,20 @@ Connection::Connection(const QString server, int port, Parser* parser){
 	m_port = port;
 	m_parser = parser;
 	m_socket = new QTcpSocket();
+
+	m_type = CONN_OUTGOING;
+	m_connected = false;
+}
+
+Connection::Connection(int port, Parser* parser){
+	m_server = "";
+	m_port = port;
+	m_parser = parser;
+	m_srv = new QTcpServer();
+
 	QObject::connect(this, SIGNAL(dataReceived()), m_parser, SLOT(parse()));
 
+	m_type = CONN_INCOMING;
 	m_connected = false;
 }
 
@@ -46,13 +58,16 @@ Connection::~Connection() {
 //
 
 void Connection::connect(){
-	QObject::connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleError(QAbstractSocket::SocketError)));
-	QObject::connect(m_socket, SIGNAL(connected()), this, SLOT(handleConnect()));
-	QObject::connect(m_socket, SIGNAL(disconnected()), this, SLOT(handleDisconnect()));
-	QObject::connect(m_socket, SIGNAL(readyRead()), this, SLOT(read()));
-	QObject::connect(m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(handleStateChanged(QAbstractSocket::SocketState)));
-
-	m_socket->connectToHost(m_server, m_port);
+	if (m_type == CONN_INCOMING) {
+		// Incoming connection
+		QObject::connect(m_srv, SIGNAL(newConnection()), this, SLOT(handleNewConn()));
+		m_srv->listen(QHostAddress::Any, m_port);
+	}
+	else {
+		// Outgoing connection
+		this->doSocketConnections();
+		m_socket->connectToHost(m_server, m_port);
+	}
 }
 
 void Connection::send(Buffer &b){
@@ -77,6 +92,14 @@ void Connection::disconnect(){
 //
 // OTHERS
 //
+
+void Connection::doSocketConnections(){
+	QObject::connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleError(QAbstractSocket::SocketError)));
+	QObject::connect(m_socket, SIGNAL(connected()), this, SLOT(handleConnect()));
+	QObject::connect(m_socket, SIGNAL(disconnected()), this, SLOT(handleDisconnect()));
+	QObject::connect(m_socket, SIGNAL(readyRead()), this, SLOT(read()));
+	QObject::connect(m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(handleStateChanged(QAbstractSocket::SocketState)));
+}
 
 Word Connection::getNextSeqNumber(){
 	m_seq = ++m_seq & POSITIVE_MASK;
@@ -111,6 +134,16 @@ void Connection::handleConnect() {
 void Connection::handleDisconnect() {
 	m_connected = false;
 	emit connDisconnected();
+}
+
+void Connection::handleNewConn() {
+	// Handles an incomint connection
+	// Get socket, close listening conn, connect the new socket signals and
+	// report connected
+	m_socket = m_srv->nextPendingConnection();
+	m_srv->close();
+	this->doSocketConnections();
+	this->handleConnect();
 }
 
 void Connection::read() {

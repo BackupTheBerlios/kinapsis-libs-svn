@@ -77,6 +77,9 @@ public:
 	void setFileName(QString n);
 	QString getFileName();
 
+	void setCookie(QWord);
+	QWord getCookie();
+
 private:
 
 	QString m_msg;
@@ -97,6 +100,8 @@ private:
 	DWord m_size;
 
 	QString m_filename;
+
+	QWord m_cookie;
 };
 
 

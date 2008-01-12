@@ -50,4 +50,20 @@ StatusConnFT FTStatus::getStatus() {
 	return m_status;
 }
 
+void FTStatus::setCookie(QWord c) {
+	m_cookie = c;
+}
+
+QWord FTStatus::getCookie() {
+	return m_cookie;
+}
+
+void FTStatus::setType(TypeConnFT t){
+	m_type = t;
+}
+
+TypeConnFT FTStatus::getType() {
+	return m_type;
+}
+
 }

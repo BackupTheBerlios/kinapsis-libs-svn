@@ -23,6 +23,10 @@
 #define _FILERECEIVESERVICE_H_
 
 #include "service.h"
+#include "ftstatus.h"
+#include "oftproxycommand.h"
+#include "oftheader.h"
+#include <qfile.h>
 
 namespace liboscar {
 
@@ -30,17 +34,42 @@ class FileReceiveService : public Service {
 Q_OBJECT
 
 public:
-	FileReceiveService(bool=false);
+	FileReceiveService(FTStatus);
 	virtual ~FileReceiveService();
 
+	void disconnect();
+
 signals:
-	void ftProgress(int);
+	void ftProgress(unsigned int, int, int);
+	void fileEnded(unsigned int);
+	void connectionSuccessful(unsigned int);
+
+	void proxyAck(unsigned int, QHostAddress, Word);
+	void proxyReady(unsigned int);
+
+public slots:
+	void handleConnect();
+	void handleProxyError(OFTProxyError);
+	void handleProxyAck(OFTProxyAck);
+	void handleProxyReady(OFTProxyReady);
+	void handleDCheader(OFTHeader);
+	void handleDCdata(Buffer);
 
 private:
 	void create();
 	void registerMeta();
 
-	bool m_proxy;
+	void sendProxyInitRecv();
+	void sendProxyInitSend();
+
+	void usePP();
+	void useOP();
+
+	FTStatus m_st;
+
+	OFTHeader m_head;
+
+	QFile* m_file;
 };
 
 }

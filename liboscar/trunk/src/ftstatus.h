@@ -37,6 +37,11 @@ namespace liboscar {
 		PROXY3
 	};
 
+	enum TypeConnFT {
+		SENDING,
+		RECEIVING
+	};
+
 class FTStatus {
 
 public:
@@ -52,12 +57,18 @@ public:
 	void setStatus(StatusConnFT);
 	StatusConnFT getStatus();
 	
+	void setCookie(QWord);
+	QWord getCookie();
+	
+	void setType(TypeConnFT);
+	TypeConnFT getType();
+
 private:
 	UIN m_uin;
-
 	FTData m_data;
-
+	QWord m_cookie;
 	StatusConnFT m_status;
+	TypeConnFT m_type;
 };
 
 
