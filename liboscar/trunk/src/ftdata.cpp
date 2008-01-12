@@ -157,4 +157,12 @@ QWord FTData::getCookie(){
 	return m_cookie;
 }
 
+Word FTData::getReqNumber(){
+	return m_rnum;
+}
+
+void FTData::setReqNumber(Word w){
+	m_rnum = w;
+}
+
 }

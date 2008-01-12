@@ -129,14 +129,6 @@ void Message::setTime(QDateTime time){
 	m_time = time;
 }
 
-Word Message::getReqNumber(){
-	return m_rnum;
-}
-
-void Message::setReqNumber(Word w){
-	m_rnum = w;
-}
-
 QWord Message::getCookie(){
 	return m_cookie;
 }
@@ -303,7 +295,7 @@ void Message::packCh2(){
 
 	if (m_ch2req == REQUEST) { // Requests have a looot of info
 		tlv = new UnformattedTLV(0x000a);
-		tlv->data() << (Word) m_rnum;
+		tlv->data() << m_ftd.getReqNumber();
 		tlvm->data() << tlv->pack();
 		delete tlv;
 	
@@ -562,7 +554,7 @@ void Message::parseCh1(Buffer &b) {
 }
 
 void Message::parseCh2(Buffer &b) {
-	Word type=0, len=0, reqType=0;
+	Word type=0, len=0, reqType=0, w;
 	DWord dw;
 	DWord c1,c2,c3,c4;
 	UnformattedTLV tlv(TLV_TYPE_GENERIC);
@@ -625,6 +617,8 @@ void Message::parseCh2(Buffer &b) {
 			case 0x000f:
 				break;
 			case 0x000a: // Request number for file transfer
+				tlv.data() >> w;
+				m_ftd.setReqNumber(w);
 				break;
 			case 0x000c: // FT User Message
 				tlv.data().readString(s);

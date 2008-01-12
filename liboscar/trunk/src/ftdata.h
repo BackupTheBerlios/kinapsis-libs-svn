@@ -80,6 +80,9 @@ public:
 	void setCookie(QWord);
 	QWord getCookie();
 
+	void setReqNumber(Word);
+	Word getReqNumber();
+
 private:
 
 	QString m_msg;
@@ -98,6 +101,7 @@ private:
 
 	Word m_count;
 	DWord m_size;
+	Word m_rnum;
 
 	QString m_filename;
 

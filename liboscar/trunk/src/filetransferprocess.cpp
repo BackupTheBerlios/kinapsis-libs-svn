@@ -117,7 +117,7 @@ void FileTransferProcess::proxyAckArrived(unsigned int id, QHostAddress ip, Word
 	m.setRequest(REQUEST);
 
 	// Request specific data
-	m.setReqNumber(2); // the second one
+	m.getFTData().setReqNumber(2); // the second one
 	m.getFTData().setClientIP(0); // not client, connect to proxy
 	m.getFTData().setProxyIP(ip.toString());
 	m.getFTData().setListeningPort(port);
