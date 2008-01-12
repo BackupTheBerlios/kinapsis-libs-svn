@@ -32,10 +32,15 @@
 
 namespace liboscar {
 
-	typedef unsigned char Byte;
+	/*typedef unsigned char Byte;
 	typedef unsigned short int Word;
 	typedef unsigned int DWord;
-	typedef unsigned long long QWord;
+	typedef unsigned long long QWord;*/
+
+	typedef quint8 Byte;
+	typedef quint16 Word;
+	typedef quint32 DWord;
+	typedef quint64 QWord;
 
 	enum ProtocolType {
 		AIM,

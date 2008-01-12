@@ -255,7 +255,7 @@ Buffer& Buffer::operator>>(QWord &qw){
 			d2 = getDWord();
 		}
 
-		QWord mask = -1; // 0xffffffffffffffff
+		QWord mask = Q_UINT64_C(0xFFFFFFFFFFFFFFFF);
 		qw = d1;
 		qw <<= 32;
 		qw |= (mask & d2);
