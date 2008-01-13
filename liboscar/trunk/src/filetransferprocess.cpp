@@ -36,12 +36,10 @@ FileTransferProcess::~FileTransferProcess() { }
 
 void FileTransferProcess::acceptFileTransfer(QWord cookie, bool accept){
 
-	FTStatus st = m_pending[cookie]; // recover data
-
-	m_pending.remove(cookie); // not pending anymore
+	FTStatus st = m_transfers[cookie]; // recover data
 
 	if (!accept)
-		this->cancelFT(st);
+		this->cancelFT(cookie);
 	else
 		this->startFT(st);
 }
@@ -66,7 +64,7 @@ void FileTransferProcess::messageArrived(Message m) {
 			fs.setType(RECEIVING); 
 			fs.setCookie(m.getCookie()); 
 
-			m_pending[m.getCookie()] = fs; // new FT req
+			m_transfers[m.getCookie()] = fs; // new FT transfer
 
 			emit notifyNewFTRequest(m.getCookie(), m.getUin(), m.getFTData().getFileName());
 		}
@@ -74,27 +72,32 @@ void FileTransferProcess::messageArrived(Message m) {
 }
 
 void FileTransferProcess::ftconnProgress(unsigned int id, int partial, int total) {
-	emit ftProgress(m_transfers[id].stat.getCookie(), partial, total);
+	QWord c = getCookieFromId(id);
+
+	emit ftProgress(c, partial, total);
 }
 
 void FileTransferProcess::fileEnded(unsigned int id) {
 	// TODO: must handle more than one file
-	emit ftEnded(m_transfers[id].stat.getCookie());
+	QWord c = getCookieFromId(id);
+
+	emit ftEnded(c);
 }
 
 void FileTransferProcess::ftconnSuccessful(unsigned int id) {
 	// We connected to something. Let's see...
+	QWord c = getCookieFromId(id);
 	
-	if (m_transfers[id].stat.getStatus() == DIRECT) {
+	if (m_transfers[c].getStatus() == DIRECT) {
 		// Woho, we connected to the sender. Send an accept.
-		this->acceptFT(m_transfers[id].stat);
+		this->acceptFT(m_transfers[c]);
 	}
-	else if (m_transfers[id].stat.getStatus() == PROXY2) {
+	else if (m_transfers[c].getStatus() == PROXY2) {
 		// We connected to the proxy server. Do nothing (Included
 		// because is clearer to me)
 		return;
 	}
-	else if (m_transfers[id].stat.getStatus() == PROXY1) {
+	else if (m_transfers[c].getStatus() == PROXY1) {
 		// We connected to the proxy server. Do nothing (Included
 		// because is clearer to me)
 		return;
@@ -102,7 +105,9 @@ void FileTransferProcess::ftconnSuccessful(unsigned int id) {
 }
 
 void FileTransferProcess::proxyAckArrived(unsigned int id, QHostAddress ip, Word port) {
-	if (m_transfers[id].stat.getStatus() != PROXY2){
+	QWord c = getCookieFromId(id);
+
+	if (m_transfers[c].getStatus() != PROXY2){
 		qDebug("[FileTransferProcess]: ack from a non-PROXY2 conn. ¿?¿?");
 		return;
 	}
@@ -110,8 +115,8 @@ void FileTransferProcess::proxyAckArrived(unsigned int id, QHostAddress ip, Word
 	// Send an REQUEST msg
 	Message m;
 
-	m.setCookie(m_transfers[id].stat.getCookie());
-	m.setUin(m_transfers[id].stat.getUin());
+	m.setCookie(c);
+	m.setUin(m_transfers[c].getUin());
 	m.setFormat(2);
 	m.setType(TYPE_FILEREQ);
 	m.setRequest(REQUEST);
@@ -122,48 +127,72 @@ void FileTransferProcess::proxyAckArrived(unsigned int id, QHostAddress ip, Word
 	m.getFTData().setProxyIP(ip.toString());
 	m.getFTData().setListeningPort(port);
 	m.getFTData().setProxyUsed(true);
-	m.getFTData().setFileCount(m_transfers[id].stat.getFTData().getFileCount());
-	m.getFTData().setFileSize(m_transfers[id].stat.getFTData().getFileSize());
-	m.getFTData().setFileName(m_transfers[id].stat.getFTData().getFileName());
+	m.getFTData().setFileCount(m_transfers[c].getFTData().getFileCount());
+	m.getFTData().setFileSize(m_transfers[c].getFTData().getFileSize());
+	m.getFTData().setFileName(m_transfers[c].getFTData().getFileName());
 	m_parent->send(m.pack());
 }
 
 void FileTransferProcess::proxyReadyArrived(unsigned int id) {
-	if (m_transfers[id].stat.getStatus() != PROXY1){
+	QWord c = getCookieFromId(id);
+
+	if (m_transfers[c].getStatus() != PROXY1){
 		qDebug("[FileTransferProcess]: ready from a non-PROXY1 conn. ¿?¿?");
 		return;
 	}
 	// We got a PROXY1 response :-)
 	// Send an ACCEPT msg
-	this->acceptFT(m_transfers[id].stat);
+	this->acceptFT(m_transfers[c]);
 }
 
 void FileTransferProcess::handleServiceEnd(unsigned int id, ConnectionResult r) {
+	QWord c = getCookieFromId(id);
 	// A service (FT) ended, delete it from the transfers
 	
-	FTStatus st = m_transfers[id].stat;
+	FTStatus st = m_transfers[c];
 
-	delete	m_transfers[id].serv;
-	m_transfers.remove(id);
+	delete	m_transfers[c].getService();
+	st.setService(0);
 
 	if (!r.successful()) // There was a problem connecting. Try another thing
 		this->startFT(st);
+	else
+		m_transfers.remove(c); // old transfer
 }
 
 //
 // OTHER
 //
 
-void FileTransferProcess::cancelFT(FTStatus st) {
+QWord FileTransferProcess::getCookieFromId(unsigned int id) {
+	FTMap::const_iterator i = m_transfers.constBegin();
+	FTStatus s;
+
+	while (i != m_transfers.constEnd()) {
+		s = i.value();
+		if (s.getService()) {
+			if (s.getService()->getId() == id)
+				return s.getCookie();
+		}
+		++i;
+	}
+	qDebug("[FileTransferProcess]: !!!!!!!! Received a signal from an not registered service.");
+	return Q_UINT64_C(0xFFFFFFFFFFFFFFFF);
+}
+
+void FileTransferProcess::cancelFT(QWord cookie) {
 	// Cancel the FT
 	Message m;
+	FTStatus st = m_transfers[cookie];
 
-	m.setCookie(st.getCookie());
+	m.setCookie(cookie);
 	m.setUin(st.getUin());
 	m.setFormat(2);
 	m.setType(TYPE_FILEREQ);
 	m.setRequest(CANCEL);
 	m_parent->send(m.pack());
+
+	m_transfers.remove(cookie); // delete from transfers
 }
 
 void FileTransferProcess::acceptFT(FTStatus st) {
@@ -178,12 +207,13 @@ void FileTransferProcess::acceptFT(FTStatus st) {
 	m_parent->send(m.pack());
 }
 
-unsigned int FileTransferProcess::addNewReceive(FTStatus st) {
+void FileTransferProcess::addNewReceive(FTStatus& st) {
 	FileReceiveService* frs;
 
 	frs = new FileReceiveService(st);
-	m_transfers[frs->getId()].stat = st; // new transfer
-	m_transfers[frs->getId()].serv = frs;
+
+	st.setService(frs);
+	
 	QObject::connect(frs, SIGNAL(ftProgress(unsigned int,int,int)), this, SLOT(ftconnProgress(unsigned int,int,int)));
 	QObject::connect(frs, SIGNAL(fileEnded(unsigned int)), this, SLOT(fileEnded(unsigned int)));
 	QObject::connect(frs, SIGNAL(connectionSuccessful(unsigned int)), this, SLOT(ftconnSuccessful(unsigned int)));
@@ -193,12 +223,10 @@ unsigned int FileTransferProcess::addNewReceive(FTStatus st) {
 	QObject::connect(frs, SIGNAL(serviceEnded(unsigned int, ConnectionResult)), this, SLOT(handleServiceEnd(unsigned int, ConnectionResult)));
 }
 
-void FileTransferProcess::startFT(FTStatus st) {
+void FileTransferProcess::startFT(FTStatus& st) {
 	// Check the status and increment it. Take the decisions and launch a
 	// service. TODO: currently only accepts receiving fts
 	
-	unsigned int id = 0;
-
 	switch (st.getStatus()) {
 		case PENDING:
 			if (st.getType() == RECEIVING) {
@@ -211,12 +239,12 @@ void FileTransferProcess::startFT(FTStatus st) {
 					st.setStatus(DIRECT);
 				st.setType(RECEIVING);
 
-				id = this->addNewReceive(st);
+				this->addNewReceive(st);
 
 				if (st.getStatus() == PROXY1)
-					m_transfers[id].serv->connect(st.getFTData().getProxyIP(), 5190); // Proxy always use 5190
+					st.getService()->connect(st.getFTData().getProxyIP(), 5190); // Proxy always use 5190
 				else
-					m_transfers[id].serv->connect(st.getFTData().getClientIP(), st.getFTData().getListeningPort());
+					st.getService()->connect(st.getFTData().getClientIP(), st.getFTData().getListeningPort());
 			}
 			break;
 		case DIRECT:
@@ -225,8 +253,8 @@ void FileTransferProcess::startFT(FTStatus st) {
 				// Start a stage2 proxy.
 				st.setStatus(PROXY2);
 				st.setType(RECEIVING);
-				id = this->addNewReceive(st);
-				m_transfers[id].serv->connect("ars.oscar.aol.com", 5190); // Proxy always use 5190
+				this->addNewReceive(st);
+				st.getService()->connect("ars.oscar.aol.com", 5190); // Proxy always use 5190
 			}
 			break;
 		case PROXY2:
@@ -235,7 +263,6 @@ void FileTransferProcess::startFT(FTStatus st) {
 		case PROXY1:
 		default:
 			qDebug("[FileTransferProcess]: unimplemented transfer mode.");
-			this->cancelFT(st);
 			break;
 	}
 }

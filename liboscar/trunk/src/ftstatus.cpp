@@ -22,7 +22,9 @@
 
 namespace liboscar {
 
-FTStatus::FTStatus() { }
+FTStatus::FTStatus() { 
+	m_service = 0;
+}
 
 FTStatus::~FTStatus() { }
 
@@ -64,6 +66,14 @@ void FTStatus::setType(TypeConnFT t){
 
 TypeConnFT FTStatus::getType() {
 	return m_type;
+}
+
+void FTStatus::setService(Service* s) {
+	m_service = s;
+}
+
+Service* FTStatus::getService(){
+	return m_service;
 }
 
 }

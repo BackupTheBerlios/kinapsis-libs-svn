@@ -31,13 +31,8 @@
 
 namespace liboscar {
 
-	typedef struct FTMapItem {
-		Service* serv;
-		FTStatus stat;
-	};
-
-	typedef QMap<QWord, FTStatus> UFTMap;
-	typedef QMap<unsigned int, FTMapItem> FTMap;
+	//typedef QMap<QWord, FTStatus> UFTMap;
+	typedef QMap<QWord, FTStatus> FTMap;
 
 class FileTransferProcess : public QObject {
 Q_OBJECT
@@ -66,12 +61,15 @@ signals:
 	void ftEnded(QWord);
 
 private:
-	void cancelFT(FTStatus);
+	void cancelFT(QWord);
 	void acceptFT(FTStatus);
-	void startFT(FTStatus);
-	unsigned int addNewReceive(FTStatus);
+	void startFT(FTStatus&);
+	void addNewReceive(FTStatus&);
+
+	QWord getCookieFromId(unsigned int);
+
 	Service* m_parent;
-	UFTMap m_pending; // Not accepted by USER
+//	UFTMap m_pending; // Not accepted by USER
 	FTMap m_transfers; // running transfers
 };
 

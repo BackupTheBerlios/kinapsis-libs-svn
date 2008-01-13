@@ -25,6 +25,7 @@
 #include "liboscar.h"
 #include "uin.h"
 #include "ftdata.h"
+#include "service.h"
 
 namespace liboscar {
 
@@ -63,12 +64,16 @@ public:
 	void setType(TypeConnFT);
 	TypeConnFT getType();
 
+	void setService(Service*);
+	Service* getService();
+
 private:
 	UIN m_uin;
 	FTData m_data;
 	QWord m_cookie;
 	StatusConnFT m_status;
 	TypeConnFT m_type;
+	Service* m_service;
 };
 
 
