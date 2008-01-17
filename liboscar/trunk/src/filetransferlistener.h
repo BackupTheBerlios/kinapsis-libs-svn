@@ -19,94 +19,29 @@
  ***************************************************************************/
 
 
-#ifndef _OFTHEADER_H_
-#define _OFTHEADER_H_
+#ifndef _FILETRANSFERLISTENER_H_
+#define _FILETRANSFERLISTENER_H_
 
 #include "liboscar.h"
-#include "buffer.h"
+#include "uin.h"
+#include <qobject.h>
 
 namespace liboscar {
 
-	enum OFTType {
-		OFTPROMPT = 0x0101,
-		OFTACK = 0x0202,
-		OFTDONE = 0x0204,
-		OFTRECRES = 0x0205,
-		OFTSENRES = 0x0102,
-		OFTRESACK = 0x0207
-	};
-
-	enum OFTFlags {
-		OFTFLAGNEGO = 0x20,
-		OFTFLAGDONE = 0x01
-	};
-
-class OFTHeader {
-
+class FileTransferListener : public QObject{
+Q_OBJECT
 public:
-	OFTHeader();
-	virtual ~OFTHeader();
+	FileTransferListener();
+	virtual ~FileTransferListener();
 
-	void setType(Word w);
-	void setType(OFTType t);
-	void setCookie(QWord qw);
-	void setTotalFiles(Word w);
-	void setFilesLeft(Word w);
-	void setTotalParts(Word w);
-	void setPartsLeft(Word w);
-	void setTotalSize(DWord dw);
-	void setSizeLeft(DWord dw);
-	void setChecksum(DWord dw);
-	void setBytesReceived(DWord dw);
-	void setReceivedChk(DWord dw);
-	void setModTime(DWord dw);
-	void setFlags(Byte b);
-	void setEncoding(Word w);
-	void setFileName(QString s);
-
-	OFTType getType();
-	QWord getCookie();
-	Word getTotalFiles();
-	Word getFilesLeft();
-	Word getTotalParts();
-	Word getPartsLeft();
-	DWord getTotalSize();
-	DWord getSizeLeft();
-	DWord getChecksum();
-	DWord getBytesReceived();
-	DWord getReceivedChk();
-	OFTFlags getFlags();
-	MessageEncoding getEncoding();
-	QString getFileName();
-
-	Buffer& pack();
-
-private:
-	OFTType m_type;
-	QWord m_cookie;
-
-	Word m_totfiles;
-	Word m_leftfiles;
-	Word m_totparts;
-	Word m_leftparts;
-	DWord m_totsize;
-	DWord m_leftsize;
-
-	DWord m_modtime;
-
-	DWord m_chk;
-	DWord m_recvchk;
-	
-	DWord m_bytesrecv;
-
-	OFTFlags m_flags;
-	MessageEncoding m_enc;
-	QString m_fname;
-
-	Buffer m_buf;
+public slots:
+	virtual void newFTRequest(QWord cookie, UIN uin, QString filename) = 0;
+	virtual void ftConnected(QWord cookie) = 0;
+	virtual void ftProgress(QWord cookie, int partialbytes, int totalbytes) = 0;
+	virtual void ftEnded(QWord cookie) = 0;
 };
 
 
 }
 
-#endif // _OFTHEADER_H_
+#endif // _FILETRANSFERLISTENER_H_

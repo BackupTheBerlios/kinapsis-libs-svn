@@ -129,9 +129,9 @@ void OFTParser::parse() {
 		}
 	
 		if (c)
-			head.setFilename(c->toUnicode(fname));
+			head.setFileName(c->toUnicode(fname));
 		else
-			head.setFilename(fname); // who cares? ...
+			head.setFileName(fname); // who cares? ...
 	
 		emit headerArrived(head);
 		m_buf.wipe();

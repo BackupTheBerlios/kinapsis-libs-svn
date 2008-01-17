@@ -294,6 +294,7 @@ void Message::packCh2(){
 	tlvm->data() << (DWord) 0x53540000;
 
 	if (m_ch2req == REQUEST) { // Requests have a looot of info
+		// FIXME: add message string (TLV 0x000c) ??
 		tlv = new UnformattedTLV(0x000a);
 		tlv->data() << m_ftd.getReqNumber();
 		tlvm->data() << tlv->pack();

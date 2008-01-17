@@ -19,63 +19,14 @@
  ***************************************************************************/
 
 
-#ifndef _FILERECEIVESERVICE_H_
-#define _FILERECEIVESERVICE_H_
-
-#include "service.h"
-#include "ftstatus.h"
-#include "oftproxycommand.h"
-#include "oftheader.h"
-#include <qfile.h>
+#include "filetransferlistener.h"
 
 namespace liboscar {
 
-class FileReceiveService : public Service {
-Q_OBJECT
+FileTransferListener::FileTransferListener() { }
 
-public:
-	FileReceiveService(FTStatus);
-	virtual ~FileReceiveService();
-
-	void setReceiveDirectory(QString);
-
-	void disconnect();
-
-signals:
-	void ftProgress(unsigned int, int, int);
-	void fileEnded(unsigned int);
-	void connectionSuccessful(unsigned int);
-
-	void proxyAck(unsigned int, QHostAddress, Word);
-	void proxyReady(unsigned int);
-
-public slots:
-	void handleConnect();
-	void handleProxyError(OFTProxyError);
-	void handleProxyAck(OFTProxyAck);
-	void handleProxyReady(OFTProxyReady);
-	void handleDCheader(OFTHeader);
-	void handleDCdata(Buffer);
-
-private:
-	void create();
-	void registerMeta();
-
-	void sendProxyInitRecv();
-	void sendProxyInitSend();
-
-	void usePP();
-	void useOP();
-
-	FTStatus m_st;
-
-	OFTHeader m_head;
-
-	QFile* m_file;
-
-	QString m_dir;
-};
+FileTransferListener::~FileTransferListener() { }
 
 }
 
-#endif // _FILERECEIVESERVICE_H_
+#include "filetransferlistener.moc"

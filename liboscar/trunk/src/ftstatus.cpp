@@ -40,7 +40,7 @@ void FTStatus::setFTData(FTData d){
 	m_data = d;
 }
 
-FTData FTStatus::getFTData(){
+FTData& FTStatus::getFTData(){
 	return m_data;
 }
 

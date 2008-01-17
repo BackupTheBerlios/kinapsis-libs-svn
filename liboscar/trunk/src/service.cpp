@@ -49,6 +49,12 @@ void Service::connect(QString server, int port) {
 	this->start();
 }
 
+void Service::connect(int port) {
+	m_server = "";
+	m_port = port;
+	this->start();
+}
+
 void Service::send(Buffer& b) {
 	if (m_conn)
 		m_conn->send(b);
@@ -64,8 +70,12 @@ void Service::run(){
 		this->exit(); // parser must be created in create()
 	}
 
-	if (!m_conn)
-		m_conn = new Connection(m_server, m_port, m_parser);
+	if (!m_conn){
+		if (m_server == "")
+			m_conn = new Connection(m_port, m_parser);
+		else
+			m_conn = new Connection(m_server, m_port, m_parser);
+	}
 
 	QObject::connect(m_conn, SIGNAL(connError(SocketError)), this, SLOT(handleConnError(SocketError)));
 	QObject::connect(m_conn, SIGNAL(connDisconnected()), this, SLOT(handleDisconnect()));

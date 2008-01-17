@@ -23,8 +23,10 @@ SET(liboscar_SRCS
 	ftcaptlv.cpp
 	ftdata.cpp
 	ftstatus.cpp
+	filetransferlistener.cpp
 	filetransferprocess.cpp
 	filereceiveservice.cpp
+	filesendservice.cpp
 	istypinglistener.cpp
 	loginservice.cpp
 	loginst1process.cpp
@@ -80,6 +82,7 @@ SET(liboscar_HDRS
 	connectionlistener.h 
 	directconnectiontlv.h 
 	families.h 
+	filetransferlistener.h
 	ftdata.h
 	istypinglistener.h 
 	liboscar.h 

@@ -19,94 +19,59 @@
  ***************************************************************************/
 
 
-#ifndef _OFTHEADER_H_
-#define _OFTHEADER_H_
+#ifndef _FILESENDSERVICE_H_
+#define _FILESENDSERVICE_H_
 
-#include "liboscar.h"
-#include "buffer.h"
+#include "service.h"
+#include "ftstatus.h"
+#include "oftheader.h"
+#include "oftproxycommand.h"
+#include <qfile.h>
 
 namespace liboscar {
 
-	enum OFTType {
-		OFTPROMPT = 0x0101,
-		OFTACK = 0x0202,
-		OFTDONE = 0x0204,
-		OFTRECRES = 0x0205,
-		OFTSENRES = 0x0102,
-		OFTRESACK = 0x0207
-	};
-
-	enum OFTFlags {
-		OFTFLAGNEGO = 0x20,
-		OFTFLAGDONE = 0x01
-	};
-
-class OFTHeader {
+class FileSendService : public Service {
+Q_OBJECT
 
 public:
-	OFTHeader();
-	virtual ~OFTHeader();
+	FileSendService(FTStatus);
+	virtual ~FileSendService();
 
-	void setType(Word w);
-	void setType(OFTType t);
-	void setCookie(QWord qw);
-	void setTotalFiles(Word w);
-	void setFilesLeft(Word w);
-	void setTotalParts(Word w);
-	void setPartsLeft(Word w);
-	void setTotalSize(DWord dw);
-	void setSizeLeft(DWord dw);
-	void setChecksum(DWord dw);
-	void setBytesReceived(DWord dw);
-	void setReceivedChk(DWord dw);
-	void setModTime(DWord dw);
-	void setFlags(Byte b);
-	void setEncoding(Word w);
-	void setFileName(QString s);
+	void receiverAccepted();
 
-	OFTType getType();
-	QWord getCookie();
-	Word getTotalFiles();
-	Word getFilesLeft();
-	Word getTotalParts();
-	Word getPartsLeft();
-	DWord getTotalSize();
-	DWord getSizeLeft();
-	DWord getChecksum();
-	DWord getBytesReceived();
-	DWord getReceivedChk();
-	OFTFlags getFlags();
-	MessageEncoding getEncoding();
-	QString getFileName();
+	void disconnect();
 
-	Buffer& pack();
+public slots:
+	void handleProxyConn();
+	void handleProxyError(OFTProxyError);
+	void handleProxyAck(OFTProxyAck);
+	void handleProxyReady(OFTProxyReady);
+	void handleDCheader(OFTHeader);
+
+signals:
+	void proxyAck(unsigned int, QHostAddress, Word);
+	void proxyReady(unsigned int);
+
+	void ftProgress(unsigned int, int, int);
+	void fileEnded(unsigned int);
 
 private:
-	OFTType m_type;
-	QWord m_cookie;
+	void create();
+	void registerMeta();
 
-	Word m_totfiles;
-	Word m_leftfiles;
-	Word m_totparts;
-	Word m_leftparts;
-	DWord m_totsize;
-	DWord m_leftsize;
+	void sendDCPrompt();
+	void sendFile();
+	void fileDone(OFTHeader);
 
-	DWord m_modtime;
+	void usePP();
+	void useOP();
 
-	DWord m_chk;
-	DWord m_recvchk;
-	
-	DWord m_bytesrecv;
+	FTStatus m_st;
+	OFTHeader m_head;
 
-	OFTFlags m_flags;
-	MessageEncoding m_enc;
-	QString m_fname;
-
-	Buffer m_buf;
+	QFile* m_file;
 };
-
 
 }
 
-#endif // _OFTHEADER_H_
+#endif // _FILESENDSERVICE_H_

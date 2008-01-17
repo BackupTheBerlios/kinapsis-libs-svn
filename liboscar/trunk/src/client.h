@@ -37,11 +37,13 @@
 #include "servicesetupprocess.h"
 #include "offlinemessagesprocess.h"
 #include "presenceprocess.h"
+#include "filetransferprocess.h"
 #include "loginservice.h"
 #include "connectionlistener.h"
 #include "messagelistener.h"
 #include "presencelistener.h"
 #include "istypinglistener.h"
+#include "filetransferlistener.h"
 #include <qobject.h>
 #include <qbytearray.h>
 
@@ -49,6 +51,9 @@ namespace liboscar {
 
 	class UIN;
 	class Connection;
+	class OfflineMessagesProcess;
+	class PresenceProcess;
+	class ServiceSetupProcess;
 //	class Parser;
 
 class Client : public Service {
@@ -91,6 +96,12 @@ public:
 	bool delContact(UIN uin);
 	bool authorize(UIN uin, QString message, bool ack);
 
+		// FileTransferProcess
+	void acceptFileTransfer(QWord, bool);
+	QWord sendFile(UIN, QString);
+
+	void setUseFTProxy(bool);
+	void setFTListeningPort(int);
 
 	// Process resources
 	Roster* getRoster();
@@ -107,6 +118,8 @@ public:
 	void delPresenceListener(PresenceListener *pl);
 	void addIsTypingListener(IsTypingListener *tl);
 	void delIsTypingListener(IsTypingListener *tl);
+	void addFileTransferListener(FileTransferListener *fl);
+	void delFileTransferListener(FileTransferListener *fl);
 
 	virtual ~Client();
 
@@ -181,6 +194,7 @@ private:
 	ServiceSetupProcess* m_ssp;
 	OfflineMessagesProcess* m_omp;
 	PresenceProcess* m_pp;
+	FileTransferProcess* m_ftp;
 
 	LoginService* m_ls;
 };

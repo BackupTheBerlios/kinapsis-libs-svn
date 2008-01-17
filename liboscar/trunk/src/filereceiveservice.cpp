@@ -20,6 +20,7 @@
 
 
 #include "filereceiveservice.h"
+#include "filetransferprocess.h"
 #include "oftparser.h"
 #include "oftproxyparser.h"
 
@@ -27,11 +28,16 @@ namespace liboscar {
 
 FileReceiveService::FileReceiveService(FTStatus st){
 	m_st = st;
+	m_dir = "";
 }
 
 FileReceiveService::~FileReceiveService() { }
 
 void FileReceiveService::registerMeta() { }
+
+void FileReceiveService::setReceiveDirectory(QString dir) {
+	m_dir = dir;
+}
 
 void FileReceiveService::disconnect() {
 	m_conn->disconnect();
@@ -126,7 +132,7 @@ void FileReceiveService::handleDCheader(OFTHeader head) {
 	// We're receiving so a PROMPT must be what we get
 	if (head.getType() == OFTPROMPT){
 		m_file = new QFile(this);	
-		m_file->setFileName(head.getFilename()); // FIXME: base dir?
+		m_file->setFileName(m_dir + head.getFileName());
 
 		m_head = head;
 
@@ -158,7 +164,7 @@ void FileReceiveService::handleDCdata(Buffer b) {
 	}
 
 	m_head.setBytesReceived(m_head.getBytesReceived() + cnt);
-	// TODO: calculate new chk
+	m_head.setReceivedChk(FileTransferProcess::calculateChunkChecksum(b, m_head.getReceivedChk()));
 
 	emit ftProgress(this->getId(), m_head.getBytesReceived(), m_head.getTotalSize());
 

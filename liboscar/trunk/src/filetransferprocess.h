@@ -26,12 +26,12 @@
 #include "service.h"
 #include "message.h"
 #include "ftstatus.h"
+#include "uin.h"
 #include <qobject.h>
 #include <qmap.h>
 
 namespace liboscar {
 
-	//typedef QMap<QWord, FTStatus> UFTMap;
 	typedef QMap<QWord, FTStatus> FTMap;
 
 class FileTransferProcess : public QObject {
@@ -42,6 +42,16 @@ public:
 	virtual ~FileTransferProcess();
 
 	void acceptFileTransfer(QWord cookie, bool accept=true);
+	QWord sendFile(UIN, QString);
+
+	void setUseProxy(bool);
+	void setListeningPort(int);
+
+	void setReceiveDirectory(QString);
+
+	static DWord calculateChunkChecksum(Buffer, DWord);
+	static DWord calculateChunkChecksum(const QByteArray, int, DWord);
+	static DWord calculateFileChecksum(QString);
 
 public slots:
 	void messageArrived(Message);
@@ -61,16 +71,24 @@ signals:
 	void ftEnded(QWord);
 
 private:
+	void sendRequest(QWord);
 	void cancelFT(QWord);
 	void acceptFT(FTStatus);
 	void startFT(FTStatus&);
 	void addNewReceive(FTStatus&);
+	void addNewSend(FTStatus&);
+	void clearFTService(QWord);
 
 	QWord getCookieFromId(unsigned int);
 
 	Service* m_parent;
-//	UFTMap m_pending; // Not accepted by USER
 	FTMap m_transfers; // running transfers
+
+	// Config
+	bool m_useproxy;
+	int m_mylport;
+	QString m_dir;
+
 };
 
 }

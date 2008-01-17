@@ -53,7 +53,7 @@ public:
 	UIN getUin();
 
 	void setFTData(FTData);
-	FTData getFTData();
+	FTData& getFTData();
 
 	void setStatus(StatusConnFT);
 	StatusConnFT getStatus();

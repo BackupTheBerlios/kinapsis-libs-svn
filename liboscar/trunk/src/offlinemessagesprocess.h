@@ -23,8 +23,8 @@
 #define _OFFLINEMESSAGESPROCESS_H_
 
 #include "liboscar.h"
-#include "client.h"
 #include "snac_icq.h"
+#include "client.h"
 #include <qobject.h>
 
 namespace liboscar {

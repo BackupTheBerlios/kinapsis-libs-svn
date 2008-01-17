@@ -39,6 +39,7 @@ public:
 	virtual ~Service();
 
 	void connect(QString server, int port);
+	void connect(int port);
 
 	void send(Buffer& b);
 

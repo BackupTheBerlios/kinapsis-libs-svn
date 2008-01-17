@@ -84,6 +84,7 @@ void Client::createProcess() {
 	m_ssp = new ServiceSetupProcess(this);
 	m_omp = new OfflineMessagesProcess(this);
 	m_pp = new PresenceProcess(this);
+	m_ftp = new FileTransferProcess(this);
 
 	// Connect processes between them
 	QObject::connect(m_l2p, SIGNAL(stage2finished()), m_ssp, SLOT(requestServiceSetup()));
@@ -216,6 +217,8 @@ void Client::create() {
 		// PresenceProcess (m_pp) signals
 		QObject::connect(m_parser, SIGNAL(statusChanged(UIN, PresenceStatus)), m_pp, SLOT(statusChanged(UIN, PresenceStatus)));
 		QObject::connect(m_parser, SIGNAL(serverUserInfo(SrvUserInfoSNAC)), m_pp, SLOT(newAwayMessage(SrvUserInfoSNAC)));
+		// FileTransferProcess (m_ftp) signals
+		QObject::connect(m_parser, SIGNAL(newMessage(Message)), m_ftp, SLOT(messageArrived(Message)));
 	}
 
 }
@@ -294,6 +297,25 @@ bool Client::authorize(UIN uin, QString message, bool auth) {
 	return m_rp->authorize(uin, message, auth);
 }
 
+		//
+		// FILETRANSFERPROCESS
+		//
+
+void Client::acceptFileTransfer(QWord c, bool a) {
+	m_ftp->acceptFileTransfer(c,a);
+}
+
+QWord Client::sendFile(UIN to, QString fname){
+	m_ftp->sendFile(to, fname);
+}
+
+void Client::setUseFTProxy(bool p) {
+	m_ftp->setUseProxy(p);
+}
+
+void Client::setFTListeningPort(int p) {
+	m_ftp->setListeningPort(p);
+}
 
 	//
 	// SLOTS
@@ -390,6 +412,7 @@ void Client::finishedConnection(){
 
 void Client::messageArrived(Message message){
 	// TODO: handle more message stuff here
+	// FT messages are handled in FileTransferProcess
 	if (message.getFormat() == 0x0002 && message.getRequest() == REQUEST){
 		if (message.getType() >= TYPE_AUTOAWAY){
 			Message m;
@@ -465,6 +488,18 @@ void Client::addIsTypingListener(IsTypingListener *tl) {
 
 void Client::delIsTypingListener(IsTypingListener *tl) {
 	QObject::disconnect(this, 0, tl, 0);
+}
+
+void Client::addFileTransferListener(FileTransferListener *fl) {
+	QObject::connect(m_ftp, SIGNAL(notifyNewFTRequest(QWord, UIN, QString)), 
+			fl, SLOT(newFTRequest(QWord, UIN, QString)));
+	QObject::connect(m_ftp, SIGNAL(ftConnected(QWord)), fl , SLOT(ftConnected(QWord)));
+	QObject::connect(m_ftp, SIGNAL(ftProgress(QWord,int,int)), fl , SLOT(ftProgress(QWord,int,int)));
+	QObject::connect(m_ftp, SIGNAL(ftEnded(QWord)), fl , SLOT(ftEnded(QWord)));
+}
+
+void Client::delFileTransferListener(FileTransferListener *fl) {
+	QObject::disconnect(this, 0, fl, 0);
 }
 
 }

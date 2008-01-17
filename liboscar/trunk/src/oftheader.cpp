@@ -86,7 +86,7 @@ void OFTHeader::setEncoding(Word w){
 	m_enc = (MessageEncoding) w;
 }
 
-void OFTHeader::setFilename(QString s){
+void OFTHeader::setFileName(QString s){
 	m_fname = s;
 }
 
@@ -143,7 +143,7 @@ MessageEncoding OFTHeader::getEncoding(){
 	return m_enc;
 }
 
-QString OFTHeader::getFilename(){
+QString OFTHeader::getFileName(){
 	return m_fname;
 }
 
