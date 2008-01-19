@@ -33,6 +33,8 @@ Connection::Connection(const QString server, int port, Parser* parser){
 	m_parser = parser;
 	m_socket = new QTcpSocket();
 
+	QObject::connect(this, SIGNAL(dataReceived()), m_parser, SLOT(parse()));
+
 	m_type = CONN_OUTGOING;
 	m_connected = false;
 }
