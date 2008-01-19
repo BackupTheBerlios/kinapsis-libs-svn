@@ -35,14 +35,20 @@ public:
 	TLVChain();
 	virtual ~TLVChain();
 	
+	void addTLV(TLV*);
 	bool exists(Word type);
+	void parseLen(Buffer& b);
 	void parse(Buffer& b, bool withcount = false);
 	int len();
 	TLV * & operator[] (Word type);
 
+	Buffer& pack();
+
 private:
 	void addItem(Buffer & b);
 	TLVMap m_map;
+
+	Buffer m_data;
 };
 
 }

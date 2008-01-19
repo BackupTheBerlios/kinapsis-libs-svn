@@ -99,7 +99,7 @@ unsigned int Service::getId(){
 // SLOTS
 //
 
-//void Service::handleConnect() { }
+void Service::handleConnect() { }
 
 void Service::handleDisconnect(){
 	if (m_reason != NO_ERROR)

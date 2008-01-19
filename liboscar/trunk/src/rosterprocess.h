@@ -33,12 +33,8 @@ namespace liboscar {
 
 	enum RosterOp {
 		ROSTEROP_NONE,
-		ROSTEROP_ADD_CONTACT,
-		ROSTEROP_DEL_CONTACT,
-		ROSTEROP_MOD_CONTACT,
-		ROSTEROP_ADD_GROUP,
-		ROSTEROP_DEL_GROUP,
-		ROSTEROP_MOD_GROUP,
+		ROSTEROP_ADD_ITEM,
+		ROSTEROP_DEL_ITEM,
 	};
 
 	class Client;
@@ -53,6 +49,8 @@ public:
 	bool addContact(UIN uin, QString groupname="", QString nickname="",  bool reqAuth=false);
 	bool delContact(UIN uin);
 	bool authorize(UIN uin, QString message, bool ack);
+	bool setVisibleStatus(UIN uin, bool in);
+	bool setInvisibleStatus(UIN uin, bool in);
 
 signals:
 	void notifyAuthRequest(UIN uin, QString reason);
@@ -68,11 +66,13 @@ private:
 	void reportSuccess();
 	void startEdit();
 	void endEdit();
+	void addItem(SBLItem*);
+	void delItem(SBLItem*);
 
 	RosterOp m_op;
 	UIN m_item;
 
-	Contact* m_ocontact;
+	SBLItem* m_oitem;
 
 	Client* m_parent;
 };

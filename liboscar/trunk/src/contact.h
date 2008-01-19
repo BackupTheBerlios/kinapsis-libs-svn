@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,35 +23,43 @@
 #define _CONTACT_H_
 
 #include "uin.h"
+#include "sblitem.h"
 
 namespace liboscar {
+
+	class SBLItem;
 
 class Contact {
 
 public:
 	Contact();
-	Contact(Contact * c);
+	Contact(Contact *);
+	Contact(SBLItem *, QString groupname);
 	Contact(UIN uin, QString nick, QString group);
 	virtual ~Contact();
 	
-	void setUin(UIN uin);
+/*	void setUin(UIN uin);
 	void setId(Word id);
 	void setNickname(QString nick);
 	void setGroup(QString group);
 	void setAuth(bool value);
+	void setVisible(bool value); */
 
 	UIN getUin();
 	Word getId();
 	QString getNickname();
 	QString getGroup();
 	bool getAuth();
+	bool getVisible();
 
 private:
 	UIN m_uin;
 	Word m_id;
 	QString m_nick;
 	QString m_group;
+	// FIXME: maybe this don't work ATM
 	bool m_auth;
+	bool m_visible;
 };
 
 

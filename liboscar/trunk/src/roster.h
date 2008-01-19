@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,13 +24,14 @@
 
 #include "liboscar.h"
 #include "contact.h"
+#include "sblitem.h"
 #include <qlist.h>
 #include <qmap.h>
 #include <qobject.h>
 
 namespace liboscar {
 
-	typedef QMap<QString, Byte> GroupMap;
+	typedef QMap<int, bool> IdMap;
 
 class Roster : public QObject {
 Q_OBJECT
@@ -39,28 +40,23 @@ public:
 	Roster();
 	virtual ~Roster();
 
-	void addContact(Contact* contact);
-	void updateContact (Contact* contact);
-	bool delContact(Contact* contact);
-
-	void addGroup(QString name, int gid);
-	bool delGroup(QString name);
-	bool delGroup(int gid);
+	void addItem(SBLItem*);
+	void updateItem (SBLItem*);
+	bool delItem(SBLItem*);
 
 	void setTimestamp(DWord t);
 	DWord getTimestamp();
 
-	void setGroupMap(GroupMap groups);
-
 	unsigned int len();
-	QList<Contact *>& getContacts();
+	QList<SBLItem *>& getItems();
 
-	GroupMap getGroupMap();
-
-	Contact* findContactById(Word id);
-	Contact* findContactByUin(UIN uin);
+	SBLItem* findItemByUin(UIN, SBLType);
+	SBLItem* findItemByName(QString, SBLType);
+	SBLItem* findItemById(int, SBLType);
 
 	void parse(Buffer &b);
+
+	int getNextId();
 
 signals:
 	void contactAdded(Contact c);
@@ -72,8 +68,8 @@ signals:
 	void groupDeleted(QString name);
 
 private:
-	QList<Contact *> m_data;
-	GroupMap m_groups;
+	QList<SBLItem *> m_data;
+	IdMap m_idmap;
 
 	DWord m_timestamp;
 

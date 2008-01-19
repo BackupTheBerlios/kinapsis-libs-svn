@@ -27,6 +27,7 @@ Contact::Contact() {
 	m_nick = "";
 	m_group = "";
 	m_auth = true;
+	m_visible = true;
 }
 
 Contact::Contact(Contact *c) {
@@ -35,6 +36,17 @@ Contact::Contact(Contact *c) {
 	m_nick = c->getNickname();
 	m_group = c->getGroup();
 	m_auth = c->getAuth();
+	m_visible = c->getVisible();
+}
+
+Contact::Contact(SBLItem *i, QString groupname) {
+	m_uin = i->getUin();
+	m_id = i->getItemId();
+	m_group = groupname;
+
+	if (i->getTLVs().exists(TLV_TYPE_NICK))
+		i->getTLVs()[TLV_TYPE_NICK]->data().readString(m_nick, 
+				i->getTLVs()[TLV_TYPE_NICK]->getLength());
 }
 
 
@@ -43,10 +55,12 @@ Contact::Contact(UIN uin, QString nick, QString group) {
 	m_nick = nick;
 	m_group = group;
 	m_auth = true;
+	m_visible = true;
 }
 
 Contact::~Contact() { }
 	
+/*
 void Contact::setUin(UIN uin) {
 	m_uin = uin;
 }
@@ -67,6 +81,11 @@ void Contact::setAuth(bool value) {
 	m_auth = value;
 }
 
+void Contact::setVisible(bool value) {
+	m_visible = value;
+}
+*/
+
 UIN Contact::getUin() { 
 	return m_uin;
 }
@@ -85,6 +104,10 @@ QString Contact::getGroup() {
 
 bool Contact::getAuth() {
 	return m_auth;
+}
+
+bool Contact::getVisible() {
+	return m_visible;
 }
 
 }

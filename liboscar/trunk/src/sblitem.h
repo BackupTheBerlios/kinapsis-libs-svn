@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -25,6 +25,7 @@
 #include "tlv.h"
 #include "buffer.h"
 #include "contact.h"
+#include "tlvchain.h"
 #include <qlist.h>
 
 namespace liboscar {
@@ -34,7 +35,7 @@ namespace liboscar {
 		ITEM_GROUP,
 		ITEM_PERMIT,
 		ITEM_DENY,
-		ITEM_SETTINGS,
+		ITEM_VISIBLE,
 		ITEM_PRESENCE,
 		ITEM_UNKNOWN,
 		ITEM_IGNORE,
@@ -50,23 +51,20 @@ class SBLItem {
 
 public:
 	SBLItem();
-	SBLItem(Contact* c);
 	virtual ~SBLItem();
 	
-	void setName(QString name);
+	void setUin(UIN uin);
 	void setGroupId(Word group);
 	void setItemId(Word item);
 	void setType(SBLType type);
-	void setTypeBuddy(bool reqAuth = false, QString nick = "", QString mail = "", QString smsnumber = "", QString comment = "");
 
-	QString getName();
+	UIN getUin();
 	Word getGroupId();
 	Word getItemId();
 	SBLType getType();
 
-	void addTLV(TLV *tlv);
-	bool delTLV(TLV *tlv);
-	QList<TLV *> getTLVs();
+	void addTLV(TLV*);
+	TLVChain& getTLVs();
 
 	void parse(Buffer& b);
 	Buffer& pack();
@@ -74,12 +72,12 @@ public:
 private:
 	Buffer m_data;
 
-	QString m_name;
+	UIN m_uin;
 	Word m_groupid;
 	Word m_itemid;
 	SBLType m_type;
 
-	QList<TLV *> m_tlvs;
+	TLVChain m_tlvs;
 };
 
 

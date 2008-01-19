@@ -52,64 +52,7 @@ SrvReplyRosterSNAC::SrvReplyRosterSNAC()
 SrvReplyRosterSNAC::~SrvReplyRosterSNAC() { }
 
 void SrvReplyRosterSNAC::parse(Buffer &b) {
-
-
-	// XXX FIXME TODO: DELETE THIS WHEN THE TESTS ARE DONE
-	UnformattedTLV tlv(TLV_TYPE_GENERIC);
-	Byte by;
-	Word count, len, group, id, type;
-	Word i;
-	DWord time;
-	Contact *c = 0;
-	QMap<Byte,QString> groupMap;
-	GroupMap rmap;
-
-	QString name, nick;
-
-	b >> by; // 0x00 (¿?)
-
-	b >> count;
-	i = count;
-
-	while (i--){
-		name = ""; nick = "";
-		b.readString(name);
-		b >> group;
-		b >> id;
-		if (id == 0 && group != 0){ /* We have a group  (that's not master group) */
-			groupMap[group] = name;
-			rmap[name] = group;
-		}
-		b >> type;
-		b >> len;
-		while (len){
-			tlv.parse(b);
-			switch (tlv.getType()){
-				case 0x0131:
-					tlv.data().gotoBegin();
-					tlv.data().readString(nick, tlv.len());
-					break;
-				case 0x0066:
-					c->setAuth(false);
-					break;
-				default:
-					break;
-			}
-			if (type == 0x0000){
-				c = new Contact();
-				c->setUin(UIN(name));
-				c->setNickname(nick);
-				c->setGroup(groupMap[group]);
-				m_roster.addContact(c);
-			}
-			len -= (tlv.data().len() + 4);
-		}
-	}
-	
-	b >> time;
-	m_roster.setTimestamp(time);
-
-	b.removeFromBegin();
+	m_roster.parse(b);
 }
 
 	// SrvUpdateAckSNAC
@@ -291,25 +234,25 @@ CliRosterAckSNAC::CliRosterAckSNAC()
 CliRosterAckSNAC::~CliRosterAckSNAC() { }
 
 	//CliRosterAddSNAC
-CliRosterAddSNAC::CliRosterAddSNAC(SBLItem i)
+CliRosterAddSNAC::CliRosterAddSNAC(SBLItem* i)
 	: SNAC_Roster(ROSTER_CLI_ROSTERADD, false) {
 
-	m_data << i.pack();
+	m_data << i->pack();
 }
 CliRosterAddSNAC::~CliRosterAddSNAC() { }
 
 	//CliRosterUpdateSNAC
-CliRosterUpdateSNAC::CliRosterUpdateSNAC(SBLItem i)
+CliRosterUpdateSNAC::CliRosterUpdateSNAC(SBLItem* i)
 	: SNAC_Roster(ROSTER_CLI_ROSTERUPDATE, false) {
 
-	m_data << i.pack(); /* the item must have the correct info */
+	m_data << i->pack(); /* the item must have the correct info */
 }
 CliRosterUpdateSNAC::~CliRosterUpdateSNAC() { }
 
 	//CliRosterDeleteSNAC
-CliRosterDeleteSNAC::CliRosterDeleteSNAC(SBLItem i)
+CliRosterDeleteSNAC::CliRosterDeleteSNAC(SBLItem* i)
 	: SNAC_Roster(ROSTER_CLI_ROSTERDELETE, true) {
-	m_data << i.pack();
+	m_data << i->pack();
 }
 CliRosterDeleteSNAC::~CliRosterDeleteSNAC() { }
 

@@ -36,8 +36,16 @@ void TLV::setLength (const Word length){
 	m_length = length;
 }
 
+Word TLV::getLength (){
+	return m_length;
+}
+
 Buffer& TLV::data(){
 	return m_data;
+}
+
+Word TLV::getType(){
+	return m_type;
 }
 
 Buffer& TLV::pack(){
@@ -93,10 +101,6 @@ void UnformattedTLV::parseData(Buffer &b, Word len){
 	m_data.gotoBegin();
 }
 	
-Word UnformattedTLV::getType(){
-	return m_type;
-}
-
 Word UnformattedTLV::len(){
 	return m_length;
 }

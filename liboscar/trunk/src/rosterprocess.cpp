@@ -32,7 +32,7 @@ namespace liboscar {
 RosterProcess::RosterProcess(Client* c) { 
 	m_parent = c;
 	m_op = ROSTEROP_NONE;
-	m_ocontact = 0;
+	m_oitem = 0;
 }
 
 RosterProcess::~RosterProcess() { }
@@ -45,42 +45,36 @@ bool RosterProcess::addContact(UIN uin, QString groupname, QString nickname,  bo
 	// XXX: maybe we can reuse code with del and modify. Do it later
 	
 	// FIXME: find group name, and if == "", then default group
-	Contact* c = new Contact(uin, groupname, nickname);
-	SBLItem it(c);
+	SBLItem *it = new SBLItem;
+	UnformattedTLV* tlv;
 
-	startEdit();
+	it->setUin(uin);
+	it->setItemId(m_parent->getRoster()->getNextId());
+	it->setGroupId(m_parent->getRoster()->findItemByName(groupname, ITEM_GROUP)->getGroupId());
+	it->setType(ITEM_BUDDY);
 
-	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
-	CliRosterAddSNAC *s = new CliRosterAddSNAC(it);
-	f.addSNAC(s);
-	m_parent->send(f.pack());
+	tlv = new UnformattedTLV(TLV_TYPE_NICK);
+	tlv->data() << nickname;
+	it->addTLV(tlv);
 
-	endEdit();
+	if (reqAuth) {
+		tlv = new UnformattedTLV(TLV_TYPE_AUTH);
+		tlv->data() << nickname;
+		it->addTLV(tlv);
+	}
 
-	m_op = ROSTEROP_ADD_CONTACT;
-	m_ocontact = c;
+	addItem(it);
+
 	return true;
 }
 
 bool RosterProcess::delContact(UIN uin) {
-	Contact* c = m_parent->getRoster()->findContactByUin(uin);
+	SBLItem* it= m_parent->getRoster()->findItemByUin(uin, ITEM_BUDDY);
 	
-	if (!c) // not found
+	if (!it) // not found
 		return false;
 
-	SBLItem it(c);
-
-	startEdit();
-
-	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
-	CliRosterDeleteSNAC *s = new CliRosterDeleteSNAC(it);
-	f.addSNAC(s);
-	m_parent->send(f.pack());
-
-	endEdit();
-
-	m_op = ROSTEROP_DEL_CONTACT;
-	m_ocontact = c;
+	delItem(it);
 	return true;
 }
 
@@ -90,6 +84,50 @@ bool RosterProcess::authorize(UIN uin, QString message, bool ack) {
 	f.addSNAC(s);
 	m_parent->send(f.pack());
 	return true;
+}
+
+bool RosterProcess::setVisibleStatus(UIN uin, bool in) {
+	SBLItem *it = m_parent->getRoster()->findItemByUin(uin, ITEM_PERMIT);
+
+	if (!it && in) {
+		// Add UIN to visible list
+		it = new SBLItem();
+		it->setUin(uin);
+		it->setGroupId(0);
+		it->setItemId(m_parent->getRoster()->getNextId());
+		it->setType(ITEM_PERMIT);
+
+		this->addItem(it);
+		return true;
+	}
+	else if (it && !in) {
+		this->delItem(it);
+		return true;
+	}
+	else 
+		return false;
+}
+
+bool RosterProcess::setInvisibleStatus(UIN uin, bool in) {
+	SBLItem *it = m_parent->getRoster()->findItemByUin(uin, ITEM_DENY);
+
+	if (!it && in) {
+		// Add UIN to invisible list
+		it = new SBLItem();
+		it->setUin(uin);
+		it->setGroupId(0);
+		it->setItemId(m_parent->getRoster()->getNextId());
+		it->setType(ITEM_DENY);
+
+		this->addItem(it);
+		return true;
+	}
+	else if (it && !in) {
+		this->delItem(it);
+		return true;
+	}
+	else 
+		return false;
 }
 
 //
@@ -122,7 +160,7 @@ void RosterProcess::handleUpdateAck(RosterModifyAck a) {
 			reportSuccess();
 			break;
 		case ACK_REQ_AUTH:
-			addContact(m_ocontact->getUin(), "", "", true); // Ask for auth FIXME: save group and nick
+			addContact(m_oitem->getUin(), "", "", true); // Ask for auth FIXME: save group and nick
 			break;
 		default:
 			qDebug("RosterProcess: Server error during operation: %d", a);
@@ -147,23 +185,15 @@ void RosterProcess::addedMe(UIN uin){
 
 void RosterProcess::reportSuccess(){
 	switch (m_op) {
-		case ROSTEROP_ADD_CONTACT:
-			// Added a contact successfully acked. Report
-			m_parent->getRoster()->addContact(m_ocontact);
-			m_ocontact = 0;
+		case ROSTEROP_ADD_ITEM:
+			// Added a item successfully acked. Add to roster
+			m_parent->getRoster()->addItem(m_oitem);
+			m_oitem = 0;
 			break;
-		case ROSTEROP_DEL_CONTACT:
-			// Deleted a contact successfully acked. Report
-			m_parent->getRoster()->delContact(m_ocontact);
-			m_ocontact = 0;
-			break;
-		case ROSTEROP_MOD_CONTACT:
-			break;
-		case ROSTEROP_ADD_GROUP:
-			break;
-		case ROSTEROP_DEL_GROUP:
-			break;
-		case ROSTEROP_MOD_GROUP:
+		case ROSTEROP_DEL_ITEM:
+			// Deleted a item successfully acked. Del from roster
+			m_parent->getRoster()->delItem(m_oitem);
+			m_oitem = 0;
 			break;
 		default:
 			break;
@@ -185,6 +215,33 @@ void RosterProcess::endEdit() {
 	m_parent->send(f.pack());
 }
 
+void RosterProcess::addItem(SBLItem* it) {
+	startEdit();
+
+	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
+	CliRosterAddSNAC *s = new CliRosterAddSNAC(it);
+	f.addSNAC(s);
+	m_parent->send(f.pack());
+
+	endEdit();
+
+	m_oitem = it;
+	m_op = ROSTEROP_ADD_ITEM;
 }
 
+void RosterProcess::delItem(SBLItem* it) {
+	startEdit();
+
+	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
+	CliRosterDeleteSNAC *s = new CliRosterDeleteSNAC(it);
+	f.addSNAC(s);
+	m_parent->send(f.pack());
+
+	endEdit();
+
+	m_oitem = it;
+	m_op = ROSTEROP_DEL_ITEM;
+}
+
+}
 #include "rosterprocess.moc"

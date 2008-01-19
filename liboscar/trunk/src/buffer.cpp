@@ -295,6 +295,12 @@ void Buffer::prepend(DWord dw){
 	}
 }
 
+void Buffer::prepend(QString s){
+	for (int i = s.length()-1; i >= 0; i--)
+		m_data.push_front(s[i].toAscii());
+	m_data.push_front(s.length());
+}
+
 void Buffer::remove(unsigned int num){
 	unsigned int i=0;
 

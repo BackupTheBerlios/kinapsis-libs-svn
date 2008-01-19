@@ -78,17 +78,21 @@ SET(liboscar_SRCS
 
 SET(liboscar_HDRS
 	avatarlistener.h
+	avatarprocess.h
 	buffer.h 
 	capabilities.h 
 	client.h 
 	connection.h 
 	connectionresult.h 
 	contact.h 
+	contactavatartlv.h
 	connectionlistener.h 
 	directconnectiontlv.h 
 	families.h 
 	filetransferlistener.h
+	filetransferprocess.h
 	ftdata.h
+	ftstatus.h
 	istypinglistener.h 
 	liboscar.h 
 	loginservice.h

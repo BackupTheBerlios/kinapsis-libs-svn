@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Luis Cidoncha                                   *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -25,15 +25,8 @@ namespace liboscar {
 
 SBLItem::SBLItem() { }
 
-SBLItem::SBLItem(Contact* c) {  /* XXX: maybe not useful */
-	m_name = c->getUin().getId();
-	m_itemid = c->getId();
-	setTypeBuddy(false, c->getNickname());
-}
-
-
-void SBLItem::setName(QString name) {
-	m_name = name;
+void SBLItem::setUin(UIN uin) {
+	m_uin = uin;
 }
 
 void SBLItem::setGroupId(Word group){
@@ -44,55 +37,12 @@ void SBLItem::setItemId(Word item){
 	m_itemid = item;
 }
 
-void SBLItem::setTypeBuddy(bool reqAuth, QString nick, QString mail, QString smsnumber, QString comment) {
-
-	UnformattedTLV *tlv;
-
-	m_type = ITEM_BUDDY;
-
-	if (reqAuth){
-		tlv = new UnformattedTLV(TLV_TYPE_AUTH);
-		addTLV(tlv);
-	}
-
-	if (nick != "") {
-		tlv = new UnformattedTLV(TLV_TYPE_NICK);
-		tlv->data() << (Word) nick.length();
-		tlv->data() << nick;
-		addTLV(tlv);
-	}
-
-	if (comment != "") {
-		tlv = new UnformattedTLV(TLV_TYPE_COMMENT);
-		tlv->data() << (Word) comment.length();
-		tlv->data() << comment;
-		addTLV(tlv);
-	}
-
-	if (smsnumber != "") {
-		tlv = new UnformattedTLV(TLV_TYPE_SMS);
-		tlv->data() << (Word) smsnumber.length();
-		tlv->data() << smsnumber;
-		addTLV(tlv);
-	}
-
-	if (mail != "") {
-		tlv = new UnformattedTLV(TLV_TYPE_MAIL);
-		tlv->data() << (Word) mail.length();
-		tlv->data() << mail;
-		addTLV(tlv);
-	}
-
-}
-
 void SBLItem::setType(SBLType type){
 	m_type = type;
-	// TODO: add TLV's
 }
 
-
-QString SBLItem::getName() {
-	return m_name;
+UIN SBLItem::getUin() {
+	return m_uin;
 }
 
 Word SBLItem::getGroupId(){
@@ -107,42 +57,43 @@ SBLType SBLItem::getType(){
 	return m_type;
 }
 
-
-void SBLItem::addTLV(TLV *tlv){
-	m_tlvs.append(tlv);
+void SBLItem::addTLV(TLV* tlv) {
+	m_tlvs.addTLV(tlv);
 }
 
-bool SBLItem::delTLV(TLV *tlv){
-	for (int i = 0; i < m_tlvs.size(); ++i) {
-	     if (m_tlvs.at(i) == tlv){
-		     m_tlvs.removeAt(i);
-		     return true; //found
-	     }
-	}
-	return false; // not found
-}
-
-QList<TLV*> SBLItem::getTLVs(){
+TLVChain& SBLItem::getTLVs(){
 	return m_tlvs;
 }
 
 void SBLItem::parse(Buffer& b) {
-	// TODO: parse
+	Word w,len ;
+
+	m_uin.parse(b);
+	b.removeFromBegin();
+
+	b >> w;
+	this->setGroupId(w);
+	b >> w;
+	this->setItemId(w);
+	b >> w;
+	this->setType((SBLType) w);
+
+	m_tlvs.parseLen(b);
 }
 
 Buffer& SBLItem::pack(){ 
 
-	for (int i = 0; i < m_tlvs.size(); i++)
-		m_data << m_tlvs[i]->pack();
+	m_data << m_tlvs.pack();
 	
-	// TODO: prepend data
+	m_data.prepend((Word) m_type);
+	m_data.prepend(m_itemid);
+	m_data.prepend(m_groupid);
+	m_data.prepend(m_uin.getId());
 	
 	return m_data;
 }
 
-SBLItem::~SBLItem(){
-	qDeleteAll(m_tlvs);
-}
+SBLItem::~SBLItem(){ }
 	
 
 }

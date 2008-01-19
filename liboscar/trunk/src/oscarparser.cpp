@@ -492,7 +492,7 @@ void OscarParser::parseCh2Roster(Buffer& buf) {
 	DWord reference;
 
 	SrvReplyListsSNAC srl;
-	SrvReplyRosterSNAC srr;
+	//SrvReplyRosterSNAC srr;
 	SrvUpdateAckSNAC sua;
 	SrvReplyRosterOkSNAC srro;
 	SrvAuthReqSNAC sar;

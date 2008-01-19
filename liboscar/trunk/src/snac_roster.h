@@ -212,7 +212,7 @@ public:
 class CliRosterAddSNAC : public SNAC_Roster {
 
 public:
-	CliRosterAddSNAC(SBLItem i);
+	CliRosterAddSNAC(SBLItem* i);
 	virtual ~CliRosterAddSNAC();
 
 	void parse(Buffer &b) {return ; };
@@ -221,7 +221,7 @@ public:
 class CliRosterUpdateSNAC : public SNAC_Roster {
 
 public:
-	CliRosterUpdateSNAC(SBLItem i);
+	CliRosterUpdateSNAC(SBLItem* i);
 	virtual ~CliRosterUpdateSNAC();
 
 	void parse(Buffer &b) {return ; };
@@ -230,7 +230,7 @@ public:
 class CliRosterDeleteSNAC : public SNAC_Roster {
 
 public:
-	CliRosterDeleteSNAC(SBLItem i);
+	CliRosterDeleteSNAC(SBLItem* i);
 	virtual ~CliRosterDeleteSNAC();
 
 	void parse(Buffer &b) {return ; };

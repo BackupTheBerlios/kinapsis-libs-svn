@@ -95,6 +95,9 @@ public:
 	
 	void setType (const Word type);
 	void setLength (const Word length);
+	Word getLength ();
+	Word getType();
+
 	Buffer& data();
 	Buffer& pack(); /* pack the TLV for sending */
 
@@ -113,7 +116,6 @@ public:
 	UnformattedTLV(const Word type);
 	virtual ~UnformattedTLV();
 	
-	Word getType();
 	Word len();
 
 	void specPack() { return ; };

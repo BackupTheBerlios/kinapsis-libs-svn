@@ -40,6 +40,10 @@ TLVChain::~TLVChain(){
 	*/
 }
 	
+void TLVChain::addTLV(TLV* tlv) {
+	m_map[tlv->getType()] = tlv;
+}
+
 bool TLVChain::exists(Word type) {
 	return m_map.contains(type);
 }
@@ -56,6 +60,21 @@ int TLVChain::len(){
 	return m_map.size();
 }
 
+void TLVChain::parseLen(Buffer& b) {
+	Word len;
+	UnformattedTLV* tlv(TLV_TYPE_GENERIC);
+
+	b >> len;
+
+	while (len){
+		b.removeFromBegin();
+		tlv->parse(b);
+		this->addTLV(tlv);
+		len -= (tlv->data().len() + 4);
+	}
+	b.removeFromBegin();
+}
+
 void TLVChain::parse(Buffer& b, bool withcount) {
 
 	if (!b.len())
@@ -67,16 +86,25 @@ void TLVChain::parse(Buffer& b, bool withcount) {
 
 		b >> count;
 		for (i=0; i < count; i++)
-			addItem(b);
-	}
-	else{
-		while (b.len())
-			addItem(b);
-	}
+			addItem(b); 
+	} 
+	else { 
+		while (b.len()) addItem(b); 
+	} 
 }
 	
-TLV * & TLVChain::operator[] (Word type) {
-	return m_map[type];
+TLV * & TLVChain::operator[] (Word type) { return m_map[type]; }
+
+Buffer& TLVChain::pack() {
+	QMapIterator<Word, TLV*> i(m_map);
+	m_data.gotoBegin();
+
+	while (i.hasNext()) {
+		i.next();
+		m_data << i.value()->pack();
+	}
+
+	return m_data;
 }
 
 }

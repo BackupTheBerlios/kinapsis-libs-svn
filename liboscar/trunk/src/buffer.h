@@ -55,6 +55,7 @@ public:
 	void prepend(Byte);
 	void prepend(Word);
 	void prepend(DWord);
+	void prepend(QString);
 
 	void remove(unsigned int num = 1);
 	void removeFromBegin();

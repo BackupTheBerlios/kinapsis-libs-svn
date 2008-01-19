@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006-2007 by Luis Cidoncha                              *
+ *   Copyright (C) 2006-2008 by Luis Cidoncha                              *
  *   luis.cidoncha@gmail.com                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -29,47 +29,47 @@ Roster::Roster() {
 }
 
 Roster::~Roster() { 
-	qDeleteAll(m_data); // delete the contacts
+	qDeleteAll(m_data); // delete the items
 }
 
-//
-// CONTACTS
-//
-
-void Roster::addContact(Contact* contact) {
-	m_data.append(contact);
-	Contact c(contact);
-	emit contactAdded(contact);
+void Roster::addItem(SBLItem* item) {
+	m_data.append(item);
+	m_idmap[item->getItemId()] = true; // id we can't use
+	if (item->getType()== ITEM_BUDDY){
+		Contact c(item, this->findItemById(item->getGroupId(), ITEM_GROUP)->getUin().getId());
+		emit contactAdded(c);
+	}
+	else if (item->getType()== ITEM_GROUP)
+		emit groupAdded(item->getUin().getId());
 }
 
-bool Roster::delContact(Contact* contact) {
-	UIN uin = contact->getUin();
+bool Roster::delItem(SBLItem* item) {
+	UIN uin = item->getUin();
+	SBLType type = item->getType();
+
+	if (type != ITEM_GROUP) // don't remove groups id (because all of them have 0x0000)
+		m_idmap.remove(item->getItemId());
+
 	for (int i = 0; i < m_data.size(); ++i) {
-		if (m_data.at(i) == contact){
+		if (m_data.at(i) == item){
 			m_data.removeAt(i);
-			emit contactDeleted(uin);
+			if (type == ITEM_BUDDY) 
+				emit contactDeleted(uin);
+			else if (type == ITEM_GROUP)
+				emit groupDeleted(uin.getId());
 			return true; //found
 		}
 	}
 	return false; // not found
 }
 
-//
-// GROUPS
-//
+int Roster::getNextId() {
+	int i = 0;
 
-void Roster::addGroup(QString name, int gid){
-	m_groups[name] = gid;
-	emit groupAdded(name);
+	while (m_idmap.contains(i)) i++;
+
+	return i;
 }
-
-bool Roster::delGroup(QString name) {
-}
-
-bool Roster::delGroup(int gid ) {
-
-}
-
 
 //
 // OTHERS
@@ -87,95 +87,53 @@ unsigned int Roster::len() {
 	return m_data.count();
 }
 
-QList<Contact *>& Roster::getContacts() {
+QList<SBLItem *>& Roster::getItems() {
 	return m_data;
 }
 
-GroupMap Roster::getGroupMap(){
-	return m_groups;
-}
-
-Contact* Roster::findContactById(Word id){
+SBLItem* Roster::findItemByUin(UIN uin, SBLType t) {
 	int i = 0;
-
 	for (i=0;i<m_data.size();i++)
-		if (m_data[i]->getId() == id) break;
+		if ((m_data[i]->getUin().getId() == uin.getId()) && (m_data[i]->getType() == t)) break;
 
 	if (i == m_data.size())
-		return NULL;
+		return 0;
 	else
 		return m_data[i];
 }
 
-Contact* Roster::findContactByUin(UIN uin){
-	int i = 0;
+SBLItem* Roster::findItemByName(QString n, SBLType t) {
+	return this->findItemByUin(UIN(n), t);
+}
 
+SBLItem* Roster::findItemById(int id, SBLType t) {
+	int i = 0;
 	for (i=0;i<m_data.size();i++)
-		if (m_data[i]->getUin().getId() == uin.getId()) break;
+		if ((m_data[i]->getItemId() == id) && (m_data[i]->getType() == t)) break;
 
 	if (i == m_data.size())
-		return NULL;
+		return 0;
 	else
 		return m_data[i];
 }
 
 void Roster::parse(Buffer &b){
-
-	UnformattedTLV tlv(TLV_TYPE_GENERIC);
 	Byte by;
-	Word count, len, group, id, type;
-	Word i;
+	Word count;
 	DWord time;
-	Contact *c = 0;
-
-	QMap<Byte, QString> rmap;
-
-	QString name, nick;
+	SBLItem *s = 0;
 
 	b.removeFromBegin();
 	b.gotoBegin();
 	b >> by; // 0x00 (¿?)
 
 	b >> count;
-	i = count;
 	b.removeFromBegin();
 
-	while (i--){
-		name = ""; nick = "";
-		b.readString(name);
-		b.removeFromBegin();
-		b >> group;
-		b >> id;
-		if (id == 0 && group != 0){ /* We have a group  (that's not master group) */
-			addGroup(name, group);
-			rmap[group] = name;
-		}
-		b >> type;
-		b >> len;
-		while (len){
-			// TODO: handle more TLVs and groups and ...
-			b.removeFromBegin();
-			tlv.parse(b);
-			switch (tlv.getType()){
-				case 0x0131:
-					tlv.data().gotoBegin();
-					tlv.data().readString(nick, tlv.len());
-					break;
-				case 0x0066:
-					c->setAuth(false);
-					break;
-				default:
-					break;
-			}
-			if (type == 0x0000){
-				c = new Contact();
-				c->setUin(UIN(name));
-				c->setNickname(nick);
-				c->setGroup(rmap[group]);
-				addContact(c);
-			}
-			len -= (tlv.data().len() + 4);
-		}
+	while (count--){
+		s = new SBLItem();
+		s->parse(b);
+		this->addItem(s);
 	}
 	
 	b >> time;
