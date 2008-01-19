@@ -29,6 +29,7 @@ namespace liboscar {
 UserInfo::UserInfo() {
 	m_class = CLASS_UNCONFIRMED;
 	m_dc = 0;
+	m_av = 0;
 	m_warn = 0;
 	m_createtime = m_signontime = m_idletime = m_createtime = m_onlinetime = 0;
 	m_extip = 0;
@@ -37,6 +38,7 @@ UserInfo::UserInfo() {
 
 UserInfo::~UserInfo() {
 	delete m_dc;
+	delete m_av;
 }
 	
 UIN UserInfo::getUin(){
@@ -69,6 +71,10 @@ DWord UserInfo::getOnlineTime() {
 
 UserClass UserInfo::getUserClass() {
 	return m_class;
+}
+
+ContactAvatarTLV* UserInfo::getAvatarInfo() {
+	return m_av;
 }
 
 void UserInfo::setStatus(PresenceStatus status) {
@@ -137,6 +143,10 @@ void UserInfo::parse(Buffer& b) {
 			case 0x000f:
 				tlv.parseData(b, len);
 				tlv.data() >> m_onlinetime;
+				break;
+			case 0x001d:
+				m_av = new ContactAvatarTLV();
+				m_av->parse(b);
 				break;
 			default: // Unknown data, forget it
 				tlv.parseData(b, len);

@@ -58,6 +58,8 @@ namespace liboscar {
 	const Word TLV_TYPE_LESSER = 0x0019;
 	const Word TLV_TYPE_BUILD = 0x001a;
 
+	const Word TLV_TYPE_AVATAR = 0x001d;
+
 	const Word TLV_TYPE_AUTH = 0x0066;
 
 	const Word TLV_TYPE_MESSAGE = 0x0101;

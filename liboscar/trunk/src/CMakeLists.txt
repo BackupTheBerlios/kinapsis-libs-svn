@@ -8,6 +8,8 @@ INCLUDE(${QT_USE_FILE})
 SET(CMAKE_BUILD_TYPE Debug)
 
 SET(liboscar_SRCS
+	avatarlistener.cpp
+	avatarprocess.cpp
 	buffer.cpp
 	capabilities.cpp
 	capabilitiestlv.cpp
@@ -16,6 +18,7 @@ SET(liboscar_SRCS
 	connectionlistener.cpp
 	connectionresult.cpp
 	contact.cpp
+	contactavatartlv.cpp
 	directconnectiontlv.cpp
 	errortlv.cpp
 	families.cpp
@@ -62,6 +65,7 @@ SET(liboscar_SRCS
 	snac_newuser.cpp
 	snac_roster.cpp
 	snac_service.cpp
+	snac_ssbi.cpp
 	statustlv.cpp
 	tlvchain.cpp
 	tlv.cpp
@@ -73,6 +77,7 @@ SET(liboscar_SRCS
 )
 
 SET(liboscar_HDRS
+	avatarlistener.h
 	buffer.h 
 	capabilities.h 
 	client.h 

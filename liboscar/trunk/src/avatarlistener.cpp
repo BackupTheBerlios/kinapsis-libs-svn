@@ -19,72 +19,14 @@
  ***************************************************************************/
 
 
-#ifndef _SERVICE_H_
-#define _SERVICE_H_
-
-#include "buffer.h"
-#include "parser.h"
-#include "connection.h"
-#include "connectionresult.h"
-#include <qthread.h>
-#include <qmetatype.h>
+#include "avatarlistener.h"
 
 namespace liboscar {
 
-class Service : public QThread {
-Q_OBJECT
+AvatarListener::AvatarListener() { }
 
-public:
-	Service(ProtocolType type=ICQ);
-	virtual ~Service();
-
-	void connect(QString server, int port);
-	void connect(int port);
-
-	ProtocolType getType();
-
-	void send(Buffer& b);
-
-	unsigned int getId();
-
-signals:
-	void serviceEnded(unsigned int, ConnectionResult);
-
-public slots:
-	virtual void handleConnect();
-	void handleDisconnect();
-	void handleConnError(SocketError);
-
-protected:
-
-	void run();
-
-	virtual void create() = 0;
-
-	Connection* m_conn;
-	Parser* m_parser;
-
-	QString m_server;
-	int m_port;
-
-	ProtocolType m_type;
-	
-	DisconnectReason m_reason;
-
-private slots:
-	void finishedSlot();
-
-private:
-
-	virtual void registerMeta() = 0;
-
-	SocketError m_err;
-
-	unsigned int m_id;
-
-	static unsigned int m_seq;
-};
+AvatarListener::~AvatarListener() { }
 
 }
 
-#endif // _SERVICE_H_
+#include "avatarlistener.moc"

@@ -35,15 +35,15 @@ namespace liboscar {
 	// CONSTRUCTORS & DESTRUCTORS
 	//
 
-Client::Client(const ProtocolType type){
-	m_type = type;
+Client::Client(const ProtocolType type) 
+	: Service(type) {
 	initvalues();
 }
 
-Client::Client(const UIN& uin, const QString& password, const ProtocolType type){
+Client::Client(const UIN& uin, const QString& password, const ProtocolType type)
+	: Service(type) {
 	m_uin = uin;
 	m_password = password;
-	m_type = type;
 	initvalues();
 }
 
@@ -85,6 +85,7 @@ void Client::createProcess() {
 	m_omp = new OfflineMessagesProcess(this);
 	m_pp = new PresenceProcess(this);
 	m_ftp = new FileTransferProcess(this);
+	m_ap = new AvatarProcess(this);
 
 	// Connect processes between them
 	QObject::connect(m_l2p, SIGNAL(stage2finished()), m_ssp, SLOT(requestServiceSetup()));
@@ -97,18 +98,14 @@ void Client::createProcess() {
 }
 
 Client::~Client() { 
-	if (m_roster)
-		delete m_roster;
-	if (m_rp)
-		delete m_rp;
-	if (m_l2p)
-		delete m_l2p;
-	if (m_ssp)
-		delete m_ssp;
-	if (m_omp)
-		delete m_omp;
-	if (m_pp)
-		delete m_pp;
+	if (m_roster) delete m_roster;
+	if (m_rp) delete m_rp;
+	if (m_l2p) delete m_l2p;
+	if (m_ssp) delete m_ssp;
+	if (m_omp) delete m_omp;
+	if (m_pp) delete m_pp;
+	if (m_ftp) delete m_ftp;
+	if (m_ap) delete m_ap;
 }
 
 	//
@@ -121,10 +118,6 @@ QString Client::getPassword(){
 
 void Client::setPassword(const QString& password){
 	m_password = password;
-}
-
-ProtocolType Client::getType(){
-	return m_type;
 }
 
 UIN Client::getUIN(){
@@ -219,6 +212,12 @@ void Client::create() {
 		QObject::connect(m_parser, SIGNAL(serverUserInfo(SrvUserInfoSNAC)), m_pp, SLOT(newAwayMessage(SrvUserInfoSNAC)));
 		// FileTransferProcess (m_ftp) signals
 		QObject::connect(m_parser, SIGNAL(newMessage(Message)), m_ftp, SLOT(messageArrived(Message)));
+		// AvatarProcess (m_ap) signals
+		QObject::connect(m_parser, SIGNAL(userOnlineInfo(UserInfo)), 
+				m_ap, SLOT(userOnlineInfo(UserInfo)));
+		QObject::connect(m_parser, SIGNAL(ownIconAck(QByteArray)), m_ap, SLOT(ownIconAck(QByteArray)));
+		QObject::connect(m_parser, SIGNAL(iconArrived(UIN, QByteArray, QByteArray)), 
+				m_ap, SLOT(iconInfo(UIN, QByteArray, QByteArray)));
 	}
 
 }
@@ -500,6 +499,17 @@ void Client::addFileTransferListener(FileTransferListener *fl) {
 
 void Client::delFileTransferListener(FileTransferListener *fl) {
 	QObject::disconnect(this, 0, fl, 0);
+}
+
+void Client::addAvatarListener(AvatarListener *al) {
+	QObject::connect(m_ap, SIGNAL(contactIconHash(UIN, QByteArray)), 
+			al , SLOT(contactIconHash(UIN, QByteArray)));
+	QObject::connect(m_ap, SIGNAL(iconInfoArrived(UIN, QByteArray, QByteArray)), 
+			al , SLOT(iconInfo(UIN, QByteArray, QByteArray)));
+}
+
+void Client::delAvatarListener(AvatarListener *al) {
+	QObject::disconnect(this, 0, al, 0);
 }
 
 }

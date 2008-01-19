@@ -96,6 +96,7 @@ public:
 	virtual ~SrvUserOnlineSNAC();
 	UIN getUin();
 	PresenceStatus getStatus();
+	UserInfo getUserInfo();
 	void parse(Buffer &b);
 private:
 	UserInfo m_info;

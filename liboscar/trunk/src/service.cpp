@@ -25,13 +25,14 @@ namespace liboscar {
 
 	unsigned int Service::m_seq = 0;
 
-Service::Service() {
+Service::Service(ProtocolType t) {
 	m_conn = 0;
 	m_parser = 0;
 	m_port = -1;
 	m_server = "";
 	m_err = UNKNOWN_ERROR;
 	m_reason = NO_ERROR;
+	m_type = t;
 
 	m_id = m_seq++;
 
@@ -42,6 +43,10 @@ Service::Service() {
 }
 
 Service::~Service() { }
+
+ProtocolType Service::getType(){
+	return m_type;
+}
 
 void Service::connect(QString server, int port) {
 	m_server = server;

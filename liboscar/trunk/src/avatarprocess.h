@@ -19,72 +19,40 @@
  ***************************************************************************/
 
 
-#ifndef _SERVICE_H_
-#define _SERVICE_H_
+#ifndef _AVATARPROCESS_H_
+#define _AVATARPROCESS_H_
 
-#include "buffer.h"
-#include "parser.h"
-#include "connection.h"
-#include "connectionresult.h"
-#include <qthread.h>
-#include <qmetatype.h>
+#include "liboscar.h"
+#include "service.h"
+#include "userinfo.h"
+#include <qobject.h>
 
 namespace liboscar {
 
-class Service : public QThread {
+class AvatarProcess : public QObject {
 Q_OBJECT
 
 public:
-	Service(ProtocolType type=ICQ);
-	virtual ~Service();
+	AvatarProcess(Service*);
+	virtual ~AvatarProcess();
 
-	void connect(QString server, int port);
-	void connect(int port);
-
-	ProtocolType getType();
-
-	void send(Buffer& b);
-
-	unsigned int getId();
-
-signals:
-	void serviceEnded(unsigned int, ConnectionResult);
+	void requestIconFor(UIN, QByteArray);
+	void uploadIcon(QString);
 
 public slots:
-	virtual void handleConnect();
-	void handleDisconnect();
-	void handleConnError(SocketError);
+	void userOnlineInfo(UserInfo);
+	void ownIconAck(QByteArray);
+	void iconInfo(UIN, QByteArray, QByteArray);
 
-protected:
-
-	void run();
-
-	virtual void create() = 0;
-
-	Connection* m_conn;
-	Parser* m_parser;
-
-	QString m_server;
-	int m_port;
-
-	ProtocolType m_type;
-	
-	DisconnectReason m_reason;
-
-private slots:
-	void finishedSlot();
+signals:
+	void contactIconHash (UIN, QByteArray);
+	void iconInfoArrived (UIN, QByteArray, QByteArray);
 
 private:
+	Service* m_parent;
 
-	virtual void registerMeta() = 0;
-
-	SocketError m_err;
-
-	unsigned int m_id;
-
-	static unsigned int m_seq;
 };
 
 }
 
-#endif // _SERVICE_H_
+#endif // _AVATARPROCESS_H_

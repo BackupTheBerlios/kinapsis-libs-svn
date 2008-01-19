@@ -38,12 +38,14 @@
 #include "offlinemessagesprocess.h"
 #include "presenceprocess.h"
 #include "filetransferprocess.h"
+#include "avatarprocess.h"
 #include "loginservice.h"
 #include "connectionlistener.h"
 #include "messagelistener.h"
 #include "presencelistener.h"
 #include "istypinglistener.h"
 #include "filetransferlistener.h"
+#include "avatarlistener.h"
 #include <qobject.h>
 #include <qbytearray.h>
 
@@ -74,9 +76,6 @@ public:
 	UIN getUIN();
 	void setUIN(const UIN& uin);
 	
-	void setType(const ProtocolType type);
-	ProtocolType getType();
-
 	void setAwayMessage(QString message);
 	QString getAwayMessage();
 
@@ -120,6 +119,8 @@ public:
 	void delIsTypingListener(IsTypingListener *tl);
 	void addFileTransferListener(FileTransferListener *fl);
 	void delFileTransferListener(FileTransferListener *fl);
+	void addAvatarListener(AvatarListener *al);
+	void delAvatarListener(AvatarListener *al);
 
 	virtual ~Client();
 
@@ -171,7 +172,6 @@ private:
 
 	UIN m_uin;
 	QString m_password;
-	ProtocolType m_type;
 	QString m_awaymsg;
 
 	ConnectionResult m_cr;
@@ -195,6 +195,7 @@ private:
 	OfflineMessagesProcess* m_omp;
 	PresenceProcess* m_pp;
 	FileTransferProcess* m_ftp;
+	AvatarProcess* m_ap;
 
 	LoginService* m_ls;
 };

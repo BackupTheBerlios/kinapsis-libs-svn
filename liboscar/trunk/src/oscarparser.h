@@ -102,6 +102,14 @@ signals:
 	void serverUserInfo(SrvUserInfoSNAC suis);
 
 	//
+	// To AvatarProcess signals
+	//
+	void userOnlineInfo(UserInfo);
+	void ownIconAck(QByteArray);
+	void iconArrived(UIN, QByteArray, QByteArray);
+	
+
+	//
 	// To UinRegistrationProcess signals
 	//
 	void newUin(UIN uin);
@@ -123,6 +131,7 @@ private:
 	void parseCh2Interval(Buffer& buf);
 	void parseCh2Roster(Buffer& buf);
 	void parseCh2ICQ(Buffer& buf);
+	void parseCh2SSBI(Buffer& buf);
 	void parseCh2NewUser(Buffer& buf);
 
 	void sendKeepAlive();

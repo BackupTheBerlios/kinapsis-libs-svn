@@ -123,6 +123,10 @@ PresenceStatus SrvUserOnlineSNAC::getStatus(){
 	return m_info.getStatus();
 }
 
+UserInfo SrvUserOnlineSNAC::getUserInfo() {
+	return m_info;
+}
+
 void SrvUserOnlineSNAC::parse(Buffer &b) {
 	// FIXME: some TLVs maybe are not getting properly parsed
 	m_info.parse(b);

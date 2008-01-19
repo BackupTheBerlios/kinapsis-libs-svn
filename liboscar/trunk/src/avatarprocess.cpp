@@ -19,72 +19,67 @@
  ***************************************************************************/
 
 
-#ifndef _SERVICE_H_
-#define _SERVICE_H_
-
-#include "buffer.h"
-#include "parser.h"
-#include "connection.h"
-#include "connectionresult.h"
-#include <qthread.h>
-#include <qmetatype.h>
+#include "avatarprocess.h"
+#include "snac_ssbi.h"
+#include "flap.h"
 
 namespace liboscar {
 
-class Service : public QThread {
-Q_OBJECT
-
-public:
-	Service(ProtocolType type=ICQ);
-	virtual ~Service();
-
-	void connect(QString server, int port);
-	void connect(int port);
-
-	ProtocolType getType();
-
-	void send(Buffer& b);
-
-	unsigned int getId();
-
-signals:
-	void serviceEnded(unsigned int, ConnectionResult);
-
-public slots:
-	virtual void handleConnect();
-	void handleDisconnect();
-	void handleConnError(SocketError);
-
-protected:
-
-	void run();
-
-	virtual void create() = 0;
-
-	Connection* m_conn;
-	Parser* m_parser;
-
-	QString m_server;
-	int m_port;
-
-	ProtocolType m_type;
-	
-	DisconnectReason m_reason;
-
-private slots:
-	void finishedSlot();
-
-private:
-
-	virtual void registerMeta() = 0;
-
-	SocketError m_err;
-
-	unsigned int m_id;
-
-	static unsigned int m_seq;
-};
-
+AvatarProcess::AvatarProcess(Service* s) { 
+	m_parent = s;
 }
 
-#endif // _SERVICE_H_
+AvatarProcess::~AvatarProcess() { }
+
+void AvatarProcess::requestIconFor(UIN uin, QByteArray md5) {
+	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
+	CliICQRequestIconSNAC *iis = 0;
+	CliAIMRequestIconSNAC *ais = 0;
+
+	if (m_parent->getType() == ICQ) {
+		iis = new CliICQRequestIconSNAC(uin, md5);
+		f.addSNAC(iis);
+	}
+	else {
+		ais = new CliAIMRequestIconSNAC(uin, md5);
+		f.addSNAC(ais);
+	}
+
+	m_parent->send(f.pack());
+
+	if (iis) delete iis;
+	if (ais) delete ais;
+}
+
+void AvatarProcess::uploadIcon(QString fname) {
+	// This is the quick way that Kopete and Pidgin use.
+	// The long way found in Alexandr Shutko's doc is not
+	// being implemented.
+	
+	FLAP f(0x02, Connection::getNextSeqNumber(), 0);
+	CliUploadIconSNAC* uis = new CliUploadIconSNAC(fname);
+	f.addSNAC(uis);
+	m_parent->send(f.pack());
+	delete uis;
+}
+
+//
+// SLOTS
+//
+
+void AvatarProcess::userOnlineInfo(UserInfo ui) {
+	if (ui.getAvatarInfo()->hasIconInfo())
+		emit contactIconHash(ui.getUin(), ui.getAvatarInfo()->getMD5Hash());
+}
+
+void AvatarProcess::ownIconAck(QByteArray h) {
+	// XXX: report to user?
+	qDebug("[AvatarProcess]: server ACKed our icon");
+}
+
+void AvatarProcess::iconInfo(UIN uin, QByteArray md5, QByteArray icon) {
+	emit iconInfoArrived(uin, md5, icon);
+}
+
+}
+#include "avatarprocess.moc"

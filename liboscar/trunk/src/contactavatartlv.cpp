@@ -19,72 +19,46 @@
  ***************************************************************************/
 
 
-#ifndef _SERVICE_H_
-#define _SERVICE_H_
-
-#include "buffer.h"
-#include "parser.h"
-#include "connection.h"
-#include "connectionresult.h"
-#include <qthread.h>
-#include <qmetatype.h>
+#include "contactavatartlv.h"
 
 namespace liboscar {
 
-class Service : public QThread {
-Q_OBJECT
-
-public:
-	Service(ProtocolType type=ICQ);
-	virtual ~Service();
-
-	void connect(QString server, int port);
-	void connect(int port);
-
-	ProtocolType getType();
-
-	void send(Buffer& b);
-
-	unsigned int getId();
-
-signals:
-	void serviceEnded(unsigned int, ConnectionResult);
-
-public slots:
-	virtual void handleConnect();
-	void handleDisconnect();
-	void handleConnError(SocketError);
-
-protected:
-
-	void run();
-
-	virtual void create() = 0;
-
-	Connection* m_conn;
-	Parser* m_parser;
-
-	QString m_server;
-	int m_port;
-
-	ProtocolType m_type;
-	
-	DisconnectReason m_reason;
-
-private slots:
-	void finishedSlot();
-
-private:
-
-	virtual void registerMeta() = 0;
-
-	SocketError m_err;
-
-	unsigned int m_id;
-
-	static unsigned int m_seq;
-};
-
+ContactAvatarTLV::ContactAvatarTLV() : TLV (TLV_TYPE_AVATAR){
+	m_info = false;
 }
 
-#endif // _SERVICE_H_
+ContactAvatarTLV::~ContactAvatarTLV(){ }
+
+bool ContactAvatarTLV::hasIconInfo() {
+	return m_info;
+}
+
+QByteArray ContactAvatarTLV::getMD5Hash() {
+	return m_md5;
+}
+
+void ContactAvatarTLV::specPack() {
+	//TODO: 
+}
+
+void ContactAvatarTLV::parse(Buffer& b){
+	Word id;
+	Byte flags, len;
+
+	b >> id;
+	b >> flags;
+	b >> len;
+
+	if (id == 0x0001){ // avatar info
+		b.readArray(m_md5, len);
+		m_info = true;
+	}
+	else
+		b.advance(len); // we don't care
+
+	b.removeFromBegin();
+}
+
+
+
+}

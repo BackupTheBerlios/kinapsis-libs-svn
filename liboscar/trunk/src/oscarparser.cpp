@@ -32,6 +32,7 @@
 #include "snac_roster.h"
 #include "snac_newuser.h"
 #include "snac_icq.h"
+#include "snac_ssbi.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -147,6 +148,9 @@ void OscarParser::parseCh2(Buffer& buf){
 			break;
 		case SNAC_FAM_ICQ:
 			parseCh2ICQ(buf);
+			break;
+		case SNAC_FAM_SSBI:
+			parseCh2SSBI(buf);
 			break;
 		case SNAC_FAM_NEWUSER:
 			parseCh2NewUser(buf);
@@ -368,6 +372,7 @@ void OscarParser::parseCh2Contact(Buffer& buf) {
 		case CONTACT_SRV_USERONLINE:
 			uos.parse(buf);
 			emit statusChanged(uos.getUin(), uos.getStatus());
+			emit userOnlineInfo(uos.getUserInfo());
 			break;
 		case CONTACT_SRV_USEROFFLINE:
 			uofs.parse(buf);
@@ -570,6 +575,44 @@ void OscarParser::parseCh2ICQ(Buffer& buf) {
 			break;
 		default:
 			qDebug("Unknown command on SNAC ICQ family");
+			break;
+	}
+}
+
+void OscarParser::parseCh2SSBI(Buffer& buf) {
+	Word command, flags;
+	DWord reference;
+
+	SrvSSBIErrSNAC ses;
+	SrvUploadAckSNAC uas;
+	SrvAIMIconResponseSNAC air;
+	SrvICQIconResponseSNAC iir;
+
+	buf >> command;
+	buf >> flags;
+	buf >> reference;
+
+	buf.removeFromBegin();
+
+	switch (command) {
+		case SSBI_SRV_SSBI_ERR:
+			ses.parse(buf);
+			qDebug("Error on channel 2 family 10: %d", ses.getError());
+			break;
+		case SSBI_SRV_UPLOADACK:
+			uas.parse(buf);
+			emit ownIconAck(uas.getHash());
+			break;
+		case SSBI_SRV_AIMRESPONSE:
+			air.parse(buf);
+			emit iconArrived(air.getUin(), air.getHash(), air.getIcon());
+			break;
+		case SSBI_SRV_ICQRESPONSE:
+			iir.parse(buf);
+			emit iconArrived(iir.getUin(), iir.getHash(), iir.getIcon());
+			break;
+		default:
+			qDebug("Unknown command on SNAC SSBI family");
 			break;
 	}
 }

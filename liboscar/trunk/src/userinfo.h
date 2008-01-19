@@ -26,6 +26,7 @@
 #include "buffer.h"
 #include "capabilities.h"
 #include "directconnectiontlv.h"
+#include "contactavatartlv.h"
 
 namespace liboscar {
 
@@ -49,6 +50,7 @@ public:
 	DWord getCreationTime();
 	DWord getOnlineTime();
 	UserClass getUserClass();
+	ContactAvatarTLV* getAvatarInfo();
 
 	void setStatus(PresenceStatus status);
 
@@ -58,6 +60,7 @@ private:
 	UIN m_uin;
 	Word m_warn;
 	DirectConnectionTLV *m_dc;
+	ContactAvatarTLV *m_av;
 	UserClass m_class;
 
 	DWord m_createtime;
