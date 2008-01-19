@@ -296,6 +296,14 @@ bool Client::authorize(UIN uin, QString message, bool auth) {
 	return m_rp->authorize(uin, message, auth);
 }
 
+bool Client::contactVisible(UIN uin, bool in) {
+	return m_rp->setVisibleStatus(uin, in);
+}
+
+bool Client::contactInvisible(UIN uin, bool in) {
+	return m_rp->setInvisibleStatus(uin, in);
+}
+
 		//
 		// FILETRANSFERPROCESS
 		//

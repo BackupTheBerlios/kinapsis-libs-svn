@@ -94,6 +94,9 @@ public:
 	bool addContact(UIN uin);
 	bool delContact(UIN uin);
 	bool authorize(UIN uin, QString message, bool ack);
+	bool contactVisible(UIN, bool);
+	bool contactInvisible(UIN, bool);
+
 
 		// FileTransferProcess
 	void acceptFileTransfer(QWord, bool);
