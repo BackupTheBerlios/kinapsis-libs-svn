@@ -67,6 +67,7 @@ void TLVChain::parseLen(Buffer& b) {
 	b >> len;
 
 	while (len){
+		tlv = new UnformattedTLV(TLV_TYPE_GENERIC);
 		b.removeFromBegin();
 		tlv->parse(b);
 		this->addTLV(tlv);

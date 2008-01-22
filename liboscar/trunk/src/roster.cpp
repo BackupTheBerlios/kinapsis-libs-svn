@@ -108,8 +108,14 @@ SBLItem* Roster::findItemByName(QString n, SBLType t) {
 
 SBLItem* Roster::findItemById(int id, SBLType t) {
 	int i = 0;
-	for (i=0;i<m_data.size();i++)
-		if ((m_data[i]->getItemId() == id) && (m_data[i]->getType() == t)) break;
+	if (t == ITEM_GROUP) { // all groups have id == 0, and gid
+		for (i=0;i<m_data.size();i++)
+			if ((m_data[i]->getGroupId() == id) && (m_data[i]->getType() == t)) break;
+	}
+	else {
+		for (i=0;i<m_data.size();i++)
+			if ((m_data[i]->getItemId() == id) && (m_data[i]->getType() == t)) break;
+	}
 
 	if (i == m_data.size())
 		return 0;

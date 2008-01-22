@@ -36,10 +36,7 @@ UserInfo::UserInfo() {
 	m_status = STATUS_ONLINE;
 }
 
-UserInfo::~UserInfo() {
-	delete m_dc;
-	delete m_av;
-}
+UserInfo::~UserInfo() { }
 	
 UIN UserInfo::getUin(){
 	return m_uin;

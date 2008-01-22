@@ -68,7 +68,7 @@ TLVChain& SBLItem::getTLVs(){
 void SBLItem::parse(Buffer& b) {
 	Word w,len ;
 
-	m_uin.parse(b);
+	m_uin.parse(b, 2);
 	b.removeFromBegin();
 
 	b >> w;

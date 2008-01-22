@@ -221,7 +221,7 @@ void SrvUserInfoSNAC::parse(Buffer &b) {
 				// TODO handle stuff
 				break;
 			default:
-				qDebug("Unknown TLV in server UserInfo reply.");
+				qDebug("Unknown TLV(%02x) in server UserInfo reply.", tlv.getType());
 		}
 		b.removeFromBegin();
 	}

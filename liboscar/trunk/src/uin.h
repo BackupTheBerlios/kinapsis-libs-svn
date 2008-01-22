@@ -41,7 +41,7 @@ public:
 	void setUin(const unsigned int uin);
 
 	void appendUin(Buffer &b);
-	void parse(Buffer &b);
+	void parse(Buffer &b, unsigned int lensize=1);
 
 private:
 	QString m_uin;

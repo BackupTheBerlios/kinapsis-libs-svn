@@ -54,13 +54,25 @@ void UIN::appendUin(Buffer &b){
 	b << m_uin;
 }
 
-void UIN::parse(Buffer &b){
-	Byte len, by;
-	unsigned int i;
+void UIN::parse(Buffer &b, unsigned int lensize){
+	Byte blen, by;
+	Word wlen;
+	unsigned int len=0;
+	unsigned int i=0;
 
 	//b.removeFromBegin();
 	//b.gotoBegin();
-	b >> len;
+	
+	if (lensize > 2)
+		return;
+	if (lensize == 1) {
+		b >> blen;
+		len = blen;
+	}
+	if (lensize == 2) {
+		b >> wlen;
+		len = wlen;
+	}
 
 	for (i=0; i < len; i++){
 		b >> by;
