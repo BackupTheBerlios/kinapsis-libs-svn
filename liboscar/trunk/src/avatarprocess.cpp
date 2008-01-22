@@ -68,8 +68,9 @@ void AvatarProcess::uploadIcon(QString fname) {
 //
 
 void AvatarProcess::userOnlineInfo(UserInfo ui) {
-	if (ui.getAvatarInfo()->hasIconInfo())
-		emit contactIconHash(ui.getUin(), ui.getAvatarInfo()->getMD5Hash());
+	if (ui.getAvatarInfo())
+		if (ui.getAvatarInfo()->hasIconInfo())
+			emit contactIconHash(ui.getUin(), ui.getAvatarInfo()->getMD5Hash());
 }
 
 void AvatarProcess::ownIconAck(QByteArray h) {
