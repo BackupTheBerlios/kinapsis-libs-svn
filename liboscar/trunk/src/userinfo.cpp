@@ -142,8 +142,12 @@ void UserInfo::parse(Buffer& b) {
 				tlv.data() >> m_onlinetime;
 				break;
 			case 0x001d:
-				m_av = new ContactAvatarTLV();
-				m_av->parse(b);
+				if (len == 0x14) { // it seems that TLV(0x001d isn't always the avatar one)
+					m_av = new ContactAvatarTLV();
+					m_av->parse(b);
+				}
+				else // forget it
+					tlv.parseData(b, len);
 				break;
 			default: // Unknown data, forget it
 				tlv.parseData(b, len);
