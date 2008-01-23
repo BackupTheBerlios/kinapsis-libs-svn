@@ -146,6 +146,7 @@ void FileReceiveService::handleDCheader(OFTHeader head) {
 		m_head.setType(OFTACK);
 		m_head.setReceivedChk(0xFFFF0000);
 		this->send(head.pack());
+		((OFTParser *)m_parser)->setRaw(true); // time for the file
 	}
 	else
 		qDebug("[FileReceiveService]: Got a non-PROMPT OFT2 header. That was unexpected.");
@@ -177,6 +178,7 @@ void FileReceiveService::handleDCdata(Buffer b) {
 		if (m_head.getFilesLeft() == 1)
 			m_head.setFlags(OFTFLAGDONE);
 		this->send(m_head.pack());
+		((OFTParser *)m_parser)->setRaw(false); // enough data!
 
 		if (m_head.getFilesLeft() == 1)
 			this->disconnect(); // finish it!

@@ -97,8 +97,10 @@ void FileSendService::handleProxyReady(OFTProxyReady r) {
 }
 
 void FileSendService::handleDCheader(OFTHeader h) {
-	if (h.getType() == OFTACK)
+	if (h.getType() == OFTACK){
+		((OFTParser *)m_parser)->setRaw(true);
 		this->sendFile(); // send data, you fools!
+	}
 	else if (h.getType() == OFTDONE)
 		this->fileDone(h);
 	else{
@@ -154,6 +156,7 @@ void FileSendService::sendFile() {
 		emit ftProgress(this->getId(), m_head.getBytesReceived(), m_head.getTotalSize());
 	}
 	f.close(); // nothing more here. Wait for an done.
+	((OFTParser *)m_parser)->setRaw(false);
 }
 
 void FileSendService::fileDone(OFTHeader h) {
