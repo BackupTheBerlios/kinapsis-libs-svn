@@ -60,7 +60,6 @@ void AvatarProcess::uploadIcon(QString fname) {
 	CliUploadIconSNAC* uis = new CliUploadIconSNAC(fname);
 	f.addSNAC(uis);
 	m_parent->send(f.pack());
-	delete uis;
 }
 
 //
