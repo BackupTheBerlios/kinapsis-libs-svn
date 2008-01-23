@@ -324,6 +324,18 @@ void Client::setFTListeningPort(int p) {
 	m_ftp->setListeningPort(p);
 }
 
+		//
+		// AVATARPROCESS
+		//
+
+void Client::requestIconFor(UIN uin, QByteArray md5) {
+	m_ap->requestIconFor(uin, md5);
+}
+
+void Client::uploadIcon(QString fname) {
+	m_ap->uploadIcon(fname);
+}
+
 	//
 	// SLOTS
 	//

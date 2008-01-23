@@ -97,13 +97,16 @@ public:
 	bool contactVisible(UIN, bool);
 	bool contactInvisible(UIN, bool);
 
-
 		// FileTransferProcess
 	void acceptFileTransfer(QWord, bool);
 	QWord sendFile(UIN, QString);
 
 	void setUseFTProxy(bool);
 	void setFTListeningPort(int);
+
+		// AvatarProcess
+	void requestIconFor(UIN, QByteArray);
+	void uploadIcon(QString);
 
 	// Process resources
 	Roster* getRoster();
