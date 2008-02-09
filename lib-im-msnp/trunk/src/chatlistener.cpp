@@ -35,7 +35,7 @@ void ChatListener::chatInfoSlot (int chatId, QString chatMsnClient, QString chat
 	this->chatInfo(chatId, chatMsnClient, chatIsLogging);
 }
 
-void ChatListener::chatArrivedMessageSlot (int chatId, QString chatMsnPassport, MSG chatMsg){
+void ChatListener::chatArrivedMessageSlot (int chatId, QString chatMsnPassport, QString chatMsg){
 	this->chatArrivedMessage(chatId, chatMsnPassport, chatMsg);
 }
 

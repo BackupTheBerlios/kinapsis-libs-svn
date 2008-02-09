@@ -30,7 +30,7 @@ public:
 	void chatLeavedTheRoom(int chatId, QString chatMsnPassport);
 	void chatIsTyping(int chatId, QString chatMsnPassport);
 	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
-	void chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMsg);
+	void chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg);
 
 	~MsnTest();
 private:

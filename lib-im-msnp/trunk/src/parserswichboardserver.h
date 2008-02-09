@@ -57,7 +57,7 @@ public:
 	~ParserSB(){printf ("MSN::ParserSB::log ## Parser deleted\n");}
 
 signals:
-       void chatArrivedMessage (int, QString, MSG);
+       void chatArrivedMessage (int, QString, QString);
        void chatInfo (int, QString, QString);
        void chatIsTyping (int, QString);
        void chatLeavedTheRoom(int, QString);

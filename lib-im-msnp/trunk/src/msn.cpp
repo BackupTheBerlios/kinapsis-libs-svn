@@ -32,74 +32,75 @@ MsnTest::MsnTest () {
 
 void MsnTest::onConnect()  {
         m_connected = 1;
-        printf("# CONNECTED\n\n\n");
+        printf("# CLIENT # CONNECTED\n\n\n");
 }
 
 void MsnTest::onDisconnect(ConnectionError) {
-        printf("# DISCONNECTED\n\n\n");
+        printf("# CLIENT # DISCONNECTED\n\n\n");
 }
 
 void MsnTest::onNewContact(Contact* c){
-	printf ("# CONTACT:%s\n",c->getPassport().toUtf8().data());
+	printf ("# CLIENT # CONTACT:%s\n",c->getPassport().toUtf8().data());
 }
 
 void MsnTest::onNewGroup(Group* g){
-	printf ("# GROUP:%s\n",g->getName().toUtf8().data());
+	printf ("# CLIENT # GROUP:%s\n",g->getName().toUtf8().data());
 }
 
 void MsnTest::presenceChanged (Contact* c){
 	switch (c->getStatus()){
 		case STATUS_NLN:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Online", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data());
+			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Online", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data());
 			m_client->initChat(c->getPassport());
 			break;
 		case STATUS_BSY:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Do Not Disturb", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
+			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Do Not Disturb", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
 			break;
 		case STATUS_IDL:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Not Available", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
+			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Not Available", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
 			break;
 		case STATUS_BRB:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Back early", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
+			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Back early", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
 			break;
 		case STATUS_AWY:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Away", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
+			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Away", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
 			break;
 		case STATUS_PHN:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"At phone", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
+			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"At phone", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
 			break;
 		case STATUS_LUN:
-			printf("# State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Eating", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
+			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Eating", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
 			break;
 		default:
-			printf("# State Changed. User Disconnected:%s\n",c->getPassport().toUtf8().data()); 
+			printf("#CLIENT # State Changed. User Disconnected:%s\n",c->getPassport().toUtf8().data()); 
 			break;
 	}
 }
 
 void MsnTest::personalMessage(Contact* c) {
-	printf ("#Mensaje personal de %s #--> %s\n",c->getPassport().toUtf8().data(), c->getPersMsg().toUtf8().data() );
+	printf ("# CLIENT #Mensaje personal de %s #--> %s\n",c->getPassport().toUtf8().data(), c->getPersMsg().toUtf8().data() );
 }
 
 void MsnTest::newChat (int chatId, QString msnPassport){
-        qDebug ("## NEW CHAT, begin with: %s in chat number: %i", msnPassport.toUtf8().data(), chatId);
+        qDebug ("# CLIENT ## NEW CHAT, begin with: %s in chat number: %i", msnPassport.toUtf8().data(), chatId);
 }
 
 void MsnTest::chatLeavedTheRoom(int chatId, QString chatMsnPassport){
-	qDebug ("## %s has left the room: %i", chatMsnPassport.toUtf8().data(), chatId);
+	qDebug ("# CLIENT ## %s has left the room: %i", chatMsnPassport.toUtf8().data(), chatId);
 }
 
 void MsnTest::chatIsTyping(int chatId, QString chatMsnPassport){
-	qDebug ("## Typing user: %s in chat number: %i ", chatMsnPassport.toUtf8().data(), chatId);
+	qDebug ("# CLIENT ## Typing user: %s in chat number: %i ", chatMsnPassport.toUtf8().data(), chatId);
 }
 
 void MsnTest::chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging){
-	qDebug ("## CLientName: %s Is Logging: %s in chat number: %i", chatMsnClient.toUtf8().data(), chatIsLogging.toUtf8().data(), chatId);
+	qDebug ("# CLIENT ## CLientName: %s Is Logging: %s in chat number: %i", chatMsnClient.toUtf8().data(), chatIsLogging.toUtf8().data(), chatId);
 }
 
-void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMsg){
-	qDebug ("## MESSAGE: `%s' from chat number: %i written by: %s", chatMsg.getMsg().toUtf8().data(), chatId, chatMsnPassport.toUtf8().data());
-	if (chatMsg.getMsg() == "eco") {
+void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg){
+	//qDebug ("# CLIENT ## MESSAGE: `%s' from chat number: %i written by: %s", chatMsg.getMsg().toUtf8().data(), chatId, chatMsnPassport.toUtf8().data());
+	qDebug ("# CLIENT ## MESSAGE: `%s' from chat number: %i written by: %s", chatMsg.toUtf8().data(), chatId, chatMsnPassport.toUtf8().data());
+	if (chatMsg == "eco") {
 		MSG m; 
 		m.addMsg("Eco Eco");
 		m.addEffect(EFFECT_ITALIC);
@@ -107,31 +108,31 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMs
 		m.addEffect(EFFECT_UNDERLINE);
 		m_client->sendChat(chatId, m);
 	}
-	if (chatMsg.getMsg() == "exit") m_client->disconnect();
-	if (chatMsg.getMsg() == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);
+	if (chatMsg == "exit") m_client->disconnect();
+	if (chatMsg == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);
 
-	if (chatMsg.getMsg() == "delPassport") {
+	if (chatMsg == "delPassport") {
 		Contact c;
 		c.setPassport(chatMsnPassport);
 		m_client->delContact(c);
 	}
-	if (chatMsg.getMsg() == "blkPassport") {
+	if (chatMsg == "blkPassport") {
 		Contact c;
 		c.setPassport(chatMsnPassport);
 		m_client->blockContact(c);
 	}
-	if (chatMsg.getMsg() == "deBlkPassport") {
+	if (chatMsg == "deBlkPassport") {
 		Contact c;
 		c.setPassport(chatMsnPassport);
 		m_client->deblockContact(c);
 	}
-	if (chatMsg.getMsg() == "addGroup") {
+	if (chatMsg == "addGroup") {
 		Group g;
 		g.setName(QString ("Minewgroup"));
 		m_client->addGroup(g);
 	}
 
-	if (chatMsg.getMsg() == "delGroup") {
+	if (chatMsg == "delGroup") {
 		Group g;
 		g.setName(QString ("Minewgroup"));
 		m_client->delGroup(g);
@@ -141,7 +142,7 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMs
 
 void MsnTest::run (){
 	m_client->connect();
-	qDebug("END OF CONNECT");
+	qDebug("# CLIENT # END OF CONNECT");
 	exit();
 }
 
