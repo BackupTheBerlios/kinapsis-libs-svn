@@ -169,7 +169,10 @@ namespace libimmsnp {
 
 			}
 		}
-		else return "";
+		else {
+			qDebug ("Error: Can not Connect to Nexus");	
+			return "";
+		}
 
 		
 	}

@@ -38,8 +38,10 @@ int msocket::connect (QString host, quint16 port) {
 		m_sslSocket->abort();
 		m_sslSocket->connectToHostEncrypted(m_host,m_port);
 
-		if (m_sslSocket->waitForEncrypted(30000)) 
+		if (m_sslSocket->waitForEncrypted(30000)){ 
 			qDebug ("MSN:: SSL Socket::CONNECTED to %s at %d", m_host.toUtf8().data(), m_port);
+			return 1;
+		}
 		else{
 			qDebug ("ERROR::MSN:: SSL Socket::Connecting : %s", m_sslSocket->errorString().toUtf8().data());
 			return 0;
@@ -50,8 +52,10 @@ int msocket::connect (QString host, quint16 port) {
 		m_socket->abort();
 		m_socket->connectToHost(m_host,m_port);
 
-		if (m_socket->waitForConnected(30000)) 
+		if (m_socket->waitForConnected(30000)){ 
 			qDebug ("MSN::Socket::CONNECTED to %s at %d", m_host.toUtf8().data(), m_port);
+			return 1;
+		}
 		else{
 			qDebug ("ERROR::MSN::Socket::Connecting : %s", m_socket->errorString().toUtf8().data());
 			return 0;
