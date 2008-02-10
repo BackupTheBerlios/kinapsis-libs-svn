@@ -43,6 +43,12 @@ public:
 	void addEffect (Effect effect);
 	void addColor (QString color);
 	void addFont (QString font);
+
+	void addType (MsgType type);
+	void addClientName (QString name);
+	void addClientVersion (QString version);
+	void addClientIsLogging (int log);
+
 	QString getMsg () {return m_msg;}
 	QString getColor () {return m_color;}
 	QString getFont () {return m_font;}
@@ -60,6 +66,12 @@ private:
 	QString m_italic;
 	QString m_bold;
 	QString m_underline;
+	
+	QString m_clientName;
+	QString m_clientVersion;
+	int m_clientIsLogging;
+	MsgType m_type;
+
 };
 
 class USRchat : public Command {

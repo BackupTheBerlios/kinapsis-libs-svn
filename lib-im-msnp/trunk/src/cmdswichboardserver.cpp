@@ -35,11 +35,29 @@ MSG::MSG() : Command ("MSG", 0, "") {
 }
 MSG::~MSG(){}
 Buffer MSG::makeCmd(){
-	// MSG xxxxxxxxxx@hotmail.com xxxxxx 126\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nhola
 	Buffer res;
-	QString msg = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=" + m_font + "; EF=" + m_bold + m_italic + m_underline + "; CO=" + m_color + "; CS=0; PF=22\r\n\r\n" + m_msg;
-	res << beginCmd() + " A " + QString::number(msg.size()) + "\r\n" + msg + endCmd();
-	return res;
+	QString msg;
+	QString log;
+	switch(m_type){
+		case MSG_TXT:
+			// MSG xxxxxxxxxx@hotmail.com xxxxxx 126\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nhola
+			msg = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=" + m_font + "; EF=" + m_bold + m_italic + m_underline + "; CO=" + m_color + "; CS=0; PF=22\r\n\r\n" + m_msg;
+			res << beginCmd() + " A " + QString::number(msg.size()) + "\r\n" + msg + endCmd();
+			return res;
+			break;
+		case MSG_IDENTIFICATION:
+			//MSG 536 U 96\r\nMIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: aMSN 0.98b\r\nChat-Logging: Y\r\n
+			if (m_clientIsLogging)
+				log = "Y";
+			else
+				log = "N";
+			msg = "MIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: " + m_clientName + " " + m_clientVersion + "\r\nChat-Logging: " + log;
+			res << beginCmd() + " 1 U " + QString::number(msg.size()) + "\r\n" + msg + endCmd();
+			return res;
+			break;
+		default:
+			break;
+		}
 }
 void MSG::addColor (QString color) {m_color = color;}
 void MSG::addFont (QString font) {m_font = font.replace(" ", "%20");}
@@ -58,8 +76,11 @@ void MSG::addEffect (Effect effect) {
 			break;
 		}
 }
-	
 void MSG::addMsg (QString msg) {m_msg = msg;}
+void MSG::addType (MsgType type) {m_type = type;}
+void MSG::addClientName (QString name) {m_clientName = name;}
+void MSG::addClientVersion (QString version) {m_clientVersion = version;}
+void MSG::addClientIsLogging (int log) {m_clientIsLogging = log;}
 
 USRchat::USRchat(int idtr) : Command ("USR", idtr) {}
 USRchat::~USRchat(){}

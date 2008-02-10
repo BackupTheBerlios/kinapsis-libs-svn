@@ -223,6 +223,12 @@ void ParserSB::parseJoi(){
 		QString fName = rx.cap(3);
 		QString capabilities = rx.cap(4);
 		m_buf.remove(0,rx.cap(1).size());
+		MSG m;
+		m.addType(MSG_IDENTIFICATION);
+		m.addClientName(m_client->getClientName());
+		m.addClientVersion(m_client->getClientVer());
+		m.addClientIsLogging(m_client->getClientIsLogging());
+		m_socket->send(m.makeCmd());
 		//qDebug("MSN::ParserSB::Log #%i::NEW CHAT with %s fname:%s capab:%s", m_chatId,email.toUtf8().data(), fName.toUtf8().data(), capabilities.toUtf8().data());
 		// TODO: remove three lines below
 	}

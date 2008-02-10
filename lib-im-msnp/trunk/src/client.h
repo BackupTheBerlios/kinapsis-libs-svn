@@ -61,6 +61,10 @@ public:
 
 	void changeStatus (State newStatus);
 
+	QString getClientName () {return QString("libMsn");}
+	QString getClientVer () {return QString("0.1beta");}
+	int getClientIsLogging () {return 1;}
+
         // Listener's connections
         void addConnectionListener (ConnectionListener* cl);
         void delConnectionListener (ConnectionListener* cl);

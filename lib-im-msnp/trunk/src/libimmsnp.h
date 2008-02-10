@@ -51,5 +51,10 @@ namespace libimmsnp {
 		EFFECT_BOLD,
 		EFFECT_UNDERLINE
 	};
+
+	enum MsgType {
+		MSG_TXT,
+		MSG_IDENTIFICATION
+	};
 }
 #endif // LIBIMMSNP_H__

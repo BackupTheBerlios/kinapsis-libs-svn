@@ -90,15 +90,8 @@ namespace libimmsnp {
 		qDebug("MSN::Log::Client ## Adding contact %s to group %s\r\n",contact.getPassport().toUtf8().data(), (m_roster->getContact(contact.getPassport()))->getGroupName().toUtf8().data());
 		ADC c (nextIdtr());
 		c.addList (QString("FL"));
-		//if (group == 0) {
-		//	c.addPassport(contact.getPassport());
-		//	c.addDisplayName (contact.getNickName());
-		//}
-		//else {
-			c.addId ( (m_roster->getContact(contact.getPassport()))->getId() );
-			c.addGroupId ( (m_roster->getContact(contact.getPassport()))->getGroupId() );
-		//}
-
+		c.addId ( (m_roster->getContact(contact.getPassport()))->getId() );
+		c.addGroupId ( (m_roster->getContact(contact.getPassport()))->getGroupId() );
 		send (c);
 	}
 	void Client::delContact(Contact& contact){
@@ -109,12 +102,25 @@ namespace libimmsnp {
 		d.addList (QString("FL"));
 		d.addId((m_roster->getContact(contact.getPassport()))->getId());
 		send (d);
+
+		REM c (nextIdtr());
+		c.addList (QString("AL"));
+		c.addId((m_roster->getContact(contact.getPassport()))->getId());
+		send (c);
 	}
 	
 	void Client::blockContact(Contact& contact){
-		// >> ADC 56 BL N=xxxxxxxxxxxxx@hotmail.com
-		// << ADC 56 BL N=xxxxxxxxxxxxx@hotmail.com
+		// >> REM 55 AL probando_msnpy@hotmail.com
+		// << REM 55 AL probando_msnpy@hotmail.com
+		// >> ADC 56 BL N=probando_msnpy@hotmail.com
+		// << ADC 56 BL N=probando_msnpy@hotmail.com
 		qDebug("MSN::Log::Client ## Blocking contact %s\r\n",contact.getPassport().toUtf8().data());
+
+		REM d (nextIdtr());
+		d.addList (QString("AL"));
+		d.addId((m_roster->getContact(contact.getPassport()))->getId());
+		send (d);
+
 		ADC c (nextIdtr());
 		c.addList (QString("BL"));
 		c.addPassport(contact.getPassport());
@@ -122,13 +128,20 @@ namespace libimmsnp {
 	}
 
 	void Client::deblockContact(Contact& contact){
-		// >> REM 57 BL xxxxxxxxxx@hotmail.com
-		// << REM 57 BL xxxxxxxxxx@hotmail.com
+		// >>> REM 425 BL probando_msnpy@hotmail.com
+		// <<< REM 425 BL probando_msnpy@hotmail.com
+		// >>> ADC 426 AL N=probando_msnpy@hotmail.com
+		// <<< ADC 426 AL N=probando_msnpy@hotmail.com
 		qDebug("MSN::Log::Client ## deblocking contact %s\r\n",contact.getPassport().toUtf8().data());
 		REM d (nextIdtr());
 		d.addList (QString("BL"));
 		d.addId(contact.getPassport());
 		send (d);
+
+		ADC c (nextIdtr());
+		c.addList (QString("AL"));
+		c.addPassport(contact.getPassport());
+		send (c);
 	}
 
 	void Client::addGroup(Group& group){

@@ -555,8 +555,9 @@ void ParserNS::parseRem () {
 
 void ParserNS::parseAdc () {
 	// ADC 0 RL N=xxxxxxxx@hotmail.com F=XXXXXX 1\r\n 
+	// ADC 13 BL N=probando_msnpy2@hotmail.com\r\n
 	QRegExp rx;
-	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) \\d+\r\n)"); 
+	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+)[ F=(\\S+) \\d+]?\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
 		QString list = rx.cap(2);
 		QString passport = rx.cap(3);
