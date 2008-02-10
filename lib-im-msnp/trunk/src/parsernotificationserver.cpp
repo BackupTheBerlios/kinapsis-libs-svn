@@ -108,7 +108,7 @@ void ParserNS::parseXfr () {
 		}
 
 		if (type == "SB"){
-			qDebug("Connecting at: %s:%i ticket:%s",address.toUtf8().data(), port, ticket.toUtf8().data());
+			//qDebug("Connecting at: %s:%i ticket:%s",address.toUtf8().data(), port, ticket.toUtf8().data());
 			emit chatRequest (address, port, "", "" ,ticket, "");
 			//ParserSB* chatParser = new ParserSB (address, port, m_client->nextChatCount(), m_msnPassport, ticket, "", m_client);
 			//chatParser->start();
@@ -242,7 +242,7 @@ void ParserNS::parseBpr () {
 	rx.setPattern("(^BPR HSB 1\r\n)");
 	if (rx.indexIn(m_buf.data()) != -1){
 		m_buf.remove(0,rx.cap(1).size());
-		qDebug("HasBlog:%s" ,m_prevContact.toUtf8().data());
+		qDebug("MSN::Log::ParserNS :HasBlog:%s" ,m_prevContact.toUtf8().data());
 		emit hasBlog (m_prevContact);
 		return;
 	}
@@ -273,7 +273,7 @@ void ParserNS::parsePrp () {
 	if (rx.indexIn(m_buf.data()) != -1){
 		if (rx.cap(2) == "MFN") {
 			// TODO: //emit signal sending my name
-			qDebug ("MSN::Log::ParserNS : MFN: %s", rx.cap(3).toUtf8().data());
+			//qDebug ("MSN::Log::ParserNS : MFN: %s", rx.cap(3).toUtf8().data());
 		}
 		m_buf.remove(0,rx.cap(1).size());
 	}
@@ -338,7 +338,7 @@ void ParserNS::parseLst () {
 			groupId = p2[6].data();
 		}
 
-		qDebug ("MSN::Log::ParserNS : New Contact=%s nick=%s", mail.toUtf8().data(), nick.toUtf8().data());
+		//qDebug ("MSN::Log::ParserNS : New Contact=%s nick=%s", mail.toUtf8().data(), nick.toUtf8().data());
 		m_buf.remove(0,m_buf.indexOf("\r\n")+2);
 		Contact* c = new Contact(mail,"" , QString(nick), id, groupId);
 		emit newContactArrived (c); 
@@ -348,7 +348,7 @@ void ParserNS::parseLst () {
 			CHG c (m_client->nextIdtr());
 			c.addStatusCode (m_initialStatus);
 			c.addCapabilities ("1342558252");
-			qDebug ("MSN::Log::ParserNS : Roster received#");
+			//qDebug ("MSN::Log::ParserNS : Roster received#");
 			m_client->send (c);
 			emit connected();
 		}
@@ -448,7 +448,7 @@ void ParserNS::parseNln () {
 		else if (state == "AWY") emit statusChanged (passport, STATUS_AWY, nick, capabilities);
 		else if (state == "PHN") emit statusChanged (passport, STATUS_PHN, nick, capabilities);
 		else if (state == "LUN") emit statusChanged (passport, STATUS_LUN, nick, capabilities);
-		qDebug ("MSN::Log::ParserNS : Status Changed:%s mail:%s nick:%s capabi:%s#",state.toUtf8().data(), passport.toUtf8().data(), nick.toUtf8().data(), capabilities.toUtf8().data());
+		//qDebug ("MSN::Log::ParserNS : Status Changed:%s mail:%s nick:%s capabi:%s#",state.toUtf8().data(), passport.toUtf8().data(), nick.toUtf8().data(), capabilities.toUtf8().data());
 		m_buf.remove(0,m_buf.indexOf("\r\n")+2);
 	}
 	else m_hasCommand = false;
@@ -503,7 +503,7 @@ void ParserNS::parseRng () {
 		QString ticket = rx.cap(5);
 		QString contact = rx.cap(6);
 		QString fName = rx.cap(7);
-		qDebug ("MSN::Log::ParserNS::Calling : sessid:%s address:%s port:%i ticket:%s contact:%s FriendName:%s",sessid.toUtf8().data(),address.toUtf8().data(),port ,ticket.toUtf8().data(),contact.toUtf8().data(),fName.toUtf8().data());
+		//qDebug ("MSN::Log::ParserNS::Calling : sessid:%s address:%s port:%i ticket:%s contact:%s FriendName:%s",sessid.toUtf8().data(),address.toUtf8().data(),port ,ticket.toUtf8().data(),contact.toUtf8().data(),fName.toUtf8().data());
 		m_buf.remove(0,rx.cap(1).size());
 		emit chatRequest (address, port, contact, fName ,ticket, sessid);
 	}

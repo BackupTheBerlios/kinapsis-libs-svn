@@ -173,14 +173,14 @@ void ParserSB::parseMsg () {
 		if (msgType == QString("text/x-msnmsgr-datacast")){
 			rx.setPattern("\r\n\r\nID: 1[\r\n]+$");
 			if (rx.indexIn(data.data()) != -1){
-				qDebug("MSG Zumbido");
+				qDebug("MSN::ParserSB::Log #%i: MSG Zumbido", m_chatId);
 			}
 		}
 
 		if (msgType == QString("application/x-msnmsgrp2p")){
 			rx.setPattern("\r\nP2P-Dest: (\\S+)\r\n\r\n");
 			if (rx.indexIn(data.data()) != -1){
-				qDebug("MSG archivo datos:%s",data.dataDebug());
+				qDebug("MSN::ParserSB::Log #%i: MSG archivo datos:%s", m_chatId, data.dataDebug());
 			}
 		}
 
@@ -222,7 +222,7 @@ void ParserSB::parseJoi(){
 		QString fName = rx.cap(3);
 		QString capabilities = rx.cap(4);
 		m_buf.remove(0,rx.cap(1).size());
-		qDebug("MSN::ParserSB::Log::NEW CHAT with %s fname:%s capab:%s",email.toUtf8().data(), fName.toUtf8().data(), capabilities.toUtf8().data());
+		//qDebug("MSN::ParserSB::Log #%i::NEW CHAT with %s fname:%s capab:%s", m_chatId,email.toUtf8().data(), fName.toUtf8().data(), capabilities.toUtf8().data());
 		// TODO: remove three lines below
 	}
 	else m_hasCommand = false;
@@ -257,7 +257,7 @@ void ParserSB::parseError () {
 	QRegExp rx;
 	rx.setPattern("(^(\\d{3}) \\d+\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
-		qDebug ("MSN::Log::ParserSB ## ERROR : %s", rx.cap(2).toUtf8().data());
+		qDebug ("MSN::ParserSB::Log #%i ## ERROR : %s", m_chatId, rx.cap(2).toUtf8().data());
 		if (rx.cap(2) == "215") {
 			m_socket->close();	
 			m_endChat = true;
@@ -271,50 +271,50 @@ void ParserSB::parse (){
 	m_isParsing = true;
 	QString cmd;
 	while (m_buf.size() && m_hasCommand){
-		qDebug("MSN::ParserSB::Log::BUFFER <%s>",m_buf.dataDebug());
+		qDebug("MSN::ParserSB::Log #%i::BUFFER <%s>", m_chatId,m_buf.dataDebug());
 		cmd = m_buf.getCmd();
 		if (cmd == "IRO"){
-			qDebug ("MSN::Log::ParserSB : Parsing IRO");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing IRO", m_chatId);
 			parseIro();
 		}
 
 		else if (cmd == "ANS"){
-			qDebug ("MSN::Log::ParserSB : Parsing ANS");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing ANS", m_chatId);
 			parseAns();
 		}
 
 		else if (cmd == "MSG"){
-			qDebug ("MSN::Log::ParserSB : Parsing MSG");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing MSG", m_chatId);
 			parseMsg();
 
 		}
 
 		else if (cmd == "ACK"){
-			qDebug ("MSN::Log::ParserSB : Parsing ACK");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing ACK", m_chatId);
 			parseAck();
 
 		}
 
 		else if (cmd == "USR"){
-			qDebug ("MSN::Log::ParserSB : Parsing USR");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing USR", m_chatId);
 			parseUsr();
 
 		}
 
 		else if (cmd == "CAL"){
-			qDebug ("MSN::Log::ParserSB : Parsing CAL");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing CAL", m_chatId);
 			parseCal();
 
 		}
 
 		else if (cmd == "JOI"){
-			qDebug ("MSN::Log::ParserSB : Parsing JOI");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing JOI", m_chatId);
 			parseJoi();
 
 		}
 		
 		else if (cmd == "BYE"){
-			qDebug ("MSN::Log::ParserSB : Parsing bye");
+			qDebug ("MSN::ParserSB::Log #%i : Parsing bye", m_chatId);
 			parseBye();
 		}
 

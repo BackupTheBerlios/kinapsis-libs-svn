@@ -228,7 +228,7 @@ namespace libimmsnp {
 	}
 
 	void Client::chatRequest(QString address, int port, QString contact, QString fName, QString ticket, QString sessid){
-		printf ("MSN::Log::ParserNS ## Calling:%s From: %s\n",contact.toUtf8().data(), address.toUtf8().data());
+		printf ("MSN::Log::CLient ## Calling:%s From: %s\n",contact.toUtf8().data(), address.toUtf8().data());
 		ParserSB* chatParser = new ParserSB (address, port, ++m_chatCount, m_msnPassport, ticket, sessid, this);
 		m_chatList[m_chatCount] = chatParser;
 		emit (notifyNewChat (m_chatCount, contact));
@@ -237,7 +237,7 @@ namespace libimmsnp {
 		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
-		chatParser->run();
+		chatParser->start();
 	}
 
 	void Client::chatArrivedMessage (int chatId, QString msnPassport, QString chatMsg) {
