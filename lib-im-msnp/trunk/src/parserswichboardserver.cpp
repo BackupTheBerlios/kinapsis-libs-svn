@@ -135,6 +135,7 @@ void ParserSB::parseMsg () {
 			QString fontType; 
 			QString codif;
 			MSG msg ;
+			qRegisterMetaType<MSG>("MSG");
 
 			rx.setPattern("charset=(\\S+)");
 			if (rx.indexIn(data.data()) != -1){
@@ -165,7 +166,7 @@ void ParserSB::parseMsg () {
 			msg.addMsg( data.mid (data.indexOf("\r\n\r\n")+4));
 
 			//qDebug("MSG Codificacion:%s Fuente:%s Efectos:%s Color:%s Character sets:%s Font Type:%s msg:%s",codif.toUtf8().data(), font.toUtf8().data(), effect.toUtf8().data(), color.toUtf8().data(), charSet.toUtf8().data(), fontType.toUtf8().data() ,msg.dataDebug());
-			emit chatArrivedMessage(m_chatId, senderPassport, data.mid (data.indexOf("\r\n\r\n")+4));
+			emit chatArrivedMessage(m_chatId, senderPassport, msg);
 			return;
 
 		}

@@ -97,10 +97,10 @@ void MsnTest::chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging)
 	qDebug ("# CLIENT ## CLientName: %s Is Logging: %s in chat number: %i", chatMsnClient.toUtf8().data(), chatIsLogging.toUtf8().data(), chatId);
 }
 
-void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString chatMsg){
+void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMsg){
 	//qDebug ("# CLIENT ## MESSAGE: `%s' from chat number: %i written by: %s", chatMsg.getMsg().toUtf8().data(), chatId, chatMsnPassport.toUtf8().data());
-	qDebug ("# CLIENT ## MESSAGE: `%s' from chat number: %i written by: %s", chatMsg.toUtf8().data(), chatId, chatMsnPassport.toUtf8().data());
-	if (chatMsg == "eco") {
+	qDebug ("# CLIENT ## MESSAGE: `%s' from chat number: %i written by: %s", chatMsg.getMsg().toUtf8().data(), chatId, chatMsnPassport.toUtf8().data());
+	if (chatMsg.getMsg() == "eco") {
 		MSG m; 
 		m.addMsg("Eco Eco");
 		m.addEffect(EFFECT_ITALIC);
@@ -108,31 +108,31 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, QString ch
 		m.addEffect(EFFECT_UNDERLINE);
 		m_client->sendChat(chatId, m);
 	}
-	if (chatMsg == "exit") m_client->disconnect();
-	if (chatMsg == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);
+	if (chatMsg.getMsg() == "exit") m_client->disconnect();
+	if (chatMsg.getMsg() == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);
 
-	if (chatMsg == "delPassport") {
+	if (chatMsg.getMsg() == "delPassport") {
 		Contact c;
 		c.setPassport(chatMsnPassport);
 		m_client->delContact(c);
 	}
-	if (chatMsg == "blkPassport") {
+	if (chatMsg.getMsg() == "blkPassport") {
 		Contact c;
 		c.setPassport(chatMsnPassport);
 		m_client->blockContact(c);
 	}
-	if (chatMsg == "deBlkPassport") {
+	if (chatMsg.getMsg() == "deBlkPassport") {
 		Contact c;
 		c.setPassport(chatMsnPassport);
 		m_client->deblockContact(c);
 	}
-	if (chatMsg == "addGroup") {
+	if (chatMsg.getMsg() == "addGroup") {
 		Group g;
 		g.setName(QString ("Minewgroup"));
 		m_client->addGroup(g);
 	}
 
-	if (chatMsg == "delGroup") {
+	if (chatMsg.getMsg() == "delGroup") {
 		Group g;
 		g.setName(QString ("Minewgroup"));
 		m_client->delGroup(g);
