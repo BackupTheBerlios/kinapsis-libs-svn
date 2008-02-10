@@ -91,6 +91,12 @@ void ParserSB::parseAns(){
 	if (rx.indexIn(m_buf.data()) != -1){
 		// TODO: 
 		m_buf.remove(0,rx.cap(1).size());
+		MSG m;
+		m.addType(MSG_IDENTIFICATION);
+		m.addClientName(m_client->getClientName());
+		m.addClientVersion(m_client->getClientVer());
+		m.addClientIsLogging(m_client->getClientIsLogging());
+		m_socket->send(m.makeCmd());
 	}
 	else m_hasCommand = false;
 }
