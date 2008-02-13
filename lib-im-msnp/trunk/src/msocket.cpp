@@ -83,6 +83,7 @@ int msocket::send (Buffer buf){
 }
 
 int msocket::send (QString str){
+	int i; 
 	if (m_ssl) {
 		m_sslSocket->write (str.toUtf8().data());
 		if (m_sslSocket->waitForBytesWritten(30000)) {
@@ -102,6 +103,7 @@ int msocket::send (QString str){
 }
 
 int msocket::recv (Buffer& buf){
+	int i; 
 	QByteArray tmpData;
 	tmpData.clear();
 	if (m_ssl) {
@@ -109,6 +111,10 @@ int msocket::recv (Buffer& buf){
 			qint64 size = m_sslSocket->bytesAvailable();
 			if ((tmpData = m_sslSocket->read(size)) != "") {
 				buf.append(tmpData);
+		        	fprintf (stderr, "MSN::SSL-Socket::%s ::len:%i RECEIVING: ", m_host.toUtf8().data(),tmpData.size());
+	                	for (i=0; i < tmpData.size(); i++)
+	                	        fprintf(stderr, "%02x ",(unsigned char) tmpData[i]);
+	                	fprintf(stderr, "\n");
 			}
 			else {
 				qDebug ("ERROR::MSN::SSL Socket::%s <<<",m_host.toUtf8().data());
@@ -123,11 +129,14 @@ int msocket::recv (Buffer& buf){
 			qint64 size = m_socket->bytesAvailable();
 			if ((tmpData = m_socket->read(size)) != "") {
 				buf.append(tmpData);
+		        	fprintf (stderr, "MSN::Socket::%s ::len:%i RECEIVING: ", m_host.toUtf8().data(),tmpData.size());
+	                	for (i=0; i < tmpData.size(); i++)
+	                	        fprintf(stderr, "%02x ",(unsigned char) tmpData[i]);
+	                	fprintf(stderr, "\n");
 			}
 			else {
 				qDebug ("ERROR::MSN::Socket::%s <<<",m_host.toUtf8().data());
 			}
-				qDebug ("MSN::Socket::%s ::len:%i <<< : %s",m_host.toUtf8().data(),tmpData.size() , tmpData.replace("\r\n","\\r\\n").data());
 			return size;
 		}
 		else return -1;

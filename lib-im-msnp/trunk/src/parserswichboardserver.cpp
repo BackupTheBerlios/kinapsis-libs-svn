@@ -66,7 +66,7 @@ void ParserSB::send (Command& c){
 
 void ParserSB::feed (Buffer b){
 	m_hasCommand = true;
-	m_buf << b;
+	m_buf.append(b);
 }
 
 void ParserSB::parseIro(){
