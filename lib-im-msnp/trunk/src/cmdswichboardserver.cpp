@@ -42,7 +42,7 @@ Buffer MSG::makeCmd(){
 		case MSG_TXT:
 			// MSG xxxxxxxxxx@hotmail.com xxxxxx 126\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nhola
 			msg = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=" + m_font + "; EF=" + m_bold + m_italic + m_underline + "; CO=" + m_color + "; CS=0; PF=22\r\n\r\n" + m_msg;
-			res << beginCmd() + " A " + QString::number(msg.size()) + "\r\n" + msg + endCmd();
+			res.append(beginCmd() + " A " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
 			return res;
 			break;
 		case MSG_IDENTIFICATION:
@@ -52,7 +52,7 @@ Buffer MSG::makeCmd(){
 			else
 				log = "N";
 			msg = "MIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: " + m_clientName + " " + m_clientVersion + "\r\nChat-Logging: " + log;
-			res << beginCmd() + " 1 U " + QString::number(msg.size()) + "\r\n" + msg + endCmd();
+			res.append(beginCmd() + " 1 U " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
 			return res;
 			break;
 		default:
@@ -87,7 +87,7 @@ USRchat::~USRchat(){}
 Buffer USRchat::makeCmd(){
 	//USR 1 example@passport.com 17262740.1050826919.32308\r\n
 	Buffer res;
-	res << beginCmd() + " " + m_passport + " " + m_ticket + endCmd();
+	res.append(beginCmd() + " " + m_passport + " " + m_ticket + endCmd());
 	return res;
 }
 void USRchat::addPassport (QString passport) {m_passport = passport;}
@@ -99,7 +99,7 @@ CAL::~CAL(){}
 Buffer CAL::makeCmd(){
 	//CAL 1 example@passport.com\r\n
 	Buffer res;
-	res << beginCmd() + " " + m_passport + endCmd();
+	res.append(beginCmd() + " " + m_passport + endCmd());
 	return res;
 }
 void CAL::addPassport (QString passport) {m_passport = passport;}
@@ -109,7 +109,7 @@ BYE::~BYE(){}
 Buffer BYE::makeCmd(){
 	//BYE xxxx@hotmail.com\r\n
 	Buffer res;
-	res << beginCmd() + " " + m_passport + endCmd();
+	res.append(beginCmd() + " " + m_passport + endCmd());
 	return res;
 }
 void BYE::addPassport (QString passport) {m_passport = passport;}

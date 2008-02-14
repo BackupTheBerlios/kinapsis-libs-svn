@@ -26,12 +26,9 @@ class Buffer : public QByteArray{
 
 public:
 	Buffer();
-	Buffer& operator<<(QString);
-	Buffer& operator<<(QByteArray);
-	Buffer& operator<<(Buffer);
 
-	Buffer getLine();
-	QString getCmd();
+	void toChars();
+	void toHex();
 	char* dataDebug();
 
 	virtual ~Buffer();

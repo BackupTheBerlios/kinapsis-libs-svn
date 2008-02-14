@@ -49,7 +49,7 @@ void ParserNS::init(){
 }
 void ParserNS::feed (Buffer b){
 	m_hasCommand = true;
-	m_buf << b;
+	m_buf.append(b);
 }
 
 void ParserNS::parseVer () {
@@ -610,7 +610,7 @@ void ParserNS::parse (){
 		if (m_buf.size() > 8000) qDebug("MSN::ParserNS::Log::BUFFER <%s>",QString(m_buf.dataDebug()).mid(0,3000).toUtf8().data());
 		else qDebug("MSN::ParserNS::Log::BUFFER <%s>",m_buf.dataDebug());
 
-		cmd = m_buf.getCmd();
+		cmd = m_buf.mid(0,3).data();
 		if (cmd == "VER"){
 			qDebug ("MSN::Log::ParserNS : Parsing VER");
 			parseVer();

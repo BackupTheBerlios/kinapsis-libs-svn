@@ -20,7 +20,7 @@ VER::VER(int idtr) : Command ("VER", idtr) {}
 VER::~VER(){}
 Buffer VER::makeCmd(){
 	Buffer res;
-	res << beginCmd() + " " + m_listProtocol.join(" ") + " CVR0" + endCmd();
+	res.append(beginCmd() + " " + m_listProtocol.join(" ") + " CVR0" + endCmd());
 	return res;
 }
 
@@ -54,10 +54,10 @@ void CVR::addPassport (QString passport) {m_passport = passport;}
 
 Buffer CVR::makeCmd(){
 	Buffer res;
-	res << beginCmd();
-	res << " " + m_locale + " " + m_osType + " " + m_osVer + " " + m_arch + " " + m_clientName + " " + m_clientVer;
-	res << " msmsgs " + m_passport;
-	res << endCmd();
+	res.append(beginCmd());
+	res.append(" " + m_locale + " " + m_osType + " " + m_osVer + " " + m_arch + " " + m_clientName + " " + m_clientVer);
+	res.append(" msmsgs " + m_passport);
+	res.append(endCmd());
 	return res;
 }
 
@@ -78,8 +78,8 @@ Buffer USR::makeCmd(){
 	//else 			res << beginCmd() + " TWN " + m_twnType + " " + m_ticket + endCmd();
 	//return res;
 	Buffer res;
-	if (m_twnType == "I") 	res << beginCmd() + " TWN " + m_twnType + " " + m_passport + endCmd();
-	else 			res << beginCmd() + " TWN " + m_twnType + " " + m_ticket + endCmd();
+	if (m_twnType == "I") 	res.append(beginCmd() + " TWN " + m_twnType + " " + m_passport + endCmd());
+	else 			res.append(beginCmd() + " TWN " + m_twnType + " " + m_ticket + endCmd());
 	return res;
 }
 
@@ -87,7 +87,7 @@ GCF::GCF(int idtr) : Command ("GCF", idtr) {}
 GCF::~GCF(){}
 Buffer  GCF::makeCmd(){
 	Buffer res;
-	res << beginCmd() + " Shields.xml" + endCmd() ;
+	res.append(beginCmd() + " Shields.xml" + endCmd());
 	return res;
 }
 
@@ -95,7 +95,7 @@ SYN::SYN(int idtr) : Command ("SYN", idtr) {}
 SYN::~SYN(){}
 Buffer  SYN::makeCmd(){
 	Buffer res;
-	res << beginCmd() + " 0 0" + endCmd() ;
+	res.append(beginCmd() + " 0 0" + endCmd()) ;
 	return res;
 }
 

@@ -21,7 +21,7 @@ Buffer CHG::makeCmd(){
 	// CHG 9 NLN 1073791084\r\n
 	// CHG trid statuscode clientid msnobj
 	Buffer res;
-	res << beginCmd() + " " + m_statusCode + " " + m_capabilities + endCmd();
+	res.append(beginCmd() + " " + m_statusCode + " " + m_capabilities + endCmd());
 	return res;
 }
 void CHG::addStatusCode (State statusCode) {
@@ -76,7 +76,7 @@ XFR::~XFR(){}
 Buffer XFR::makeCmd(){
 	// XFR 15 SB\r\n
 	Buffer res;
-	res << beginCmd() + " SB" + endCmd();
+	res.append(beginCmd() + " SB" + endCmd());
 	return res;
 }
 

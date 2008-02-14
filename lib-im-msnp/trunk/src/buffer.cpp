@@ -19,39 +19,31 @@ namespace libimmsnp {
 Buffer::Buffer(){
 }
 
-Buffer& Buffer::operator << (QString q){
-	this->append(q);
-	return *this;
+void Buffer::toChars(){
+	int i; 
+	for (i=0; i < this->size(); i++){
+		if ((const char) this->at(i) == '\n')
+			fprintf(stderr, "\\n");
+		else
+			if ((const char) this->at(i) == '\r')
+				fprintf(stderr, "\\r");
+			else
+	        		fprintf(stderr, "%c",(const char) this->at(i));
+	}
+	fprintf(stderr, "\n");
 }
 
-Buffer& Buffer::operator << (QByteArray q){
-	this->append(q);
-	return *this;
+void Buffer::toHex(){
+	int i; 
+	for (i=0; i < this->size(); i++){
+	        fprintf(stderr, "%02x ",(unsigned char) this->at(i));
+	}
+	fprintf(stderr, "\n");
+	
 }
-
-Buffer& Buffer::operator << (Buffer q){
-	this->append(q.data());
-	return *this;
-}
-
 char* Buffer::dataDebug(){
 	QString tmp = this->data();
 	return tmp.replace("\r\n","\\r\\n").toUtf8().data();
-}
-
-Buffer Buffer::getLine(){
-	Buffer tmp;
-	tmp << *this;
-
-	Buffer res;
-	QByteArray line = tmp.split('\n')[0];
-	res << line;
-	return res;
-}
-
-QString Buffer::getCmd(){
-	QByteArray line = this->mid(0,3);
-	return QString (line.data());
 }
 
 Buffer::~Buffer() { }
