@@ -105,143 +105,183 @@ void ParserSB::parseMsg () {
 	// MSG XXXXXXXX@gmail.com XXXXXX 590\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: XXXXXXXX@hotmail.com\r\n\r\n......
 	// MSG XXXXXXXX@hotmail.com XXXX 128\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nholaaa
 	QRegExp rx;
+	Buffer data;
 	rx.setPattern("(^MSG (\\S+) (\\S+) (\\d+)\r\n)MIME-Version: 1.0\r\nContent-Type: (\\S+)[\r\n|;]"); 
 	if (rx.indexIn(m_buf.data()) != -1){
+		QString header = rx.cap(1);
 		QString senderPassport = rx.cap(2);
 		QString msgType = rx.cap(5);
 		QString payload = rx.cap(4);
-		Buffer data;
 		data.append(m_buf.mid(rx.cap(1).size(), payload.toInt()));
-		m_buf.remove(0, rx.cap(1).size() + payload.toInt());
+		if (data.size() == payload.toInt()) {
+			m_buf.remove(0, header.size() + payload.toInt());
 
-		if (msgType == QString("text/x-clientcaps")){
-			rx.setPattern("\r\n\r\nClient-Name: ([\\S|\\s]*)\r\nChat-Logging: (\\S)[\r\n]+$");
-			if (rx.indexIn(data.data()) != -1){
-				//qDebug("MSG chat info client:%s logging:%s",rx.cap(1).toUtf8().data(), rx.cap(2).toUtf8().data());
-				emit chatInfo (m_chatId, rx.cap(1), rx.cap(2));
-				return;
-			}
-		}
-
-		if (msgType == QString("text/x-msmsgscontrol")){
-			rx.setPattern("\r\nTypingUser: (\\S+)[\r\n]+$");
-			if (rx.indexIn(data.data()) != -1){
-				//qDebug("MSG Typing user:%s ",rx.cap(1).toUtf8().data());
-				emit chatIsTyping ( m_chatId,senderPassport);
-				return;
-			}
-		}
-
-
-		if (msgType == QString("text/plain")){
-			QString font; 
-			QString effect;
-			QString color;
-			QString charSet;
-			QString fontType; 
-			QString codif;
-			MSG msg ;
-			qRegisterMetaType<MSG>("MSG");
-
-			rx.setPattern("charset=(\\S+)");
-			if (rx.indexIn(data.data()) != -1){
-				codif = rx.cap(1);
-			}
-
-			// X-MMS-IM-Format: FN=Arial; EF=BI; CO=0
-			rx.setPattern("\r\nX-MMS-IM-Format: FN=(\\S+); EF=(\\S*); CO=(\\S*); CS=(\\S*); PF=(\\d*)");
-			if (rx.indexIn(data.data()) != -1){
-				font = rx.cap(1);
-				effect = rx.cap(2);
-				color = rx.cap(3);
-				charSet = rx.cap(4);
-				fontType = rx.cap(5);
-			}
-			rx.setPattern("\r\nX-MMS-IM-Format: FN=(\\S+); EF=(\\S*); CO=(\\S*)");
-			if (rx.indexIn(data.data()) != -1){
-				font = rx.cap(1);
-				effect = rx.cap(2);
-				color = rx.cap(3);
-			}
-			msg.addColor(color);
-			msg.addFont(font);
-			if (effect.contains('B')) msg.addEffect(EFFECT_BOLD);
-			if (effect.contains('I')) msg.addEffect(EFFECT_ITALIC);
-			if (effect.contains('U')) msg.addEffect(EFFECT_UNDERLINE);
-
-			msg.addMsg( data.mid (data.indexOf("\r\n\r\n")+4));
-
-			//qDebug("MSG Codificacion:%s Fuente:%s Efectos:%s Color:%s Character sets:%s Font Type:%s msg:%s",codif.toUtf8().data(), font.toUtf8().data(), effect.toUtf8().data(), color.toUtf8().data(), charSet.toUtf8().data(), fontType.toUtf8().data() ,msg.dataDebug());
-			emit chatArrivedMessage(m_chatId, senderPassport, msg);
-			return;
-
-		}
-
-		if (msgType == QString("text/x-msnmsgr-datacast")){
-			// Zumbidos
-			rx.setPattern("\r\n\r\nID: 1[\r\n]+$");
-			if (rx.indexIn(data.data()) != -1){
-				qDebug("MSN::ParserSB::Log #%i: MSG Zumbido", m_chatId);
-			}
-			// Guiños
-			// Content-Type: text/x-msnmsgr-datacast\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunks: 3\r\n\r\nID: 2\r\nData: <msnobj Creator="vaticano666@hotmail.com" Size="95742" Type="8" Location="TFR1B4.tmp" Friendly="QgByAGUAYQBrACAARABhAG4AYwBlAHIA" SHA1D="i++iSwaoqftUJZ3j+9d2jccqtmo=" SHA1C="oCshAefPuHtWCODyB/eX+103nOY=" stamp="MIIIngYJ.....
-			// MSG vaticano666@hotmail.com Pedro 1266\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunk: 1\r\n\r\n6CAcoATQBpAGMAcgBvAHMAbwBmA...
-			// MSG vaticano666@hotmail.com Pedro 837\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunk: 2\r\n\r\nzwj7QM7Rs/4p...
-			rx.setPattern("");
-			if (rx.indexIn(data.data()) != -1){
-				qDebug("MSN::ParserSB::Log #%i: MSG Zumbido", m_chatId);
-			}
-		}
-
-		if (msgType == QString("application/x-msnmsgrp2p")){
-			rx.setPattern("\r\nP2P-Dest: (\\S+)\r\n\r\n");
-			if (rx.indexIn(data.data()) != -1){
-				printf("MSN::ParserSB::Log #%i: MSG archivo datos:", m_chatId);
-				data.toHex();
-				QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
-
-				//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
-				// Little-endian abcd = dbca in memory
-				// \r\n\r\n
-				// SessionID	Identifier	Data offset 		Total data size		Message length	Flag          	identifier	unique ID      	data size
-				// 00 00 00 00 	51 67 07 00	00 00 00 00 00 00 00 00 2a 02 00 00 00 00 00 00 2a 02 00 00 	00 00 00 00   	dd 30 48 00  	00 00 00 00    	00 00 00 00 00 00 00 00
-				QByteArray sessionID	 = binaryHeader.mid(0,4);	
-				QByteArray identifier	 = binaryHeader.mid(4,4);	
-				QByteArray dataOffset	 = binaryHeader.mid(8,8);	
-				QByteArray totalDataSize = binaryHeader.mid(16,8);	
-				QByteArray messageLength = binaryHeader.mid(20,4);	
-				QByteArray flag		 = binaryHeader.mid(24,4);	
-				QByteArray ackIdentifier = binaryHeader.mid(28,4);	
-				QByteArray ackUniqueID	 = binaryHeader.mid(32,4);	
-				QByteArray ackDataSize	 = binaryHeader.mid(36,8);	
-
-				QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
-				//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
-				//BYE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={FBF1AAE6-E093-D86E-5FE7-5C10D4981645}\r\nCSeq: 0\r\nCall-ID: {CA04F5F2-39B1-D31B-4DBD-E3AFE34A2841}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionclosebody\r\nContent-Length: 22\r\n\r\nContext: dAMAgQ==\r\n\r\n
-				QRegExp fx;
-				Buffer a;
-				fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nEUF-GUID: \\{(\\S+)\\}\r\nSessionID: (\\d+)\r\nAppID: (\\d+)\r\nContext: (\\S+))");
-				if (fx.indexIn(invitation.data()) != -1){
-					a.clear();
-					a.append(fx.cap(11));
-					a.toChars();
-					printf("MSN::ParserSB::Log #%i: to %s from\n:", m_chatId, fx.cap(1).data());
+			if (msgType == QString("text/x-clientcaps")){
+				rx.setPattern("\r\n\r\nClient-Name: ([\\S|\\s]*)\r\nChat-Logging: (\\S)[\r\n]+$");
+				if (rx.indexIn(data.data()) != -1){
+					//qDebug("MSG chat info client:%s logging:%s",rx.cap(1).toUtf8().data(), rx.cap(2).toUtf8().data());
+					emit chatInfo (m_chatId, rx.cap(1), rx.cap(2));
+					return;
 				}
-				fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nContext: (\\S+))");
-				if (fx.indexIn(invitation.data()) != -1){
-					a.clear();
-					a.append(fx.cap(11));
-					a.toChars();
-					printf("MSN::ParserSB::Log #%i: to %s from\n:", m_chatId, fx.cap(1).data());
+			}
+
+			if (msgType == QString("text/x-msmsgscontrol")){
+				rx.setPattern("\r\nTypingUser: (\\S+)[\r\n]+$");
+				if (rx.indexIn(data.data()) != -1){
+					//qDebug("MSG Typing user:%s ",rx.cap(1).toUtf8().data());
+					emit chatIsTyping ( m_chatId,senderPassport);
+					return;
+				}
+			}
+
+
+			if (msgType == QString("text/plain")){
+				QString font; 
+				QString effect;
+				QString color;
+				QString charSet;
+				QString fontType; 
+				QString codif;
+				MSG msg ;
+				qRegisterMetaType<MSG>("MSG");
+
+				rx.setPattern("charset=(\\S+)");
+				if (rx.indexIn(data.data()) != -1){
+					codif = rx.cap(1);
+				}
+
+				// X-MMS-IM-Format: FN=Arial; EF=BI; CO=0
+				rx.setPattern("\r\nX-MMS-IM-Format: FN=(\\S+); EF=(\\S*); CO=(\\S*); CS=(\\S*); PF=(\\d*)");
+				if (rx.indexIn(data.data()) != -1){
+					font = rx.cap(1);
+					effect = rx.cap(2);
+					color = rx.cap(3);
+					charSet = rx.cap(4);
+					fontType = rx.cap(5);
+				}
+				rx.setPattern("\r\nX-MMS-IM-Format: FN=(\\S+); EF=(\\S*); CO=(\\S*)");
+				if (rx.indexIn(data.data()) != -1){
+					font = rx.cap(1);
+					effect = rx.cap(2);
+					color = rx.cap(3);
+				}
+				msg.addColor(color);
+				msg.addFont(font);
+				if (effect.contains('B')) msg.addEffect(EFFECT_BOLD);
+				if (effect.contains('I')) msg.addEffect(EFFECT_ITALIC);
+				if (effect.contains('U')) msg.addEffect(EFFECT_UNDERLINE);
+
+				msg.addMsg( data.mid (data.indexOf("\r\n\r\n")+4));
+
+				//qDebug("MSG Codificacion:%s Fuente:%s Efectos:%s Color:%s Character sets:%s Font Type:%s msg:%s",codif.toUtf8().data(), font.toUtf8().data(), effect.toUtf8().data(), color.toUtf8().data(), charSet.toUtf8().data(), fontType.toUtf8().data() ,msg.dataDebug());
+				emit chatArrivedMessage(m_chatId, senderPassport, msg);
+				return;
+
+			}
+
+			if (msgType == QString("text/x-msnmsgr-datacast")){
+				// Zumbidos
+				rx.setPattern("\r\n\r\nID: 1[\r\n]+$");
+				if (rx.indexIn(data.data()) != -1){
+					qDebug("MSN::ParserSB::Log #%i: MSG Zumbido", m_chatId);
+				}
+				// Guiños
+				// Content-Type: text/x-msnmsgr-datacast\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunks: 3\r\n\r\nID: 2\r\nData: <msnobj Creator="vaticano666@hotmail.com" Size="95742" Type="8" Location="TFR1B4.tmp" Friendly="QgByAGUAYQBrACAARABhAG4AYwBlAHIA" SHA1D="i++iSwaoqftUJZ3j+9d2jccqtmo=" SHA1C="oCshAefPuHtWCODyB/eX+103nOY=" stamp="MIIIngYJ.....
+				// MSG vaticano666@hotmail.com Pedro 1266\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunk: 1\r\n\r\n6CAcoATQBpAGMAcgBvAHMAbwBmA...
+				// MSG vaticano666@hotmail.com Pedro 837\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunk: 2\r\n\r\nzwj7QM7Rs/4p...
+				rx.setPattern("^MIME-Version: 1.0\r\nContent-Type: text/x-msnmsgr-datacast\r\nMessage-ID: \\{(\\S+)\\}\r\nChunks: (\\d+)\r\n\r\nID: (\\d+)\r\nData: <msnobj Creator=\"(\\S+)\" Size=\"(\\d+)\" Type=\"(\\d+)\" Location=\"(\\S+)\" Friendly=\"(\\S+)\" SHA1D=\"(\\S+)\" SHA1C=\"(\\S+)\" stamp=\"(\\S+)$");
+				if (rx.indexIn(data.data()) != -1){
+					QString messageID	= rx.cap(1);
+					QString chunks		= rx.cap(2);  
+					QString id		= rx.cap(3); 
+					QString creator		= rx.cap(4); 
+					QString size		= rx.cap(5); 
+					QString type		= rx.cap(6); 
+					QString location	= rx.cap(7);    
+					QString friendly	= rx.cap(8);    
+					QString sha1D		= rx.cap(9);  
+					QString sha1C		= rx.cap(10); 
+					QString dataWink	= rx.cap(11); 	
+					//QStringList list = rx.capturedTexts();
+					//QStringList::iterator it = list.begin();
+					//printf ("MSN::ParserSB::Log #%i: MSG Guiño > ", m_chatId);
+ 					//while (++it != list.end()) {
+ 					//    printf("%s,",(*it).toUtf8().replace("\r\n","\\r\\n").data());
+ 					//}
+					printf ("MSN::ParserSB::Log #%i: MSG Guiño %s,%s\n",m_chatId, messageID.toUtf8().data(), dataWink.toUtf8().data() );
+				}
+			}
+
+			if (msgType == QString("application/x-msnmsgrp2p")){
+				rx.setPattern("\r\nP2P-Dest: (\\S+)\r\n\r\n");
+				if (rx.indexIn(data.data()) != -1){
+					printf("MSN::ParserSB::Log #%i: MSG archivo datos:", m_chatId);
+					data.toHex();
+					printf("\n");
+					QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
+
+					//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
+					// Little-endian abcd = dbca in memory
+					// \r\n\r\n
+					// SessionID	Identifier	Data offset 		Total data size		Message length	Flag          	identifier	unique ID      	data size
+					// 00 00 00 00 	51 67 07 00	00 00 00 00 00 00 00 00 2a 02 00 00 00 00 00 00 2a 02 00 00 	00 00 00 00   	dd 30 48 00  	00 00 00 00    	00 00 00 00 00 00 00 00
+					QByteArray sessionID	 = binaryHeader.mid(0,4);	
+					QByteArray identifier	 = binaryHeader.mid(4,4);	
+					QByteArray dataOffset	 = binaryHeader.mid(8,8);	
+					QByteArray totalDataSize = binaryHeader.mid(16,8);	
+					QByteArray messageLength = binaryHeader.mid(20,4);	
+					QByteArray flag		 = binaryHeader.mid(24,4);	
+					QByteArray ackIdentifier = binaryHeader.mid(28,4);	
+					QByteArray ackUniqueID	 = binaryHeader.mid(32,4);	
+					QByteArray ackDataSize	 = binaryHeader.mid(36,8);	
+
+					QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
+					//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
+					//BYE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={FBF1AAE6-E093-D86E-5FE7-5C10D4981645}\r\nCSeq: 0\r\nCall-ID: {CA04F5F2-39B1-D31B-4DBD-E3AFE34A2841}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionclosebody\r\nContent-Length: 22\r\n\r\nContext: dAMAgQ==\r\n\r\n
+					QRegExp fx;
+					Buffer a;
+					fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nEUF-GUID: \\{(\\S+)\\}\r\nSessionID: (\\d+)\r\nAppID: (\\d+)\r\nContext: (\\S+))");
+					if (fx.indexIn(invitation.data()) != -1){
+						a.clear();
+						a.append(fx.cap(11));
+						a.toChars();
+						printf("MSN::ParserSB::Log #%i: to %s\n", m_chatId, fx.cap(1).toUtf8().replace("\r\n","\\r\\n").data());
+					}
+					fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nContext: (\\S+))");
+					if (fx.indexIn(invitation.data()) != -1){
+						a.clear();
+						a.append(fx.cap(11));
+						a.toChars();
+						printf("MSN::ParserSB::Log #%i: to %s from\n:", m_chatId, fx.cap(1).replace("\r\n","\\r\\n").data());
+					}
 				}
 			}
 		}
 
 	}
 	else {
-		// es un guiño
-		// MSG vaticano666@hotmail.com Pedro 837\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunk: 2\r\n\r\nzwj7QM7Rs/4...
-		m_hasCommand = false;
+		rx.setPattern("(^MSG (\\S+) (\\S+) (\\d+)\r\n)"); 
+		if (rx.indexIn(m_buf.data()) != -1){
+			QString header = rx.cap(1);
+			QString senderPassport = rx.cap(2);
+			QString payload = rx.cap(4);
+			qDebug ("%s, %s, %s",header.toUtf8().data(),senderPassport.toUtf8().data(),payload.toUtf8().data());
+			data.clear();
+			data.append(m_buf.mid(header.size(), payload.toInt()));
+			// MSG vaticano666@hotmail.com Pedro 837\r\nMessage-ID: {879ED7A5-DF1C-BEAA-6D8B-65F6137734C5}\r\nChunk: 2\r\n\r\nzwj7QM7Rs/4...
+			if (data.size() == payload.toInt()) {
+				m_buf.remove(0, header.size() + payload.toInt());
+				rx.setPattern("^Message-ID: \\{(\\S+)\\}\r\nChunk: (\\d+)\r\n\r\n(\\S+)");
+				if (rx.indexIn(data.data()) != -1){
+					QString messageID2	= rx.cap(1);
+					QString chunks2		= rx.cap(2);  
+					QString dataWink2	= rx.cap(3); 
+					printf ("MSN::ParserSB::Log #%i: MSG Guiño %s,%s\n",m_chatId, messageID2.toUtf8().data(), dataWink2.toUtf8().data() );
+				}
+			}
+		}
+		else
+			m_hasCommand = false;
 	}
 }
 
