@@ -90,8 +90,10 @@ namespace libimmsnp {
 		qDebug("MSN::Log::Client ## Adding contact %s to group %s\r\n",contact.getPassport().toUtf8().data(), (m_roster->getContact(contact.getPassport()))->getGroupName().toUtf8().data());
 		ADC c (nextIdtr());
 		c.addList (QString("FL"));
-		c.addId ( (m_roster->getContact(contact.getPassport()))->getId() );
-		c.addGroupId ( (m_roster->getContact(contact.getPassport()))->getGroupId() );
+		c.addPassport (contact.getPassport());
+		//c.addId ( (m_roster->getContact(contact.getPassport()))->getId() );
+		if (group.getName() != "")
+			c.addGroupId ((m_roster->getContact(contact.getPassport()))->getGroupId());
 		send (c);
 	}
 	void Client::delContact(Contact& contact){

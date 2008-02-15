@@ -18,7 +18,7 @@ namespace libimmsnp {
 
 
 MsnTest::MsnTest () {
-	QString id ("probando_msnpy@hotmail.com");
+	QString id ("probando_msnpy3@hotmail.com");
 	QString pass ("gargolas");
 
 	// TODO:  segfault if bad password
@@ -33,6 +33,11 @@ MsnTest::MsnTest () {
 void MsnTest::onConnect()  {
         m_connected = 1;
         printf("# CLIENT # CONNECTED\n\n\n");
+	//Contact c;
+	//c.setPassport(QString("probando_msnpy3@hotmail.com"));
+	//Group g;
+	//g.setName("1");
+	//m_client->addContact(c, g);
 }
 
 void MsnTest::onDisconnect(ConnectionError) {

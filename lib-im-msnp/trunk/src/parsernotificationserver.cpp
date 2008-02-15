@@ -205,8 +205,9 @@ void ParserNS::parseMsg () {
 
 void ParserNS::parseSyn () {
 	// SYN 8 2006-12-09T11:15:07.163-08:00 2006-06-10T20:12:54.183-07:00 1 6\r\n
+	// SYN 8 2008-02-15T03:50:53.817-08:00 2008-02-15T03:43:37.837-08:00 2 0\r\nGTC A\r\nBLP BL\r\nPRP MFN probando_msnpy3@hotmail.com\r\nPRP MBE N\r\nPRP WWE 0\r\nLST N=probando_msnpy3@hotmail.com F=probando_msnpy3@hotmail.com C=4e395d4f-46cd-474a-a2d0-a3c53837652c 17 1\r\nLST N=probando_msnpy@hotmail.com F=Nick%20deprueba 16 1\r\n
 	QRegExp rx;
-	rx.setPattern("(^SYN \\d+ [\\d|\\D]* (\\d+) (\\d+)\r\n)"); 
+	rx.setPattern("(^SYN \\d+ (\\S+) (\\S+) (\\d+) (\\d+)\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
 		m_contacts = rx.cap(2).toInt();
 		m_groups = rx.cap(3).toInt();
@@ -306,6 +307,7 @@ void ParserNS::parseLsg () {
 void ParserNS::parseLst () {
 	// LST N=aaaaaaaaa@hotmail.com F=nick:%20aaÃ³ C=07ad2594-ef7f-4a1e-96e1-0158611521ed 11 1 5faec9a4-b368-4def-8f11-6be610b665d0\r\n
 	// LST N=aaaaaaaaa@hotmail.com F=nick:%20aaÃ³ C=07ad2594-ef7f-4a1e-96e1-0158611521ed 11 1\r\n
+	// LST N=probando_msnpy@hotmail.com F=Nick%20deprueba 16 1\r\n
 	// LST N=aaaaaaaaa@hotmail.com 11 1\r\n
 	
 	QString mail;
@@ -554,16 +556,39 @@ void ParserNS::parseRem () {
 }
 
 void ParserNS::parseAdc () {
-	// ADC 0 RL N=xxxxxxxx@hotmail.com F=XXXXXX 1\r\n 
 	// ADC 13 BL N=probando_msnpy2@hotmail.com\r\n
 	QRegExp rx;
-	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+)[ F=(\\S+) \\d+]?\r\n)"); 
+	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+)\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
 		QString list = rx.cap(2);
 		QString passport = rx.cap(3);
-		QString friendName = rx.cap(4);
 		m_buf.remove(0,rx.cap(1).size());
-		qDebug ("MSN::Log::ParserNS::%s with fName: %s has added you to:%s list",passport.toUtf8().data(), friendName.toUtf8().data(), list.toUtf8().data());
+		qDebug ("MSN::Log::ParserNS:: %s has added you to:%s list",passport.toUtf8().data(), list.toUtf8().data());
+	}
+	// ADC 0 RL N=xxxxxxxx@hotmail.com F=XXXXXX 1\r\n 
+	else {
+		rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) \\d+\r\n)"); 
+		if (rx.indexIn(m_buf.data()) != -1){
+			QString list = rx.cap(2);
+			QString passport = rx.cap(3);
+			QString friendName = rx.cap(4);
+			m_buf.remove(0,rx.cap(1).size());
+			qDebug ("MSN::Log::ParserNS::%s with fName: %s has added you to:%s list",passport.toUtf8().data(), friendName.toUtf8().data(), list.toUtf8().data());
+		}
+		else {
+			// ADC 10 FL N=probando_msnpy3@hotmail.com F=probando_msnpy3@hotmail.com C=c8f79544-e3c2-490a-b572-88319df44b38\r\n
+			rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) C=(\\S+)\r\n)"); 
+			if (rx.indexIn(m_buf.data()) != -1){
+				QString list = rx.cap(2);
+				QString passport = rx.cap(3);
+				QString friendName = rx.cap(4);
+				QString id = rx.cap(5);
+				m_buf.remove(0,rx.cap(1).size());
+				qDebug ("MSN::Log::ParserNS::NEW CONTACT %s with fName: %s has added you to:%s list with id:%s",passport.toUtf8().data(), friendName.toUtf8().data(), list.toUtf8().data(), id.toUtf8().data());
+				Contact* c = new Contact(passport,"" , friendName, id, "");
+				emit newContactArrived(c);
+			}
+		}
 	}
 	//else m_hasCommand = false;
 }
