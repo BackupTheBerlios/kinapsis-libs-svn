@@ -209,11 +209,11 @@ void ParserNS::parseSyn () {
 	QRegExp rx;
 	rx.setPattern("(^SYN \\d+ (\\S+) (\\S+) (\\d+) (\\d+)\r\n)"); 
 	if (rx.indexIn(m_buf.data()) != -1){
-		m_contacts = rx.cap(2).toInt();
-		m_groups = rx.cap(3).toInt();
+		m_contacts = rx.cap(4).toInt();
+		m_groups = rx.cap(5).toInt();
 		m_buf.remove(0,rx.cap(1).size());
 	}
-	////else m_hasCommand = false;
+	else m_hasCommand = false;
 }
 
 void ParserNS::parseGtc () {
@@ -247,22 +247,21 @@ void ParserNS::parseBpr () {
 		emit hasBlog (m_prevContact);
 		return;
 	}
-	rx.setPattern("(^BPR MOB Y\r\n)");
-	if (rx.indexIn(m_buf.data()) != -1){
-		m_buf.remove(0,rx.cap(1).size());
-		return;
-	}
 	else {
-		//BPR PHH tel:34%20925825866 0\r\nBPR PHW tel:34%20625914471 0\r\nBPR PHM tel:34%20625914471 0\r\nBPR HSB 1\r\n
-		//rx.setPattern("(^BPR PHM (\\S+) 0\r\n)");
-		rx.setPattern("(^BPR PH. \\S+ \\d+\r\n)");
+		rx.setPattern("(^BPR MOB Y\r\n)");
 		if (rx.indexIn(m_buf.data()) != -1){
 			m_buf.remove(0,rx.cap(1).size());
+			return;
 		}
-		//else {
-		//	//m_hasCommand = false;
-		//	return;
-		//}
+			else {
+				//BPR PHH tel:34%20925825866 0\r\nBPR PHW tel:34%20625914471 0\r\nBPR PHM tel:34%20625914471 0\r\nBPR HSB 1\r\n
+				//rx.setPattern("(^BPR PHM (\\S+) 0\r\n)");
+				rx.setPattern("(^BPR PH. \\S+ \\d+\r\n)");
+				if (rx.indexIn(m_buf.data()) != -1){
+					m_buf.remove(0,rx.cap(1).size());
+				}
+				else m_hasCommand = false;
+			}
 	}
 
 }
@@ -305,44 +304,25 @@ void ParserNS::parseLsg () {
 }
 
 void ParserNS::parseLst () {
+	QRegExp vx;
+
 	// LST N=aaaaaaaaa@hotmail.com F=nick:%20aaÃ³ C=07ad2594-ef7f-4a1e-96e1-0158611521ed 11 1 5faec9a4-b368-4def-8f11-6be610b665d0\r\n
 	// LST N=aaaaaaaaa@hotmail.com F=nick:%20aaÃ³ C=07ad2594-ef7f-4a1e-96e1-0158611521ed 11 1\r\n
 	// LST N=probando_msnpy@hotmail.com F=Nick%20deprueba 16 1\r\n
-	// LST N=aaaaaaaaa@hotmail.com 11 1\r\n
 	
-	QString mail;
-	QString nick;
-	QString id;
-	QString num1;
-	QString num2;
-	QString groupId;
-
-	if (m_buf.indexOf("\r\n") >= 0) {
-		QList<QByteArray> p2 = m_buf.split(' ');
-		if (p2.size() == 4)  {
-			mail = p2[1].mid(2).data();
-			nick = p2[2].mid(2).data();
-			id   = p2[3].mid(2).data();
-		}
-		if (p2.size() == 6)  {
-			mail = p2[1].mid(2).data();
-			nick = p2[2].mid(2).data();
-			id   = p2[3].mid(2).data();
-			num1 = p2[4].data();
-			num2 = p2[5].data();
-		}
-		if (p2.size() >6 )  {
-			mail = p2[1].mid(2).data();
-			nick = p2[2].mid(2).data();
-			id   = p2[3].mid(2).data();
-			num1 = p2[4].data();
-			num2 = p2[5].data();
-			groupId = p2[6].data();
-		}
-
-		//qDebug ("MSN::Log::ParserNS : New Contact=%s nick=%s", mail.toUtf8().data(), nick.toUtf8().data());
-		m_buf.remove(0,m_buf.indexOf("\r\n")+2);
-		Contact* c = new Contact(mail,"" , QString(nick), id, groupId);
+	vx.setPattern("(^LST N=(\\S+) (F=(.*) C=(\\S+) |F=(.*) )?(\\d+) \\d+( \\S+)?\r\n)"); 
+        vx.setMinimal(TRUE);
+	if (vx.indexIn(m_buf.data()) != -1){
+		m_buf.remove(0, vx.cap(1).size());
+		QString mail	= vx.cap(2);
+		QString nick	= vx.cap(4);
+		QString id	= vx.cap(5);
+		QString list	= vx.cap(7);
+		QString groupId	= vx.cap(8);
+		Contact *c = new Contact(mail, QString(""), nick, id, groupId);
+		list = vx.cap(7);
+		c->setList(list);
+		qDebug ("##5 de %i# %i,1 %s,mail %s,3 %s,nick %s,id %s,6 %s,List %s, Grupos %s,9 %s \n",m_contacts,vx.capturedTexts().size(), vx.cap(1).toUtf8().replace("\r\n","\\r\\n").data(), vx.cap(2).toUtf8().data(), vx.cap(3).toUtf8().data(), vx.cap(4).toUtf8().data(), vx.cap(5).toUtf8().data(), vx.cap(6).toUtf8().data(), list.toUtf8().data(), vx.cap(8).toUtf8().data(), vx.cap(9).toUtf8().data());
 		emit newContactArrived (c); 
 		m_prevContact = mail;
 		if (--m_contacts == 0) {
@@ -350,14 +330,13 @@ void ParserNS::parseLst () {
 			CHG c (m_client->nextIdtr());
 			c.addStatusCode (m_initialStatus);
 			c.addCapabilities ("1342558252");
-			//qDebug ("MSN::Log::ParserNS : Roster received#");
 			m_client->send (c);
 			emit connected();
 		}
-		return;
 	}
-
-	else m_hasCommand = false;
+	else {
+		m_hasCommand = false;
+	}
 }
 
 void ParserNS::parseChg () {
@@ -633,8 +612,9 @@ void ParserNS::parse (){
 	m_isParsing = true;
 	QString cmd;
 	while (m_buf.size() && m_hasCommand){
-		if (m_buf.size() > 8000) qDebug("MSN::ParserNS::Log::BUFFER <%s>",QString(m_buf.dataDebug()).mid(0,3000).toUtf8().data());
-		else qDebug("MSN::ParserNS::Log::BUFFER <%s>",m_buf.dataDebug());
+		//fprintf(stderr,"MSN::ParserNS::Log::BUFFER <");
+		//m_buf.toChars();
+		//fprintf(stderr,">\n");
 
 		cmd = m_buf.mid(0,3).data();
 		if (cmd == "VER"){
@@ -687,7 +667,7 @@ void ParserNS::parse (){
 			parseLsg();
 		}
 		else if (cmd == "LST"){
-			//qDebug ("MSN::Log::ParserNS : Parsing LST");
+			qDebug ("MSN::Log::ParserNS : Parsing LST");
 			parseLst();
 		}
 		else if (cmd == "CHG"){
@@ -761,6 +741,9 @@ void ParserNS::parse (){
 			qDebug("MSN::ParserNS::Log::SALIMOOOOSSS");
 		}
 	}	
+	//fprintf(stderr,"MSN::ParserNS::Log::NO COMMAND BUFFER size %i, hasCommand %i <", m_buf.size(), m_hasCommand);
+	//m_buf.toChars();
+	//fprintf(stderr,">\n");
 	m_isParsing = false;
 }
 }

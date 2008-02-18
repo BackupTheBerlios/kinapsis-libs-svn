@@ -38,6 +38,11 @@ public:
 	void setCapabilities (QString);
 	void setList (QString list);
 
+	bool inForwardList(){return m_fl;};
+	bool inReverseList(){return m_rl;};
+	bool inBlockList(){return m_bl;};
+	bool inAllowList(){return m_al;};
+
 	QString getPassport(){return m_passport;};
 	QString getGroupName(){return m_groupName;};
 	QString getNickName(){return m_nickName;};
@@ -61,6 +66,11 @@ private:
 	QString	m_persMsg;		
 	QString	m_capabilities ;	
 	QString m_list;
+	bool m_fl;
+	bool m_rl;
+	bool m_bl;
+	bool m_al;
+
 };
 
 class Group {

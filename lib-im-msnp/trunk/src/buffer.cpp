@@ -30,7 +30,7 @@ void Buffer::toChars(){
 			else
 	        		fprintf(stderr, "%c",(const char) this->at(i));
 	}
-	fprintf(stderr, "\n");
+	//fprintf(stderr, "\n");
 }
 
 void Buffer::toHex(){

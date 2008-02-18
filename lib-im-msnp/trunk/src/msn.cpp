@@ -18,7 +18,7 @@ namespace libimmsnp {
 
 
 MsnTest::MsnTest () {
-	QString id ("probando_msnpy3@hotmail.com");
+	QString id ("probando_msnpy@hotmail.com");
 	QString pass ("gargolas");
 
 	// TODO:  segfault if bad password

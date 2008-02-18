@@ -121,6 +121,8 @@ int msocket::recv (Buffer& buf){
 				buf.append(tmpData);
 				fprintf (stderr, "MSN::Socket:: RECEIVING: ");
 				buf.toChars();
+				fprintf(stderr, "\n");
+
 			}
 			else {
 				qDebug ("ERROR::MSN::SSL Socket::%s <<<",m_host.toUtf8().data());
@@ -137,6 +139,7 @@ int msocket::recv (Buffer& buf){
 				buf.append(tmpData);
 				fprintf (stderr, "MSN::Socket:: RECEIVING: ");
 				buf.toChars();
+				fprintf(stderr, "\n");
 			}
 			else {
 				qDebug ("ERROR::MSN::Socket::%s <<<",m_host.toUtf8().data());

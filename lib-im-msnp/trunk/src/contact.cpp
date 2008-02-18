@@ -12,6 +12,7 @@
 */
 
 #include "contact.h"
+#include <QStringList>
 
 namespace libimmsnp {
 // Class Contact
@@ -48,7 +49,7 @@ Contact::Contact(QString passport, QString groupName, QString nickName, QString 
 	   				
 	m_id = id;			
                                         
-	m_groupId = groupId;		
+	m_groupId = (groupId.split(','))[0];		
 	m_status= STATUS_OFF;		
 	m_displayName = "";		
 	m_persMsg = ""; 		
