@@ -539,39 +539,35 @@ void ParserNS::parseRem () {
 void ParserNS::parseAdc () {
 	// ADC 13 BL N=probando_msnpy2@hotmail.com\r\n
 	QRegExp rx;
-	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+)\r\n)"); 
+	QString list;
+	QString passport;
+	QString nick;
+	QString id;
+	QString groupId;
+	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+)( F=(.*) \\d+| F=(.*) C=(\\S+))?\r\n)");
 	if (rx.indexIn(m_buf.data()) != -1){
-		QString list = rx.cap(2);
-		QString passport = rx.cap(3);
+		list = rx.cap(2);
+		passport = rx.cap(3);
+		nick = rx.cap(5);
+		id = rx.cap(6);
 		m_buf.remove(0,rx.cap(1).size());
-		qDebug ("MSN::Log::ParserNS:: %s has added you to:%s list",passport.toUtf8().data(), list.toUtf8().data());
+		qDebug ("MSN::Log::ParserNS:######:1 %s,List %s,mail %s,4 %s,nick %s,6 %s",rx.cap(1).toUtf8().replace("\r\n","\\r\\n").data(), list.toUtf8().data(), passport.toUtf8().data(), rx.cap(4).toUtf8().data(), nick.toUtf8().data(), rx.cap(6).toUtf8().data());
+		Contact* c = new Contact(passport,"" , nick, id, "");
+		c->setList(list);
+		emit newContactArrived(c);
 	}
-	// ADC 0 RL N=xxxxxxxx@hotmail.com F=XXXXXX 1\r\n 
 	else {
-		rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) \\d+\r\n)"); 
+		rx.setPattern("(^ADC \\d+ (\\S+) C=(\\S+) (\\S+)\r\n)");
 		if (rx.indexIn(m_buf.data()) != -1){
-			QString list = rx.cap(2);
-			QString passport = rx.cap(3);
-			QString friendName = rx.cap(4);
+			list = rx.cap(2);
+			id = rx.cap(3);
+			groupId = rx.cap(4);
 			m_buf.remove(0,rx.cap(1).size());
-			qDebug ("MSN::Log::ParserNS::%s with fName: %s has added you to:%s list",passport.toUtf8().data(), friendName.toUtf8().data(), list.toUtf8().data());
+			qDebug ("MSN::Log::ParserNS:######:1 %s,lista %s,msnId %s,group %s,5 %s,6 %s",rx.cap(1).toUtf8().replace("\r\n","\\r\\n").data(), list.toUtf8().data(), id.toUtf8().data(), groupId.toUtf8().data(), rx.cap(5).toUtf8().data(), rx.cap(6).toUtf8().data());
 		}
-		else {
-			// ADC 10 FL N=probando_msnpy3@hotmail.com F=probando_msnpy3@hotmail.com C=c8f79544-e3c2-490a-b572-88319df44b38\r\n
-			rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) C=(\\S+)\r\n)"); 
-			if (rx.indexIn(m_buf.data()) != -1){
-				QString list = rx.cap(2);
-				QString passport = rx.cap(3);
-				QString friendName = rx.cap(4);
-				QString id = rx.cap(5);
-				m_buf.remove(0,rx.cap(1).size());
-				qDebug ("MSN::Log::ParserNS::NEW CONTACT %s with fName: %s has added you to:%s list with id:%s",passport.toUtf8().data(), friendName.toUtf8().data(), list.toUtf8().data(), id.toUtf8().data());
-				Contact* c = new Contact(passport,"" , friendName, id, "");
-				emit newContactArrived(c);
-			}
-		}
+		else m_hasCommand = false;
+		
 	}
-	//else m_hasCommand = false;
 }
 
 void ParserNS::parseRmg () {
@@ -664,7 +660,7 @@ void ParserNS::parse (){
 			parsePrp();
 		}
 		else if (cmd == "LSG" || cmd == "ADG"){
-			//qDebug ("MSN::Log::ParserNS : Parsing LSG");
+			qDebug ("MSN::Log::ParserNS : Parsing LSG");
 			parseLsg();
 		}
 		else if (cmd == "LST"){

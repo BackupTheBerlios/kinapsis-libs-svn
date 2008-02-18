@@ -84,16 +84,21 @@ namespace libimmsnp {
 	}
 
 	void Client::addContact(Contact& contact, Group& group){
+		// >>ADC 80 FL N=probando_msnpy2@hotmail.com F=+34123456789^M
+		// <<ADC 80 FL N=probando_msnpy2@hotmail.com F=+34123456789 C=26a1f2a9-2560-4941-be6a-c4dc7adead55
+
 		// >> ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95
 		// << ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95
 
-		qDebug("MSN::Log::Client ## Adding contact %s to group %s\r\n",contact.getPassport().toUtf8().data(), (m_roster->getContact(contact.getPassport()))->getGroupName().toUtf8().data());
+		qDebug("MSN::Log::Client ## Adding contact %s to group %s\r\n",contact.getPassport().toUtf8().data(), group.getName().toUtf8().data());
 		ADC c (nextIdtr());
 		c.addList (QString("FL"));
 		c.addPassport (contact.getPassport());
-		//c.addId ( (m_roster->getContact(contact.getPassport()))->getId() );
-		if (group.getName() != "")
-			c.addGroupId ((m_roster->getContact(contact.getPassport()))->getGroupId());
+		if (!group.getName().isEmpty()){
+			c.addId ( (m_roster->getContact(contact.getPassport()))->getId() );
+			c.addGroupId (m_roster->getGroupId(group.getName()));
+			qDebug() << "mail:" << (m_roster->getContact(contact.getPassport()))->getId() << "Group:" << m_roster->getGroupId(group.getName());
+		}
 		send (c);
 	}
 	void Client::delContact(Contact& contact){

@@ -98,9 +98,8 @@ Buffer ADC::makeCmd(){
 	Buffer res;
 	res += beginCmd();
 	if (m_list == "FL"){
-		qDebug (m_passport.toUtf8().data());
-		if (m_passport.toUtf8().data() != "") res += " " + m_list + " N=" + m_passport + " F=" + m_passport;
-		else if (m_id ==  "") res += " " + m_list + " C=" + m_id + " " + m_groupId;
+		if (m_groupId.isEmpty()) res += " " + m_list + " N=" + m_passport + " F=" + m_passport;
+		else res += " " + m_list + " C=" + m_id + " " + m_groupId;
 	}
 	else if (m_list == "BL"){
 		res += " " + m_list + " N=" + m_passport;

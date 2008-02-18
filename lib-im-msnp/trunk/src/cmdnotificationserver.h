@@ -67,18 +67,14 @@ public:
 	virtual ~ADC();
 	Buffer makeCmd();
 	void addList (QString);
-
 	void addId (QString);
 	void addGroupId (QString);
-
 	void addPassport (QString passport);
 	void addDisplayName (QString dispName);
 private:
 	QString m_list;
-
 	QString m_id;
 	QString m_groupId;
-
 	QString m_passport;
 	QString m_dispName;
 };
