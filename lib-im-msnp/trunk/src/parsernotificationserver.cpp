@@ -519,7 +519,8 @@ void ParserNS::parseNot () {
 	if (rx.indexIn(m_buf.data()) != -1){
 		QString payload = rx.cap(1).toUtf8().data();
 
-		rx.setPattern("(^NOT \\d+\r\n[\\d|\\D]{" + payload + "})"); 
+		rx.setPattern("(^NOT \\d+\r\n<NOTIFICATION .*</NOTIFICATION>)"); 
+		rx.setMinimal(TRUE);
 		if (rx.indexIn(m_buf.data()) != -1){
 			m_buf.remove(0,rx.cap(1).size());
 		}
