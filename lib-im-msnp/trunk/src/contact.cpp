@@ -30,14 +30,13 @@ Contact::Contact(){
 	m_list = 0;     		// LST N=emily@passport.com F=Emily C=8a99df6b-ae73-40bd-bdf7-05d0134be851 [3] 124153dc-a695-4f6c-93e8-8e07c9775251,...\r\n 
 }                       		
 
-Contact::Contact(QString passport, QString groupName, QString nickName, QString id, QString groupId){
+Contact::Contact(QString passport, QString nickName, QString id){
 	m_passport = passport;		
-	m_groupName = groupName;	
 	m_nickName = nickName;		
 	   				
 	m_id = id;			
                                         
-	m_groupId = (groupId.split(','))[0];		
+	m_groupId = ""; 	     
 	m_status= STATUS_OFF;		
 	m_displayName = "";		
 	m_persMsg = ""; 		
@@ -64,7 +63,7 @@ void Contact::setId(QString id) {
 }
 
 void Contact::setGroupId(QString groupId) {
-	m_groupId = groupId;
+	m_groupId = (groupId.split(','))[0];		
 }
 
 void Contact::setStatus(State status) {

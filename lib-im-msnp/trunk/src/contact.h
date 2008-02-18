@@ -23,7 +23,7 @@ class Contact {
 
 public:
 	Contact();
-	Contact(QString passport, QString groupName, QString nickName, QString msnId, QString groupId);
+	Contact(QString passport, QString nickName, QString msnId);
 	
 	virtual ~Contact();
 	

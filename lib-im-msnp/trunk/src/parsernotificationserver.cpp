@@ -319,7 +319,8 @@ void ParserNS::parseLst () {
 		QString id	= vx.cap(5);
 		QString list	= vx.cap(7);
 		QString groupId	= vx.cap(8);
-		Contact *c = new Contact(mail, QString(""), nick, id, groupId);
+		Contact *c = new Contact(mail, nick, id);
+		c->setGroupId(groupId);
 		list = vx.cap(7);
 		c->setList(list);
 		qDebug ("##5 de %i# %i,1 %s,mail %s,3 %s,nick %s,id %s,6 %s,List %s, Grupos %s,9 %s \n",m_contacts,vx.capturedTexts().size(), vx.cap(1).toUtf8().replace("\r\n","\\r\\n").data(), vx.cap(2).toUtf8().data(), vx.cap(3).toUtf8().data(), vx.cap(4).toUtf8().data(), vx.cap(5).toUtf8().data(), vx.cap(6).toUtf8().data(), list.toUtf8().data(), vx.cap(8).toUtf8().data(), vx.cap(9).toUtf8().data());
@@ -552,7 +553,7 @@ void ParserNS::parseAdc () {
 		id = rx.cap(6);
 		m_buf.remove(0,rx.cap(1).size());
 		qDebug ("MSN::Log::ParserNS:######:1 %s,List %s,mail %s,4 %s,nick %s,6 %s",rx.cap(1).toUtf8().replace("\r\n","\\r\\n").data(), list.toUtf8().data(), passport.toUtf8().data(), rx.cap(4).toUtf8().data(), nick.toUtf8().data(), rx.cap(6).toUtf8().data());
-		Contact* c = new Contact(passport,"" , nick, id, "");
+		Contact* c = new Contact(passport, nick, id);
 		c->setList(list);
 		emit newContactArrived(c);
 	}
