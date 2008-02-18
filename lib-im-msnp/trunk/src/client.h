@@ -52,7 +52,7 @@ public:
 	QString nextChatPassport();
 	void send(Command& c, int chat = -1);
 	void sendChat(int chatId, Command& msg);
-	void addContact(Contact& contact, Group& group);
+	void addContact(Contact& contact, Group& group = *(new Group()));
 	void delContact(Contact& contact);
 	void blockContact(Contact& contact);
 	void deblockContact(Contact& contact);

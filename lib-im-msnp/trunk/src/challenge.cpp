@@ -166,6 +166,8 @@ namespace libimmsnp {
 					sslSock->close();
 					return rx.cap(1);
 				}
+				else
+					return "";
 
 			}
 		}

@@ -104,11 +104,6 @@ namespace libimmsnp {
 		d.addList (QString("FL"));
 		d.addId((m_roster->getContact(contact.getPassport()))->getId());
 		send (d);
-
-		REM c (nextIdtr());
-		c.addList (QString("AL"));
-		c.addId((m_roster->getContact(contact.getPassport()))->getId());
-		send (c);
 	}
 	
 	void Client::blockContact(Contact& contact){
@@ -120,7 +115,7 @@ namespace libimmsnp {
 
 		REM d (nextIdtr());
 		d.addList (QString("AL"));
-		d.addId((m_roster->getContact(contact.getPassport()))->getId());
+		d.addId(contact.getPassport());
 		send (d);
 
 		ADC c (nextIdtr());

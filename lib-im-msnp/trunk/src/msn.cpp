@@ -18,8 +18,8 @@ namespace libimmsnp {
 
 
 MsnTest::MsnTest () {
-	QString id ("probando_msnpy@hotmail.com");
-	QString pass ("gargolas");
+       QString id ("probando_msnpy@hotmail.com");
+       QString pass ("gargolas");
 
 	// TODO:  segfault if bad password
 	m_client = new Client (id, pass, STATUS_NLN);
@@ -33,11 +33,10 @@ MsnTest::MsnTest () {
 void MsnTest::onConnect()  {
         m_connected = 1;
         printf("# CLIENT # CONNECTED\n\n\n");
-	//Contact c;
-	//c.setPassport(QString("probando_msnpy3@hotmail.com"));
-	//Group g;
-	//g.setName("1");
-	//m_client->addContact(c, g);
+	Contact c;
+	c.setPassport(QString("probando_msnpy3@hotmail.com"));
+	m_client->addContact(c);
+	m_client->deblockContact(c);
 }
 
 void MsnTest::onDisconnect(ConnectionError) {
@@ -120,6 +119,12 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMs
 		Contact c;
 		c.setPassport(chatMsnPassport);
 		m_client->delContact(c);
+	}
+	if (chatMsg.getMsg() == "delAndBlkPassport") {
+		Contact c;
+		c.setPassport(chatMsnPassport);
+		m_client->delContact(c);
+		m_client->blockContact(c);
 	}
 	if (chatMsg.getMsg() == "blkPassport") {
 		Contact c;

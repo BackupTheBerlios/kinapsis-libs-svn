@@ -329,7 +329,8 @@ void ParserNS::parseLst () {
 			qDebug ("MSN::Log::ParserNS : Roster Received");
 			CHG c (m_client->nextIdtr());
 			c.addStatusCode (m_initialStatus);
-			c.addCapabilities ("1342558252");
+			//c.addCapabilities ("1342558252");
+			c.addCapabilities ("1879343140");
 			m_client->send (c);
 			emit connected();
 		}

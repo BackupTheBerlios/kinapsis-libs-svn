@@ -105,6 +105,9 @@ Buffer ADC::makeCmd(){
 	else if (m_list == "BL"){
 		res += " " + m_list + " N=" + m_passport;
 	}
+	else if (m_list == "AL"){
+		res += " " + m_list + " N=" + m_passport;
+	}
 
 	res += endCmd();
 	return res;
