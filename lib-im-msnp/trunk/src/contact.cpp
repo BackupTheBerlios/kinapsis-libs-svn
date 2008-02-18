@@ -15,18 +15,6 @@
 #include <QStringList>
 
 namespace libimmsnp {
-// Class Contact
-// LST N=eve@passport.com F=Eavesdropper 12\r\n eve cannot see me.
-// LST N=fred@passport.com F=Fred 8\r\n in reverse list but not on add or block list
-//
-// LST [N] -> passport = carol@passport.com
-// LST [F] -> nickName = Carol
-// ILN [] -> displayName = urlEncoded
-// display_name : Principal's URL encoded display name
-// lists = 1 = forward list | 13 = forward, block, and reverse lists| 12 | 
-// groups = ... && ... && ...
-// phones = home,work,...
-
 Contact::Contact(){
 	m_passport = "";		// LST [N=emily@passport.com] F=Emily C=8a99df6b-ae73-40bd-bdf7-05d0134be851 3 124153dc-a695-4f6c-93e8-8e07c9775251,...\r\n 
 	m_groupName = "";		// LSG [Other%20Contacts] 124153dc-a695-4f6c-93e8-8e07c9775251\r\n 
@@ -39,7 +27,7 @@ Contact::Contact(){
 	m_displayName = "";		// ILN 9 BSY emily@passport.com [Emily%20The%20best] 268435492 !!urlEncoded¡¡                                 
 	m_persMsg = ""; 		// UBX emily@passport.com 53\r\n[<Data><PSM></PSM><CurrentMedia></CurrentMedia></Data>]
 	m_capabilities = "";		// ILN 9 BSY emily@passport.com Emily [268435492]
-	m_list = "";     		// LST N=emily@passport.com F=Emily C=8a99df6b-ae73-40bd-bdf7-05d0134be851 [3] 124153dc-a695-4f6c-93e8-8e07c9775251,...\r\n 
+	m_list = 0;     		// LST N=emily@passport.com F=Emily C=8a99df6b-ae73-40bd-bdf7-05d0134be851 [3] 124153dc-a695-4f6c-93e8-8e07c9775251,...\r\n 
 }                       		
 
 Contact::Contact(QString passport, QString groupName, QString nickName, QString id, QString groupId){
@@ -54,7 +42,7 @@ Contact::Contact(QString passport, QString groupName, QString nickName, QString 
 	m_displayName = "";		
 	m_persMsg = ""; 		
 	m_capabilities = "";		
-	m_list = "";     		
+	m_list = 0;     		
 }                       		
 
 Contact::~Contact() { }
@@ -96,10 +84,20 @@ void Contact::setCapabilities (QString msnCapabilities){
 }
 
 void Contact::setList (QString list){
-	// TODO: make an enumerate and convert the 'list' to that enumerate
-	m_list = list;
+	m_list = list.toInt();
 }
-
+bool Contact::inForwardList(){
+	return (1 and m_list);
+}
+bool Contact::inAllowList(){
+	return (2 and m_list);
+}
+bool Contact::inBlockList(){
+	return (4 and m_list);
+}
+bool Contact::inReverseList(){
+	return (8 and m_list);
+}
 // Now Group Class
 // LSG Family 01eccd16-9f8a-425f-a36d-cbb73af6461e\r\n
 

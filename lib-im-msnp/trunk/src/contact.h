@@ -38,10 +38,10 @@ public:
 	void setCapabilities (QString);
 	void setList (QString list);
 
-	bool inForwardList(){return m_fl;};
-	bool inReverseList(){return m_rl;};
-	bool inBlockList(){return m_bl;};
-	bool inAllowList(){return m_al;};
+	bool inForwardList();
+	bool inAllowList();
+	bool inBlockList();
+	bool inReverseList();
 
 	QString getPassport(){return m_passport;};
 	QString getGroupName(){return m_groupName;};
@@ -50,7 +50,6 @@ public:
 	QString getGroupId(){return m_groupId;};
 	State getStatus() {return m_status;};
 	QString getCapabilities() {return m_capabilities;};
-	QString getList(){return m_list;};
 	QString getPersMsg(){return m_persMsg;};
 	QString getDisplayName(){return m_displayName;};
 	
@@ -65,12 +64,7 @@ private:
 	QString	m_displayName;	
 	QString	m_persMsg;		
 	QString	m_capabilities ;	
-	QString m_list;
-	bool m_fl;
-	bool m_rl;
-	bool m_bl;
-	bool m_al;
-
+	int m_list;
 };
 
 class Group {
