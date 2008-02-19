@@ -53,13 +53,13 @@ QByteArray MSG::makeCmd(){
 			else
 				log = "N";
 			msg = "MIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: " + m_clientName + " " + m_clientVersion + "\r\nChat-Logging: " + log;
-			res.append(beginCmd() + " 1 U " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
+			res.append(beginCmd() + " U " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
 			return res;
 			break;
 		case MSG_P2P:
 			data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + QByteArray(m_destPassport.toUtf8().data()) + "\r\n\r\n";
 			data.append(m_p2pData);
-			res.append(beginCmd() + " 1 U " + QString::number(msg.size()) + "\r\n");
+			res.append(beginCmd() + " D " + QString::number(data.size()) + "\r\n");
 			res.append(data);
 			return res;
 		default:

@@ -29,6 +29,7 @@ ParserSB::ParserSB (QString address, int port, int chatId, QString msnPassport, 
 	m_isParsing = false;
 	m_endChat = false;
 }
+
 void ParserSB::run(){
 	m_socket = new msocket ();
 	m_socket->connect(m_address, m_port);
@@ -92,6 +93,7 @@ void ParserSB::parseAns(){
 		// TODO: 
 		m_buf.remove(0,rx.cap(1).size());
 		MSG m;
+		m.addTrid(nextIdtr());
 		m.addType(MSG_IDENTIFICATION);
 		m.addClientName(m_client->getClientName());
 		m.addClientVersion(m_client->getClientVer());
@@ -215,9 +217,8 @@ void ParserSB::parseMsg () {
 			if (msgType == QString("application/x-msnmsgrp2p")){
 				rx.setPattern("\r\nP2P-Dest: (\\S+)\r\n\r\n");
 				if (rx.indexIn(data.data()) != -1){
-					printf("MSN::ParserSB::Log #%i: MSG archivo datos:", m_chatId);
-					data.toHex();
-					printf("\n");
+					qDebug("MSN::ParserSB::Log #1#%i: MSG archivo datos:<%s>", m_chatId, data.data());
+					qDebug("MSN::ParserSB::Log #2#%i: MSG archivo datos:<%s>", m_chatId, data.toHex().data());
 					QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
 
 					//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
@@ -234,14 +235,15 @@ void ParserSB::parseMsg () {
 					QByteArray ackUniqueID	 = binaryHeader.mid(28,4);	
 					QByteArray ackIdentifier = binaryHeader.mid(32,4);	
 					QByteArray ackDataSize	 = binaryHeader.mid(36,8);	
-					//qDebug() << "####### BINARY" << binaryHeader.toHex();
-					//qDebug () << "######## sid"<< sessionID.toHex() << "Id" << identifier.toHex() << "dataOffset" << dataOffset.toHex() << "totalDataSize" << totalDataSize.toHex() << "messageLength" << messageLength.toHex() << "flag" << flag.toHex() << "ackIdentifier" << ackIdentifier.toHex() << "ackUniqueID" << ackUniqueID.toHex() << "ackDataSize" << ackDataSize.toHex();
+					qDebug() << "####### BINARY" << binaryHeader.toHex();
+					qDebug () << "######## sid"<< sessionID.toHex() << "Id" << identifier.toHex() << "dataOffset" << dataOffset.toHex() << "totalDataSize" << totalDataSize.toHex() << "messageLength" << messageLength.toHex() << "flag" << flag.toHex() << "ackIdentifier" << ackIdentifier.toHex() << "ackUniqueID" << ackUniqueID.toHex() << "ackDataSize" << ackDataSize.toHex();
 
 					QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 					//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
 					QRegExp fx;
 					QByteArray a;
 					fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nEUF-GUID: \\{(\\S+)\\}\r\nSessionID: (\\d+)\r\nAppID: (\\d+)\r\nContext: (\\S+))");
+					m_hasCommand = false;
 					if (fx.indexIn(invitation) != -1){
 						QString EUF_GUID = fx.cap(11);
 						QString p2pSessionId = fx.cap(12);
@@ -249,21 +251,16 @@ void ParserSB::parseMsg () {
 						qDebug() << "$$$$ " << EUF_GUID << " " << p2pSessionId;
 
 						//res = SessionID + random + Data offset+ Total data size +  00 00 00 00  + 02 00 00 00 + Identifier + identifier + Total data size
-						QByteArray response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00") + identifier + ackIdentifier + totalDataSize;
+						QByteArray response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00") + identifier + ackIdentifier + totalDataSize + QByteArray::fromHex("00 00 00 00");
 						MSG p2p;
+						p2p.addTrid(nextIdtr());
 						p2p.addType(MSG_P2P);
 						p2p.addDestPassport(fx.cap(4));
 						p2p.addP2PData(response);
-						//p2p.makeCmd().toChars();
-						//p2p.makeCmd().toHex();
+						printf("ENVIO:%s\n",QByteArray(p2p.makeCmd()).toHex().data());
 						m_socket->send(p2p.makeCmd());
 						// ahora envio esto:
-						//MSG 241 D 152
-						//MIME-Version: 1.0
-						//Content-Type: application/x-msnmsgrp2p
-						//P2P-Dest: darth_leviathan@hotmail.com
-						//................=................x6b.I.c=...........
-						//
+						//MSG 4 U 152\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: probando_msnpy2@hotmail.com\r\n\r\n..........
 					}
 				}
 			}

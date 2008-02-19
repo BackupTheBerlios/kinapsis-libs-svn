@@ -52,7 +52,7 @@ public:
 
 	void parseError();
 
-	int getIdtr (){return m_idtr++;};
+	int nextIdtr (){return m_idtr++;};
 	
 	~ParserSB(){printf ("MSN::ParserSB::log ## Parser deleted\n");}
 

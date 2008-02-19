@@ -78,7 +78,7 @@ namespace libimmsnp {
 
 	void Client::sendChat(int chatId, Command& msg) {
 		if (m_chatList[chatId]){
-			msg.addTrid (m_chatList[chatId]->getIdtr());
+			msg.addTrid (m_chatList[chatId]->nextIdtr());
 			send (msg, chatId);
 		}
 	}
