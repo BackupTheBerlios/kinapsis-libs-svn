@@ -8,7 +8,6 @@ INCLUDE(${QT_USE_FILE})
 SET(LibImMsnP_SRCS
 	client.cpp
 	msocket.cpp
-	buffer.cpp
 	cmdlogin.cpp
 	parsernotificationserver.cpp
 	challenge.cpp
@@ -29,7 +28,6 @@ SET(LibImMsnP_HDRS
 	libimmsnp.h
 	client.h
 	msocket.h
-	buffer.h
 	command.h
 	cmdlogin.h
 	parsernotificationserver.h

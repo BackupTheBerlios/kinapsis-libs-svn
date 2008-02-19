@@ -75,7 +75,7 @@ int msocket::send (Buffer buf){
 	else { 
 		m_socket->write (buf.data());
 		if (m_socket->waitForBytesWritten(30000)) {
-			qDebug ("MSN::Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());
+			qDebug ("MSN::Socket::%s >>> : %s",m_host.toUtf8().data(), buf.data());
 			}
 		else
 			qDebug ("ERROR::MSN::Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());

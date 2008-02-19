@@ -44,6 +44,9 @@ public:
 	void addColor (QString color);
 	void addFont (QString font);
 
+	void addDestPassport (QString p);
+	void addP2PData (QByteArray b);
+
 	void addType (MsgType type);
 	void addClientName (QString name);
 	void addClientVersion (QString version);
@@ -71,6 +74,9 @@ private:
 	QString m_clientVersion;
 	int m_clientIsLogging;
 	MsgType m_type;
+
+	QString m_destPassport;
+	QByteArray m_p2pData;
 
 };
 

@@ -229,30 +229,41 @@ void ParserSB::parseMsg () {
 					QByteArray identifier	 = binaryHeader.mid(4,4);	
 					QByteArray dataOffset	 = binaryHeader.mid(8,8);	
 					QByteArray totalDataSize = binaryHeader.mid(16,8);	
-					QByteArray messageLength = binaryHeader.mid(20,4);	
-					QByteArray flag		 = binaryHeader.mid(24,4);	
-					QByteArray ackIdentifier = binaryHeader.mid(28,4);	
-					QByteArray ackUniqueID	 = binaryHeader.mid(32,4);	
+					QByteArray flag		 = binaryHeader.mid(20,4);	
+					QByteArray messageLength = binaryHeader.mid(24,4);	
+					QByteArray ackUniqueID	 = binaryHeader.mid(28,4);	
+					QByteArray ackIdentifier = binaryHeader.mid(32,4);	
 					QByteArray ackDataSize	 = binaryHeader.mid(36,8);	
+					//qDebug() << "####### BINARY" << binaryHeader.toHex();
+					//qDebug () << "######## sid"<< sessionID.toHex() << "Id" << identifier.toHex() << "dataOffset" << dataOffset.toHex() << "totalDataSize" << totalDataSize.toHex() << "messageLength" << messageLength.toHex() << "flag" << flag.toHex() << "ackIdentifier" << ackIdentifier.toHex() << "ackUniqueID" << ackUniqueID.toHex() << "ackDataSize" << ackDataSize.toHex();
 
 					QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 					//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
-					//BYE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={FBF1AAE6-E093-D86E-5FE7-5C10D4981645}\r\nCSeq: 0\r\nCall-ID: {CA04F5F2-39B1-D31B-4DBD-E3AFE34A2841}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionclosebody\r\nContent-Length: 22\r\n\r\nContext: dAMAgQ==\r\n\r\n
 					QRegExp fx;
 					Buffer a;
 					fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nEUF-GUID: \\{(\\S+)\\}\r\nSessionID: (\\d+)\r\nAppID: (\\d+)\r\nContext: (\\S+))");
-					if (fx.indexIn(invitation.data()) != -1){
-						a.clear();
-						a.append(fx.cap(11));
-						a.toChars();
-						printf("MSN::ParserSB::Log #%i: to %s\n", m_chatId, fx.cap(1).toUtf8().replace("\r\n","\\r\\n").data());
-					}
-					fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nContext: (\\S+))");
-					if (fx.indexIn(invitation.data()) != -1){
-						a.clear();
-						a.append(fx.cap(11));
-						a.toChars();
-						printf("MSN::ParserSB::Log #%i: to %s from\n:", m_chatId, fx.cap(1).replace("\r\n","\\r\\n").data());
+					if (fx.indexIn(invitation) != -1){
+						QString EUF_GUID = fx.cap(11);
+						QString p2pSessionId = fx.cap(12);
+						
+						qDebug() << "$$$$ " << EUF_GUID << " " << p2pSessionId;
+
+						//res = SessionID + random + Data offset+ Total data size +  00 00 00 00  + 02 00 00 00 + Identifier + identifier + Total data size
+						QByteArray response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00") + identifier + ackIdentifier + totalDataSize;
+						MSG p2p;
+						p2p.addType(MSG_P2P);
+						p2p.addDestPassport(fx.cap(4));
+						p2p.addP2PData(response);
+						//p2p.makeCmd().toChars();
+						//p2p.makeCmd().toHex();
+						m_socket->send(p2p.makeCmd());
+						// ahora envio esto:
+						//MSG 241 D 152
+						//MIME-Version: 1.0
+						//Content-Type: application/x-msnmsgrp2p
+						//P2P-Dest: darth_leviathan@hotmail.com
+						//................=................x6b.I.c=...........
+						//
 					}
 				}
 			}

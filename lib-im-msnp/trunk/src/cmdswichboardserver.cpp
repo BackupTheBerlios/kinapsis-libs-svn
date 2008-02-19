@@ -38,6 +38,7 @@ Buffer MSG::makeCmd(){
 	Buffer res;
 	QString msg;
 	QString log;
+	QByteArray data;
 	switch(m_type){
 		case MSG_TXT:
 			// MSG xxxxxxxxxx@hotmail.com xxxxxx 126\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nhola
@@ -55,10 +56,19 @@ Buffer MSG::makeCmd(){
 			res.append(beginCmd() + " 1 U " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
 			return res;
 			break;
+		case MSG_P2P:
+			data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + QByteArray(m_destPassport.toUtf8().data()) + "\r\n\r\n";
+			data.append(m_p2pData);
+			res.append(beginCmd() + " 1 U " + QString::number(msg.size()) + "\r\n");
+			res.append(data);
+			return res;
 		default:
 			break;
 		}
 }
+void MSG::addDestPassport (QString p) {m_destPassport = p;}
+void MSG::addP2PData (QByteArray b) {m_p2pData = b;}
+
 void MSG::addColor (QString color) {m_color = color;}
 void MSG::addFont (QString font) {m_font = font.replace(" ", "%20");}
 void MSG::addEffect (Effect effect) {

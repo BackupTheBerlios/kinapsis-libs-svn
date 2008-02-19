@@ -54,7 +54,8 @@ namespace libimmsnp {
 
 	enum MsgType {
 		MSG_TXT,
-		MSG_IDENTIFICATION
+		MSG_IDENTIFICATION,
+		MSG_P2P
 	};
 }
 #endif // LIBIMMSNP_H__
