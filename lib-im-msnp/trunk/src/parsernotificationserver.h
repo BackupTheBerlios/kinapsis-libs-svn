@@ -15,7 +15,7 @@
 #define _PARSERNS_H_
 
 #include "libimmsnp.h"
-#include "buffer.h"
+
 #include "msocket.h"
 #include "client.h"
 #include "contact.h"
@@ -35,7 +35,7 @@ public:
 
 	int hasData() {return m_buf.size();}
 
-	void feed (Buffer);
+	void feed (QByteArray);
 	void parse ();
 
 	void parseVer();
@@ -88,7 +88,7 @@ private:
 	QString m_msnPass;
 	QString m_ticket;
 	msocket* m_socket;
-	Buffer m_buf;
+	QByteArray m_buf;
 	State m_initialStatus;
 	Client* m_client;
 	QString m_protocol;

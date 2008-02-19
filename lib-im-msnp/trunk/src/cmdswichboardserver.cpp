@@ -17,9 +17,9 @@ namespace libimmsnp {
 
 ANS::ANS(int idtr) : Command ("ANS", idtr) {}
 ANS::~ANS(){}
-Buffer ANS::makeCmd(){
+QByteArray ANS::makeCmd(){
 	//ANS trid your_passport ticket sessid\r\n
-	Buffer res;
+	QByteArray res;
 	res += beginCmd();
 	res += " " + m_passport  + " " +  m_ticket + " " + m_sessId;
 	res += endCmd();
@@ -34,8 +34,8 @@ MSG::MSG() : Command ("MSG", 0, "") {
 	m_font = "Helvetica";
 }
 MSG::~MSG(){}
-Buffer MSG::makeCmd(){
-	Buffer res;
+QByteArray MSG::makeCmd(){
+	QByteArray res;
 	QString msg;
 	QString log;
 	QByteArray data;
@@ -94,9 +94,9 @@ void MSG::addClientIsLogging (int log) {m_clientIsLogging = log;}
 
 USRchat::USRchat(int idtr) : Command ("USR", idtr) {}
 USRchat::~USRchat(){}
-Buffer USRchat::makeCmd(){
+QByteArray USRchat::makeCmd(){
 	//USR 1 example@passport.com 17262740.1050826919.32308\r\n
-	Buffer res;
+	QByteArray res;
 	res.append(beginCmd() + " " + m_passport + " " + m_ticket + endCmd());
 	return res;
 }
@@ -106,9 +106,9 @@ void USRchat::addTicket (QString ticket) {m_ticket = ticket;}
 
 CAL::CAL(int idtr) : Command ("CAL", idtr) {}
 CAL::~CAL(){}
-Buffer CAL::makeCmd(){
+QByteArray CAL::makeCmd(){
 	//CAL 1 example@passport.com\r\n
-	Buffer res;
+	QByteArray res;
 	res.append(beginCmd() + " " + m_passport + endCmd());
 	return res;
 }
@@ -116,9 +116,9 @@ void CAL::addPassport (QString passport) {m_passport = passport;}
 
 BYE::BYE() : Command ("BYE") {}
 BYE::~BYE(){}
-Buffer BYE::makeCmd(){
+QByteArray BYE::makeCmd(){
 	//BYE xxxx@hotmail.com\r\n
-	Buffer res;
+	QByteArray res;
 	res.append(beginCmd() + " " + m_passport + endCmd());
 	return res;
 }

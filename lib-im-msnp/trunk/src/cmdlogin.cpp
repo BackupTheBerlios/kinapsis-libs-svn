@@ -18,8 +18,8 @@ namespace libimmsnp {
 
 VER::VER(int idtr) : Command ("VER", idtr) {}
 VER::~VER(){}
-Buffer VER::makeCmd(){
-	Buffer res;
+QByteArray VER::makeCmd(){
+	QByteArray res;
 	res.append(beginCmd() + " " + m_listProtocol.join(" ") + " CVR0" + endCmd());
 	return res;
 }
@@ -52,8 +52,8 @@ void CVR::addClient (QString clientName, QString clientVer) {
 
 void CVR::addPassport (QString passport) {m_passport = passport;}
 
-Buffer CVR::makeCmd(){
-	Buffer res;
+QByteArray CVR::makeCmd(){
+	QByteArray res;
 	res.append(beginCmd());
 	res.append(" " + m_locale + " " + m_osType + " " + m_osVer + " " + m_arch + " " + m_clientName + " " + m_clientVer);
 	res.append(" msmsgs " + m_passport);
@@ -71,13 +71,13 @@ void USR::addTicket (QString ticket) {m_ticket = ticket;}
 
 void USR::addPassport (QString passport) {m_passport = passport;}
 
-Buffer USR::makeCmd(){
+QByteArray USR::makeCmd(){
 	// USR 3 SSO I alice@passport.com\r\n
-	//Buffer res;
+	//QByteArray res;
 	//if (m_twnType == "I") 	res << beginCmd() + " TWN " + m_twnType + " " + m_passport + endCmd();
 	//else 			res << beginCmd() + " TWN " + m_twnType + " " + m_ticket + endCmd();
 	//return res;
-	Buffer res;
+	QByteArray res;
 	if (m_twnType == "I") 	res.append(beginCmd() + " TWN " + m_twnType + " " + m_passport + endCmd());
 	else 			res.append(beginCmd() + " TWN " + m_twnType + " " + m_ticket + endCmd());
 	return res;
@@ -85,24 +85,24 @@ Buffer USR::makeCmd(){
 
 GCF::GCF(int idtr) : Command ("GCF", idtr) {}
 GCF::~GCF(){}
-Buffer  GCF::makeCmd(){
-	Buffer res;
+QByteArray  GCF::makeCmd(){
+	QByteArray res;
 	res.append(beginCmd() + " Shields.xml" + endCmd());
 	return res;
 }
 
 SYN::SYN(int idtr) : Command ("SYN", idtr) {}
 SYN::~SYN(){}
-Buffer  SYN::makeCmd(){
-	Buffer res;
+QByteArray  SYN::makeCmd(){
+	QByteArray res;
 	res.append(beginCmd() + " 0 0" + endCmd()) ;
 	return res;
 }
 
 QRY::QRY (int idtr):Command ("QRY", idtr, "")  {}
 QRY::~QRY() {}
-Buffer QRY::makeCmd() {
-	Buffer res;
+QByteArray QRY::makeCmd() {
+	QByteArray res;
 	res += beginCmd() + " " + m_productId + " 32\r\n" + m_md5.mid(0,32) + endCmd();
 	return res;
 }

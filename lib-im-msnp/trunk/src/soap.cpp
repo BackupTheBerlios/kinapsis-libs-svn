@@ -13,7 +13,6 @@
 
 #include "soap.h"
 #include "msocket.h"
-#include "buffer.h"
 #include <QByteArray>
 #include <QUrl>
 namespace libimmsnp {

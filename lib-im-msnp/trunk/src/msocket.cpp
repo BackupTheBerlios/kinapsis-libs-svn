@@ -63,22 +63,22 @@ int msocket::connect (QString host, quint16 port) {
 	}
 }
 
-int msocket::send (Buffer buf){
+int msocket::send (QByteArray buf){
 	if (m_ssl) {
 		m_sslSocket->write (buf.data());
 		if (m_sslSocket->waitForBytesWritten(30000)) {
-			//qDebug ("MSN::SSL Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());
+			qDebug ("MSN::SSL Socket::%s >>> : %s",m_host.toUtf8().data(),buf.replace("\r\n","\\r\\n").data());
 			}
 		else
-			qDebug ("ERROR::MSN::SSL Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());
+			qDebug ("ERROR::MSN::SSL Socket::%s >>> : %s",m_host.toUtf8().data(),buf.replace("\r\n","\\r\\n").data());
 	}
 	else { 
 		m_socket->write (buf.data());
 		if (m_socket->waitForBytesWritten(30000)) {
-			qDebug ("MSN::Socket::%s >>> : %s",m_host.toUtf8().data(), buf.data());
+			qDebug ("MSN::Socket::%s >>> : %s",m_host.toUtf8().data(), buf.replace("\r\n","\\r\\n").data());
 			}
 		else
-			qDebug ("ERROR::MSN::Socket::%s >>> : %s",m_host.toUtf8().data(),buf.dataDebug());
+			qDebug ("ERROR::MSN::Socket::%s >>> : %s",m_host.toUtf8().data(),buf.replace("\r\n","\\r\\n").data());
 	}
 }
 
@@ -110,7 +110,7 @@ void debug (QByteArray tmpData){
 	fprintf(stderr, "\n");
 }
 
-int msocket::recv (Buffer& buf){
+int msocket::recv (QByteArray& buf){
 	int i; 
 	QByteArray tmpData;
 	tmpData.clear();
@@ -119,10 +119,7 @@ int msocket::recv (Buffer& buf){
 			qint64 size = m_sslSocket->bytesAvailable();
 			if ((tmpData = m_sslSocket->read(size)) != "") {
 				buf.append(tmpData);
-				fprintf (stderr, "MSN::Socket:: RECEIVING: ");
-				buf.toChars();
-				fprintf(stderr, "\n");
-
+				fprintf (stderr, "MSN::Socket:: RECEIVING: %s\n",tmpData.replace("\r\n","\\r\\n").data());
 			}
 			else {
 				qDebug ("ERROR::MSN::SSL Socket::%s <<<",m_host.toUtf8().data());
@@ -137,9 +134,7 @@ int msocket::recv (Buffer& buf){
 			qint64 size = m_socket->bytesAvailable();
 			if ((tmpData = m_socket->read(size)) != "") {
 				buf.append(tmpData);
-				fprintf (stderr, "MSN::Socket:: RECEIVING: ");
-				buf.toChars();
-				fprintf(stderr, "\n");
+				fprintf (stderr, "MSN::Socket:: RECEIVING: %s\n",tmpData.replace("\r\n","\\r\\n").data());
 			}
 			else {
 				qDebug ("ERROR::MSN::Socket::%s <<<",m_host.toUtf8().data());

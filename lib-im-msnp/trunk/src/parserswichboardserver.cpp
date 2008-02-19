@@ -48,7 +48,7 @@ void ParserSB::run(){
 		m_socket->send(usr.makeCmd());
 	}
 
-	Buffer data;
+	QByteArray data;
 	//qDebug("MSN::ParserSB:: Chat %i START",m_chatId);
 	while (!m_endChat && ((m_socket->recv(data)) != -1)){
 		feed (data);
@@ -64,7 +64,7 @@ void ParserSB::send (Command& c){
 	m_socket->send(c.makeCmd());
 }
 
-void ParserSB::feed (Buffer b){
+void ParserSB::feed (QByteArray b){
 	m_hasCommand = true;
 	m_buf.append(b);
 }
@@ -74,9 +74,9 @@ void ParserSB::parseIro(){
 	// IRO trid rooster roostercount passport friendlyname
 	QRegExp rx;
 	rx.setPattern("(^IRO \\d+ (\\d+) (\\d+) (\\S+) (\\S+) (\\S+)\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
-		int rooster = rx.cap(2).toInt();
-		int rosterCount = rx.cap(3).toInt();
+	if (rx.indexIn(m_buf) != -1){
+		QString rooster = rx.cap(2);
+		QString rosterCount = rx.cap(3);
 		m_buddy = rx.cap(4);
 		QString fName = rx.cap(5);
 
@@ -88,7 +88,7 @@ void ParserSB::parseAns(){
 	//ANS trid "OK"\r\n
 	QRegExp rx;
 	rx.setPattern("(^ANS (\\d+) OK\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		// TODO: 
 		m_buf.remove(0,rx.cap(1).size());
 		MSG m;
@@ -105,9 +105,9 @@ void ParserSB::parseMsg () {
 	// MSG XXXXXXXX@gmail.com XXXXXX 590\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: XXXXXXXX@hotmail.com\r\n\r\n......
 	// MSG XXXXXXXX@hotmail.com XXXX 128\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-MMS-IM-Format: FN=Helvetica; EF=; CO=000000; CS=0; PF=22\r\n\r\nholaaa
 	QRegExp rx;
-	Buffer data;
+	QByteArray data;
 	rx.setPattern("(^MSG (\\S+) (\\S+) (\\d+)\r\n)MIME-Version: 1.0\r\nContent-Type: (\\S+)[\r\n|;]"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		QString header = rx.cap(1);
 		QString senderPassport = rx.cap(2);
 		QString msgType = rx.cap(5);
@@ -240,7 +240,7 @@ void ParserSB::parseMsg () {
 					QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 					//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
 					QRegExp fx;
-					Buffer a;
+					QByteArray a;
 					fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nEUF-GUID: \\{(\\S+)\\}\r\nSessionID: (\\d+)\r\nAppID: (\\d+)\r\nContext: (\\S+))");
 					if (fx.indexIn(invitation) != -1){
 						QString EUF_GUID = fx.cap(11);
@@ -272,7 +272,7 @@ void ParserSB::parseMsg () {
 	}
 	else {
 		rx.setPattern("(^MSG (\\S+) (\\S+) (\\d+)\r\n)"); 
-		if (rx.indexIn(m_buf.data()) != -1){
+		if (rx.indexIn(m_buf) != -1){
 			QString header = rx.cap(1);
 			QString senderPassport = rx.cap(2);
 			QString payload = rx.cap(4);
@@ -301,7 +301,7 @@ void ParserSB::parseUsr(){
 	// >> CAL 828 XXXXXXX@gmail.com\r\n
 	QRegExp rx;
 	rx.setPattern("(^USR \\d+ OK \\S+ \\S+\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		m_buf.remove(0,rx.cap(1).size());
 		CAL cal(m_idtr++);
 		cal.addPassport (m_client->nextChatPassport());
@@ -315,7 +315,7 @@ void ParserSB::parseCal(){
 	// >> CAL 32 XXXXXXXX@gmail.com\r\n
 	QRegExp rx;
 	rx.setPattern("(^CAL \\d+ RINGING (\\S+)\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		m_buf.remove(0,rx.cap(1).size());
 	}
 	else m_hasCommand = false;
@@ -325,7 +325,7 @@ void ParserSB::parseJoi(){
 	// << JOI XXXXXXXXXXXX@gmail.com XXXXXXXX 1073741860.73741860.912301
 	QRegExp rx;
 	rx.setPattern("(^JOI (\\S+) (\\S+) (\\S+)\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		QString email = rx.cap(2);
 		QString fName = rx.cap(3);
 		QString capabilities = rx.cap(4);
@@ -346,7 +346,7 @@ void ParserSB::parseAck(){
 	// ACK 3\r\n
 	QRegExp rx;
 	rx.setPattern("(^ACK (\\d+)\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		m_buf.remove(0,rx.cap(1).size());
 	}
 	else m_hasCommand = false;
@@ -357,7 +357,7 @@ void ParserSB::parseBye () {
 	// BYE XXXXXXXXX@hotmail.com 1\r\n 
 	QRegExp rx;
 	rx.setPattern("(^BYE (\\S+)[ ]?(\\d*)\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		m_buf.remove(0, rx.cap(1).size());
 		m_endChat = true;
 		emit chatLeavedTheRoom (m_chatId,rx.cap(2));
@@ -370,7 +370,7 @@ void ParserSB::parseError () {
 	// 215 1\r\n
 	QRegExp rx;
 	rx.setPattern("(^(\\d{3}) \\d+\r\n)"); 
-	if (rx.indexIn(m_buf.data()) != -1){
+	if (rx.indexIn(m_buf) != -1){
 		qDebug ("MSN::ParserSB::Log #%i ## ERROR : %s", m_chatId, rx.cap(2).toUtf8().data());
 		if (rx.cap(2) == "215") {
 			m_socket->close();	
@@ -385,7 +385,7 @@ void ParserSB::parse (){
 	m_isParsing = true;
 	QString cmd;
 	while (m_buf.size() && m_hasCommand){
-		qDebug("MSN::ParserSB::Log #%i::BUFFER <%s>", m_chatId,m_buf.dataDebug());
+		qDebug("MSN::ParserSB::Log #%i::BUFFER <%s>", m_chatId,QByteArray(m_buf).replace("\\r\\n", "\\\\r\\\\n").replace("\r\n", "\\r\\n").data());
 		cmd = m_buf.mid(0,3).data();
 		if (cmd == "IRO"){
 			qDebug ("MSN::ParserSB::Log #%i : Parsing IRO", m_chatId);

@@ -14,7 +14,6 @@
 #include <QRegExp>
 #include "challenge.h"
 #include "soap.h"
-#include "buffer.h"
 
 namespace libimmsnp {
 
@@ -148,8 +147,8 @@ namespace libimmsnp {
 	QString Challenge::getTicket(){
 		msocket* sslSock = new msocket(true); 
 		if (sslSock->connect("nexus.passport.com",443)) {
-			sslSock->send("GET /rdr/pprdr.asp HTTP/1.0\r\n\r\n");
-			Buffer buf;
+			sslSock->send(QByteArray("GET /rdr/pprdr.asp HTTP/1.0\r\n\r\n"));
+			QByteArray buf;
 			sslSock->recv(buf);
 			QRegExp rx;
 			rx.setPattern("DALogin=([\\d|\\D]*),DAReg"); 
@@ -191,11 +190,11 @@ namespace libimmsnp {
 	//	sslSock->connect("login.live.com",443);
 	//	Soap s;
 	//	sslSock->send(s.ticket(m_msnPassport, m_msnPass));
-	//	Buffer buf;
+	//	QByteArray buf;
 	//	sslSock->recv(buf);
-	//	printf("Buffer size: %i\n",buf.size());
+	//	printf("QByteArray size: %i\n",buf.size());
 	//	sslSock->recv(buf);
-	//	printf("Buffer size: %i\n",buf.size());
+	//	printf("QByteArray size: %i\n",buf.size());
 	//	//qDebug(buf.dataDebug());
 	//	QRegExp rx;
 	//	rx.setPattern("BinarySecret>([\\d|\\D]*)</wst:BinarySecret"); 

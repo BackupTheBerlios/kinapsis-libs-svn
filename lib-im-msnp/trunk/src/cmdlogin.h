@@ -14,7 +14,7 @@
 #ifndef _CMDLOGIN_H_
 #define _CMDLOGIN_H_
 #include "command.h" 
-#include "buffer.h"
+
 #include <QStringList>	// for VER protocols
 
 namespace libimmsnp {
@@ -24,7 +24,7 @@ class VER : public Command {
 public:
 	VER (int idtr);
 	virtual ~VER();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addProtocolSupported (QString protocol);
 private:
 	QStringList m_listProtocol;
@@ -35,7 +35,7 @@ class CVR : public Command {
 public:
 	CVR (int idtr);
 	virtual ~CVR();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addLocaleId (QString ); //get it from http://www.html.dk/dokumentation/vbscript/HTML/vsmscLCID.htm
 	void addOs (QString osType,QString osVer);
 	void addArch (QString );
@@ -60,7 +60,7 @@ public:
 	void addTwnType (QString twnType);
 	void addTicket (QString ticket); 
 	void addPassport (QString );
-	Buffer makeCmd();
+	QByteArray makeCmd();
 
 private:
 	QString m_twnType;
@@ -73,7 +73,7 @@ class GCF : public Command {
 public:
 	GCF (int idtr);
 	virtual ~GCF();
-	Buffer  makeCmd();
+	QByteArray  makeCmd();
 };
 
 class SYN : public Command {
@@ -81,14 +81,14 @@ class SYN : public Command {
 public:
 	SYN (int idtr);
 	virtual ~SYN();
-	Buffer  makeCmd();
+	QByteArray  makeCmd();
 };
 class QRY : public Command {
 //QRY trid idstring payload_length\r\nmd5digest
 public:
 	QRY (int idtr);
 	virtual ~QRY();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addProductId (QString);
 	void addMd5(QString);
 private:

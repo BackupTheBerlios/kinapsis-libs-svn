@@ -14,14 +14,14 @@
 #ifndef _COMMAND_H_
 #define _COMMAND_H_
 #include <qstring.h>
-#include "buffer.h"
+
 
 namespace libimmsnp {
 class Command {
 public:
 	Command(QString cmdName, int transaction=0, QString endCmd = "\r\n"): m_trid (transaction), m_endCmd (endCmd), m_cmdName (cmdName) {};
 	virtual ~Command() {};
-	virtual Buffer makeCmd() = 0;
+	virtual QByteArray makeCmd() = 0;
 	QString beginCmd() {return m_cmdName + QString((hasTransaction()) ? QString(" %1").arg(m_trid):"");};
 	bool hasTransaction () {return (m_trid)?true:false;};
 	bool addTrid (int trid) {m_trid = trid;};

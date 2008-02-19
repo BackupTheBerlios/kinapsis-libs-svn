@@ -15,7 +15,7 @@
 #define _SWICHBOARDSERVER_H_
 #include "command.h" 
 #include "libimmsnp.h"
-#include "buffer.h"
+
 
 namespace libimmsnp {
 class ANS : public Command {
@@ -23,7 +23,7 @@ class ANS : public Command {
 public:
 	ANS (int idtr);
 	virtual ~ANS();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addPassport (QString passport);
 	void addTicket (QString ticket);
 	void addSessId (QString sessId);
@@ -38,7 +38,7 @@ class MSG : public Command {
 public:
 	MSG ();
 	virtual ~MSG();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addMsg (QString msg);
 	void addEffect (Effect effect);
 	void addColor (QString color);
@@ -85,7 +85,7 @@ class USRchat : public Command {
 public:
 	USRchat (int idtr);
 	virtual ~USRchat();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addPassport (QString passport);
 	void addTicket (QString passport);
 private:
@@ -98,7 +98,7 @@ class CAL : public Command {
 public:
 	CAL (int idtr);
 	virtual ~CAL();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addPassport (QString passport);
 private:
 	QString m_passport;
@@ -109,7 +109,7 @@ class BYE : public Command {
 public:
 	BYE ();
 	virtual ~BYE();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addPassport (QString passport);
 private:
 	QString m_passport;

@@ -18,7 +18,7 @@
 #include <QByteArray>
 #include <QSslSocket>
 #include "libimmsnp.h"
-#include "buffer.h"
+
 
 namespace libimmsnp {
 
@@ -43,11 +43,11 @@ public:
 	int connect (QString host, quint16 port);
 
 	// send the buffer's content
-	int send (Buffer buf);
+	int send (QByteArray buf);
 	int send (QString str);
 	
 	// recive into buffer
-	int recv (Buffer&);
+	int recv (QByteArray&);
 
 	// destructor
 	~msocket ();

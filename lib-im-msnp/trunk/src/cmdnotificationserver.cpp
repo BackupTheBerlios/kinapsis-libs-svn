@@ -17,10 +17,10 @@ namespace libimmsnp {
 
 CHG::CHG(int idtr) : Command ("CHG", idtr) {}
 CHG::~CHG(){}
-Buffer CHG::makeCmd(){
+QByteArray CHG::makeCmd(){
 	// CHG 9 NLN 1073791084\r\n
 	// CHG trid statuscode clientid msnobj
-	Buffer res;
+	QByteArray res;
 	res.append(beginCmd() + " " + m_statusCode + " " + m_capabilities + endCmd());
 	return res;
 }
@@ -61,9 +61,9 @@ void CHG::addMsnObj (QString msnObj) {m_msnObj = msnObj;}
 
 //PRP::PRP(int idtr) : Command ("PRP", idtr) {}
 //PRP::~PRP(){}
-//Buffer PRP::makeCmd(){
+//QByteArray PRP::makeCmd(){
 //	// PRP idtr nick\r\n
-//	Buffer res;
+//	QByteArray res;
 //	res += beginCmd();
 //	res += " MFN " + m_nick;
 //	res += endCmd();
@@ -73,18 +73,18 @@ void CHG::addMsnObj (QString msnObj) {m_msnObj = msnObj;}
 //
 XFR::XFR(int idtr) : Command ("XFR", idtr) {}
 XFR::~XFR(){}
-Buffer XFR::makeCmd(){
+QByteArray XFR::makeCmd(){
 	// XFR 15 SB\r\n
-	Buffer res;
+	QByteArray res;
 	res.append(beginCmd() + " SB" + endCmd());
 	return res;
 }
 
 OUT::OUT() : Command ("OUT") {}
 OUT::~OUT(){}
-Buffer OUT::makeCmd(){
+QByteArray OUT::makeCmd(){
 	// OUT\r\n
-	Buffer res;
+	QByteArray res;
 	res += beginCmd();
 	res += endCmd();
 	return res;
@@ -92,10 +92,10 @@ Buffer OUT::makeCmd(){
 
 ADC::ADC(int idtr) : Command ("ADC", idtr) {}
 ADC::~ADC(){}
-Buffer ADC::makeCmd(){
+QByteArray ADC::makeCmd(){
 	// >> ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95\r\n
 	// << ADC 45 FL C=f39c2bb5-8a18-4f40-ae18-75aa595b747e cc57fad0-f245-42c2-a5f7-e13df408cb95\r\n
-	Buffer res;
+	QByteArray res;
 	res += beginCmd();
 	if (m_list == "FL"){
 		if (m_groupId.isEmpty()) res += " " + m_list + " N=" + m_passport + " F=" + m_passport;
@@ -121,8 +121,8 @@ void ADC::addGroupId (QString groupId){m_groupId = groupId;}
 
 REM::REM(int idtr) : Command ("REM", idtr) {}
 REM::~REM(){}
-Buffer REM::makeCmd(){
-	Buffer res;
+QByteArray REM::makeCmd(){
+	QByteArray res;
 	res += beginCmd();
 	res += " " + m_list + " " + m_id;
 	res += endCmd();
@@ -133,8 +133,8 @@ void REM::addId (QString id){m_id = id;}
 
 ADG::ADG(int idtr) : Command ("ADG", idtr) {}
 ADG::~ADG(){}
-Buffer ADG::makeCmd(){
-	Buffer res;
+QByteArray ADG::makeCmd(){
+	QByteArray res;
 	res += beginCmd();
 	res += " " + m_name + " 0"; 
 	res += endCmd();
@@ -144,8 +144,8 @@ void ADG::addName (QString name){m_name = name;}
 
 RMG::RMG(int idtr) : Command ("RMG", idtr) {}
 RMG::~RMG(){}
-Buffer RMG::makeCmd(){
-	Buffer res;
+QByteArray RMG::makeCmd(){
+	QByteArray res;
 	res += beginCmd();
 	res += " " + m_name; 
 	res += endCmd();

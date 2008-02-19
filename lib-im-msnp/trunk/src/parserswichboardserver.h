@@ -15,7 +15,7 @@
 #define _PARSERSB_H_
 
 #include "libimmsnp.h"
-#include "buffer.h"
+
 #include "msocket.h"
 #include "client.h"
 #include "command.h"
@@ -38,7 +38,7 @@ public:
 	int hasData() {return m_buf.size();}
 
 	void send (Command& c);
-	void feed(Buffer);
+	void feed(QByteArray);
 	void parse();
 
 	void parseIro();
@@ -74,7 +74,7 @@ private:
 	QString m_ticket;
 	QString m_sessid;
 
-	Buffer m_buf;
+	QByteArray m_buf;
 
 	bool m_isParsing;
 	bool m_hasCommand;

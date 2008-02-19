@@ -14,7 +14,7 @@
 #ifndef _CMDNOTIFICATIONSERVER_H_
 #define _CMDNOTIFICATIONSERVER_H_
 #include "command.h" 
-#include "buffer.h"
+
 #include "libimmsnp.h"
 
 namespace libimmsnp {
@@ -23,7 +23,7 @@ class CHG : public Command {
 public:
 	CHG (int idtr);
 	virtual ~CHG();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addStatusCode (State statusCode);
 	void addCapabilities (QString capabilities);
 	void addMsnObj (QString msnObj);
@@ -38,7 +38,7 @@ private:
 //public:
 //	PRP (int idtr);
 //	virtual ~PRP();
-//	Buffer makeCmd();
+//	QByteArray makeCmd();
 //	void addNick (QString nick);
 //private:
 //	QString m_nick;
@@ -49,7 +49,7 @@ class XFR : public Command {
 public:
 	XFR (int idtr);
 	virtual ~XFR();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 };
 
 class OUT : public Command {
@@ -57,7 +57,7 @@ class OUT : public Command {
 public:
 	OUT ();
 	virtual ~OUT();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 };
 
 class ADC : public Command {
@@ -65,7 +65,7 @@ class ADC : public Command {
 public:
 	ADC (int idtr);
 	virtual ~ADC();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addList (QString);
 	void addId (QString);
 	void addGroupId (QString);
@@ -84,7 +84,7 @@ class REM : public Command {
 public:
 	REM (int idtr);
 	virtual ~REM();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 
 	void addList (QString);
 	void addId (QString);
@@ -97,7 +97,7 @@ class ADG : public Command {
 public:
 	ADG (int idtr);
 	virtual ~ADG();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addName (QString);
 private:
 	QString m_name;
@@ -107,7 +107,7 @@ class RMG : public Command {
 public:
 	RMG (int idtr);
 	virtual ~RMG();
-	Buffer makeCmd();
+	QByteArray makeCmd();
 	void addId (QString);
 private:
 	QString m_name;

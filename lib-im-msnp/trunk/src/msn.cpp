@@ -185,7 +185,7 @@ int main(int argc, char *argv[]){
 //	using namespace libimmsnp;
 //	QCoreApplication a(argc, argv); 
 //	QRegExp rx;
-//	Buffer buf;
+//	QByteArray buf;
 //	buf << QString ("ADC 0 RL N=xxxxxxxxxxx@hotmail.com F=xxxxxx 1\r\n");
 //	rx.setPattern("(^ADC \\d+ (\\S+) N=(\\S+) F=(\\S+) \\d+\r\n)"); 
 //	if (rx.indexIn(buf.data()) != -1){

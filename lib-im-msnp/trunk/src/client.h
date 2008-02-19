@@ -26,7 +26,7 @@
 #include "command.h"
 #include "cmdswichboardserver.h"
 #include "msocket.h"
-#include "buffer.h"
+
 #include "cmdlogin.h"
 #include "roster.h"
 
