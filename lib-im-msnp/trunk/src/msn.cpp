@@ -35,14 +35,14 @@ void MsnTest::onConnect()  {
         m_connected = 1;
         printf("# CLIENT # CONNECTED\n\n\n");
 
-	Group g;
-	g.setName(QString ("Minewgroup"));
+	//Group g;
+	//g.setName(QString ("Minewgroup"));
 	//// m_client->addGroup(g);
 
-	Contact c;
-	c.setPassport(QString("probando_msnpy2@hotmail.com"));
-	m_client->addContact(c,g);
-	m_client->deblockContact(c);
+	//Contact c;
+	//c.setPassport(QString("probando_msnpy2@hotmail.com"));
+	//m_client->addContact(c,g);
+	//m_client->deblockContact(c);
 }
 
 void MsnTest::onDisconnect(ConnectionError) {
@@ -61,7 +61,7 @@ void MsnTest::presenceChanged (Contact* c){
 	switch (c->getStatus()){
 		case STATUS_NLN:
 			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Online", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data());
-			//m_client->initChat(c->getPassport());
+			m_client->initChat(c->getPassport());
 			break;
 		case STATUS_BSY:
 			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Do Not Disturb", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 

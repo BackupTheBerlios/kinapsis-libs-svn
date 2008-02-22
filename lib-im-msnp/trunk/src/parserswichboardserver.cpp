@@ -13,6 +13,7 @@
 #include <QRegExp>
 #include "parserswichboardserver.h"
 #include "cmdswichboardserver.h"
+#include "cmdp2p.h"
 
 namespace libimmsnp {
 ParserSB::ParserSB (QString address, int port, int chatId, QString msnPassport, QString ticket, QString sessid, Client* c){
@@ -216,52 +217,23 @@ void ParserSB::parseMsg () {
 
 			if (msgType == QString("application/x-msnmsgrp2p")){
 				rx.setPattern("\r\nP2P-Dest: (\\S+)\r\n\r\n");
-				if (rx.indexIn(data.data()) != -1){
-					qDebug("MSN::ParserSB::Log #1#%i: MSG archivo datos:<%s>", m_chatId, data.data());
-					qDebug("MSN::ParserSB::Log #2#%i: MSG archivo datos:<%s>", m_chatId, data.toHex().data());
-					QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
-
-					//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
-					// Little-endian abcd = dbca in memory
-					// \r\n\r\n
-					// SessionID	Identifier	Data offset 		Total data size		Message length	Flag          	identifier	unique ID      	data size
-					// 00 00 00 00 	51 67 07 00	00 00 00 00 00 00 00 00 2a 02 00 00 00 00 00 00 2a 02 00 00 	00 00 00 00   	dd 30 48 00  	00 00 00 00    	00 00 00 00 00 00 00 00
-					QByteArray sessionID	 = binaryHeader.mid(0,4);	
-					QByteArray identifier	 = binaryHeader.mid(4,4);	
-					QByteArray dataOffset	 = binaryHeader.mid(8,8);	
-					QByteArray totalDataSize = binaryHeader.mid(16,8);	
-					QByteArray flag		 = binaryHeader.mid(20,4);	
-					QByteArray messageLength = binaryHeader.mid(24,4);	
-					QByteArray ackUniqueID	 = binaryHeader.mid(28,4);	
-					QByteArray ackIdentifier = binaryHeader.mid(32,4);	
-					QByteArray ackDataSize	 = binaryHeader.mid(36,8);	
-					qDebug() << "####### BINARY" << binaryHeader.toHex();
-					qDebug () << "######## sid"<< sessionID.toHex() << "Id" << identifier.toHex() << "dataOffset" << dataOffset.toHex() << "totalDataSize" << totalDataSize.toHex() << "messageLength" << messageLength.toHex() << "flag" << flag.toHex() << "ackIdentifier" << ackIdentifier.toHex() << "ackUniqueID" << ackUniqueID.toHex() << "ackDataSize" << ackDataSize.toHex();
-
-					QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
-					//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
-					QRegExp fx;
-					QByteArray a;
-					fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nEUF-GUID: \\{(\\S+)\\}\r\nSessionID: (\\d+)\r\nAppID: (\\d+)\r\nContext: (\\S+))");
-					m_hasCommand = false;
-					if (fx.indexIn(invitation) != -1){
-						QString EUF_GUID = fx.cap(11);
-						QString p2pSessionId = fx.cap(12);
-						
-						qDebug() << "$$$$ " << EUF_GUID << " " << p2pSessionId;
-
-						//res = SessionID + random + Data offset+ Total data size +  00 00 00 00  + 02 00 00 00 + Identifier + identifier + Total data size
-						QByteArray response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00") + identifier + ackIdentifier + totalDataSize + QByteArray::fromHex("00 00 00 00");
-						MSG p2p;
-						p2p.addTrid(nextIdtr());
-						p2p.addType(MSG_P2P);
-						p2p.addDestPassport(fx.cap(4));
-						p2p.addP2PData(response);
-						printf("ENVIO:%s\n",QByteArray(p2p.makeCmd()).toHex().data());
-						m_socket->send(p2p.makeCmd());
-						// ahora envio esto:
-						//MSG 4 U 152\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: probando_msnpy2@hotmail.com\r\n\r\n..........
+				if (rx.indexIn(data) != -1){
+					//qDebug("MSN::ParserSB::Log #1#%i: MSG archivo datos:<%s>", m_chatId, data.data());
+					//qDebug("MSN::ParserSB::Log #2#%i: MSG archivo datos:<%s>", m_chatId, data.toHex().data());
+					P2P msg(nextIdtr());
+					msg.parse(data);
+					if (!msg.makeCmd().isNull()) {
+						qDebug() << "ENVIO:" << msg.makeCmd().toHex();
+						m_socket->send(msg.makeCmd());
 					}
+					else {
+						qDebug() << "No ha creado comando";
+						m_hasCommand = false;
+					}
+					// ahora envio esto:
+					//MSG 242 D 496\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: darth_leviathan@hotmail.com\r\n\r\n
+					//res = SessionID + (anteriorRandom++) + Data offset+ Total data size 8B +  Total data size 4B  + 00 00 00 00 + Identifier + random + 00 00 00 00 00 00 00 00
+					//response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + msgLen + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");
 				}
 			}
 		}
@@ -332,7 +304,7 @@ void ParserSB::parseJoi(){
 		m.addClientName(m_client->getClientName());
 		m.addClientVersion(m_client->getClientVer());
 		m.addClientIsLogging(m_client->getClientIsLogging());
-		m_socket->send(m.makeCmd());
+		//m_socket->send(m.makeCmd());
 		//qDebug("MSN::ParserSB::Log #%i::NEW CHAT with %s fname:%s capab:%s", m_chatId,email.toUtf8().data(), fName.toUtf8().data(), capabilities.toUtf8().data());
 		// TODO: remove three lines below
 	}

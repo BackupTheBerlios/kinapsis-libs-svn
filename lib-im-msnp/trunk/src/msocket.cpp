@@ -65,7 +65,7 @@ int msocket::connect (QString host, quint16 port) {
 
 int msocket::send (QByteArray buf){
 	if (m_ssl) {
-		m_sslSocket->write (buf.data());
+		m_sslSocket->write (buf);
 		if (m_sslSocket->waitForBytesWritten(30000)) {
 			qDebug ("MSN::SSL Socket::%s >>> : %s",m_host.toUtf8().data(),buf.replace("\r\n","\\r\\n").data());
 			}
@@ -73,7 +73,7 @@ int msocket::send (QByteArray buf){
 			qDebug ("ERROR::MSN::SSL Socket::%s >>> : %s",m_host.toUtf8().data(),buf.replace("\r\n","\\r\\n").data());
 	}
 	else { 
-		m_socket->write (buf.data());
+		m_socket->write (buf);
 		if (m_socket->waitForBytesWritten(30000)) {
 			qDebug ("MSN::Socket::%s >>> : %s",m_host.toUtf8().data(), buf.replace("\r\n","\\r\\n").data());
 			}

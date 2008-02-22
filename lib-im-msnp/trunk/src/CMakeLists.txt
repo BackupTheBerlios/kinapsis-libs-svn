@@ -22,6 +22,7 @@ SET(LibImMsnP_SRCS
 	presencelistener.cpp
 	rosterlistener.cpp
 	chatlistener.cpp
+	cmdp2p.cpp
 )
 
 SET(LibImMsnP_HDRS
@@ -43,6 +44,7 @@ SET(LibImMsnP_HDRS
 	presencelistener.h
 	rosterlistener.h
 	chatlistener.h
+	cmdp2p.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)
