@@ -205,12 +205,6 @@ void ParserSB::parseMsg () {
 					QString sha1D		= rx.cap(9);  
 					QString sha1C		= rx.cap(10); 
 					QString dataWink	= rx.cap(11); 	
-					//QStringList list = rx.capturedTexts();
-					//QStringList::iterator it = list.begin();
-					//printf ("MSN::ParserSB::Log #%i: MSG Guiño > ", m_chatId);
- 					//while (++it != list.end()) {
- 					//    printf("%s,",(*it).toUtf8().replace("\r\n","\\r\\n").data());
- 					//}
 					printf ("MSN::ParserSB::Log #%i: MSG Guiño %s,%s\n",m_chatId, messageID.toUtf8().data(), dataWink.toUtf8().data() );
 				}
 			}

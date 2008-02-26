@@ -84,9 +84,10 @@ void P2P::parse(QByteArray data){
 
 	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 	//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
+	bool ok;
 	QRegExp fx;
 	qDebug() << "INVITATION" << invitation;
-	fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\nEUF-GUID: \\{(\\S+)\\}\r\nSessionID: (\\d+)\r\nAppID: (\\d+)\r\nContext: (\\S+))");
+	fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\n)");
 	if (fx.indexIn(invitation) != -1){
 		m_p2pType 	= QByteArray(fx.cap(2).toUtf8().data());		
 		m_to 		= QByteArray(fx.cap(3).toUtf8().data());
@@ -100,8 +101,66 @@ void P2P::parse(QByteArray data){
 		m_EUF_GUID 	= QByteArray(fx.cap(11).toUtf8().data());
 		m_p2pSessionId 	= QByteArray(fx.cap(12).toUtf8().data());
 		m_context 	= QByteArray(fx.cap(13).toUtf8().data());
-		bool ok;
 		qDebug() << "$$$$ " << m_EUF_GUID << m_p2pSessionId << m_identifier.mid(1,1).toInt(&ok,16);
+	}
+	qDebug() << "SLP MSG: " << m_p2pType << m_to << m_from << m_branch << m_CsEq << m_callId << m_maxForwards << m_ContentType << m_ContentLength;
+	
+	// INVITATION PHASE
+	if (m_ContentType == "application/x-msnmsgr-sessionreqbody"){
+		fx.setPattern("EUF-GUID: \\{(\\S+)\\}");
+		if (fx.indexIn(invitation) != -1)
+			m_EUF_GUID = QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("SessionID: (\\d+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_p2pSessionId 	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("AppID: (\\d+)\r\n)");
+		if (fx.indexIn(invitation) != -1)
+			m_appId = QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("Context: (\\S+)");
+		if (fx.indexIn(invitation) != -1)
+			m_context 	= QByteArray(fx.cap(1).toUtf8().data());
+		qDebug() << "SLP INV: " << m_EUF_GUID << m_p2pSessionId << m_identifier.mid(1,1).toInt(&ok,16);
+	}
+	
+
+	if (m_ContentType == "application/x-msnmsgr-transreqbody"){
+		// REQUEST PHASE
+		fx.setMinimal(TRUE);
+		fx.setPattern("Bridges?: (.*)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_bridges	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("NetID: (\\S+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_netId		= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("Conn-Type: (\\S+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_connType	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("TCP-Conn-Type: (\\S+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_tcpConnType	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("UPnPNat: (\\S+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_UPnpNat	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("ICF: (\\S+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_Icf		= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("Hashed-Nonce: \\{(\\S+)\\}\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_hashedNonce	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("SessionID: (\\d+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_sessionID	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("SChannelState: (\\d+)\r\n");
+		if (fx.indexIn(invitation) != -1)
+			m_sChannelState	= QByteArray(fx.cap(1).toUtf8().data());
+		fx.setPattern("Capabilities-Flags: (\\d+)\r\n)");
+		if (fx.indexIn(invitation) != -1)
+			m_capabilities	= QByteArray(fx.cap(20).toUtf8().data());
+		qDebug() << "SLP REQ: " << m_bridges << m_netId << m_connType << m_tcpConnType << m_UPnpNat << m_Icf << m_hashedNonce << m_sChannelState << m_capabilities;
+	}
+	if (m_ContentType == "application/x-msnmsgr-sessionclosebody"){
+		m_closeSession = true;
+		qDebug() << "SLP BYE: Yes"; 
 	}
 }
 
@@ -152,8 +211,21 @@ QByteArray P2P::makeCmd() {
 		res.append(resData200);
 		return res;
 	}
-	else 
-		return QByteArray();
+	else {
+		if (m_p2pType == "INVITE" and m_ContentType == "application/x-msnmsgr-transreqbody") {
+			if (m_connType == "Direct-Connect") 
+				qDebug() << "Inicio Conexion Directa misma IP mismo Puerto";
+			if (m_connType == "Port-Restrict-NAT") 
+				qDebug() << "Inicio conexión por misma IP diferente Puerto";
+			if (m_connType == "IP-Restrict-NAT") 
+				qDebug() << "Inicio conexión por distinta IP mismo Puerto";
+			if (m_connType == "Symmetric-NAT" or m_connType == "Unknown-NAT")
+				qDebug() << "Inicio conexion por distinta IP y distinto Puerto";
+			return QByteArray();
+		}
+		else 
+			return QByteArray();
+	}
 }
 //void P2P::addProductId (QString productId) {
 //	m_productId = productId;

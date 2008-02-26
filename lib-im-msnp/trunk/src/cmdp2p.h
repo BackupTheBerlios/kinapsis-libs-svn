@@ -43,9 +43,26 @@ private:
 	QByteArray m_maxForwards;
 	QByteArray m_ContentType;
 	QByteArray m_ContentLength;
+
+	// Invitation
 	QByteArray m_EUF_GUID;
 	QByteArray m_p2pSessionId;
+	QByteArray m_appId;
 	QByteArray m_context;
+		
+	// initial dc
+	QByteArray m_netId;
+	QByteArray m_bridges;
+	QByteArray m_connType;
+	QByteArray m_tcpConnType;
+	QByteArray m_UPnpNat;
+	QByteArray m_Icf;
+	QByteArray m_hashedNonce;
+	QByteArray m_sChannelState;
+	QByteArray m_capabilities;
+	
+	// BYE
+	bool m_closeSession;
 };
 
 }
