@@ -87,22 +87,34 @@ void P2P::parse(QByteArray data){
 	bool ok;
 	QRegExp fx;
 	qDebug() << "INVITATION" << invitation;
-	fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\n)");
-	if (fx.indexIn(invitation) != -1){
-		m_p2pType 	= QByteArray(fx.cap(2).toUtf8().data());		
-		m_to 		= QByteArray(fx.cap(3).toUtf8().data());
-		m_from 		= QByteArray(fx.cap(4).toUtf8().data());
-		m_branch	= QByteArray(fx.cap(5).toUtf8().data());
-		m_CsEq 		= QByteArray(fx.cap(6).toUtf8().data()).toInt();
-		m_callId	= QByteArray(fx.cap(7).toUtf8().data());
-		m_maxForwards 	= QByteArray(fx.cap(8).toUtf8().data());
-		m_ContentType 	= QByteArray(fx.cap(9).toUtf8().data());
-		m_ContentLength = QByteArray(fx.cap(10).toUtf8().data());
-		m_EUF_GUID 	= QByteArray(fx.cap(11).toUtf8().data());
-		m_p2pSessionId 	= QByteArray(fx.cap(12).toUtf8().data());
-		m_context 	= QByteArray(fx.cap(13).toUtf8().data());
-		qDebug() << "$$$$ " << m_EUF_GUID << m_p2pSessionId << m_identifier.mid(1,1).toInt(&ok,16);
-	}
+	//fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\n)");
+	fx.setPattern("^(\\S+) MSNMSGR");
+	if (fx.indexIn(invitation) != -1)
+		m_p2pType 	= QByteArray(fx.cap(1).toUtf8().data());		
+	fx.setPattern("To: <msnmsgr:(\\S+)>");
+	if (fx.indexIn(invitation) != -1)
+		m_to 		= QByteArray(fx.cap(1).toUtf8().data());
+	fx.setPattern("From: <msnmsgr:(\\S+)>");
+	if (fx.indexIn(invitation) != -1)
+		m_from 		= QByteArray(fx.cap(1).toUtf8().data());
+	fx.setPattern("branch=\\{(\\S+)\\}");
+	if (fx.indexIn(invitation) != -1)
+		m_branch	= QByteArray(fx.cap(1).toUtf8().data());
+	fx.setPattern("CSeq: (\\d+)\r\n");
+	if (fx.indexIn(invitation) != -1)
+		m_CsEq 		= QByteArray(fx.cap(1).toUtf8().data()).toInt();
+	fx.setPattern("Call-ID: \\{(\\S+)\\}\r\n");
+	if (fx.indexIn(invitation) != -1)
+		m_callId	= QByteArray(fx.cap(1).toUtf8().data());
+	fx.setPattern("Max-Forwards: (\\d+)\r\n");
+	if (fx.indexIn(invitation) != -1)
+		m_maxForwards 	= QByteArray(fx.cap(1).toUtf8().data());
+	fx.setPattern("Content-Type: (\\S+)\r\n");
+	if (fx.indexIn(invitation) != -1)
+		m_ContentType 	= QByteArray(fx.cap(1).toUtf8().data());
+	fx.setPattern("Content-Length: (\\d+)\r\n");
+	if (fx.indexIn(invitation) != -1)
+		m_ContentLength = QByteArray(fx.cap(1).toUtf8().data());
 	qDebug() << "SLP MSG: " << m_p2pType << m_to << m_from << m_branch << m_CsEq << m_callId << m_maxForwards << m_ContentType << m_ContentLength;
 	
 	// INVITATION PHASE
