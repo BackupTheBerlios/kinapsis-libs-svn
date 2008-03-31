@@ -187,6 +187,11 @@ void ParserNS::parseMsg () {
 				SYN s(m_client->nextIdtr());
 				m_client->send (s);
 			}
+			rx.setPattern("ClientIP: (\\d+\\.\\d+\\.\\d+\\.\\d+)\r\nClientPort: (\\d+)");
+                        if (rx.indexIn(msg) != -1){
+				emit clientIpPort(rx.cap(1), rx.cap(2));
+			}
+
 			// <MD><E><I>16</I><IU>6</IU><O>0</O><OU>0</OU></E>
 			rx.setPattern("^MIME-Version: 1.0\r\nContent-Type: text/x-msmsgsinitialmdatanotification; charset=UTF-8\r\n\r\nMail-Data: <MD><E><I>(\\d+)</I><IU>(\\d+)</IU><O>(\\d+)</O><OU>(\\d+)</OU></E><Q><QTM>409600</QTM><QNM>204800</QNM></Q></MD>\r\nInbox-URL: /cgi-bin/HoTMaiL\r\nFolders-URL: /cgi-bin/folders\r\nPost-URL: http://www.hotmail.com\r\n");
 			if (rx.indexIn(msg) != -1){

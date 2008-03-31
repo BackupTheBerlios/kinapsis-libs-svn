@@ -70,6 +70,7 @@ public:
 
 signals:
 //	void mainSocket(msocket*);
+	void clientIpPort (QString, QString);
 	void connected ();
 	void disconnected(ConnectionError);
 	void newGroupArrived (Group*);

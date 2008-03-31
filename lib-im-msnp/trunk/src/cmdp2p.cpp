@@ -16,7 +16,12 @@
 #include <QtEndian>
 #include "cmdp2p.h"
 namespace libimmsnp {
-P2P::P2P (int idtr):Command ("MSG", idtr, "")  {}
+//P2P::P2P ():Command ("MSG", 0, "")  {
+//	m_accepted = 0;
+//	}
+P2P::P2P (int idtr):Command ("MSG", idtr, "")  {
+	m_accepted = 0;
+	}
 P2P::~P2P() {}
 
 int qbyte2int (QByteArray num){
@@ -79,14 +84,14 @@ void P2P::parse(QByteArray data){
 	m_ackUniqueID	 = binaryHeader.mid(28,4);	
 	m_ackIdentifier  = binaryHeader.mid(32,4);	
 	m_ackDataSize	 = binaryHeader.mid(36,8);	
-	qDebug() << "####### BINARY" << binaryHeader.toHex();
-	qDebug () << "######## sid"<< m_sessionID.toHex() << "Id" << m_identifier.toHex() << "dataOffset" << m_dataOffset.toHex() << "totalDataSize" << m_totalDataSize.toHex() << "messageLength" << m_messageLength.toHex() << "flag" << m_flag.toHex() << "ackIdentifier" << m_ackIdentifier.toHex() << "ackUniqueID" << m_ackUniqueID.toHex() << "ackDataSize" << m_ackDataSize.toHex();
+	qDebug() << "### SLP BIN DATA" << binaryHeader.toHex();
+	qDebug () << "SLP BIN: sid"<< m_sessionID.toHex() << "Id" << m_identifier.toHex() << "dataOffset" << m_dataOffset.toHex() << "totalDataSize" << m_totalDataSize.toHex() << "messageLength" << m_messageLength.toHex() << "flag" << m_flag.toHex() << "ackIdentifier" << m_ackIdentifier.toHex() << "ackUniqueID" << m_ackUniqueID.toHex() << "ackDataSize" << m_ackDataSize.toHex();
 
 	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 	//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
 	bool ok;
 	QRegExp fx;
-	qDebug() << "INVITATION" << invitation;
+	qDebug() << "### SLP INV DATA" << QByteArray(invitation).replace("\n","\\n").replace("\r","\\r");
 	//fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\n)");
 	fx.setPattern("^(\\S+) MSNMSGR");
 	if (fx.indexIn(invitation) != -1)
@@ -181,6 +186,8 @@ QByteArray P2P::makeCmd() {
 	QByteArray data;
 	QByteArray binaryHeader;
 	QByteArray msnslpData;
+	QByteArray data200;
+	QByteArray resData200;
 
 	if (m_p2pType == "INVITE" and m_ContentType == "application/x-msnmsgr-sessionreqbody") {
 		// ACK for invite 
@@ -191,8 +198,6 @@ QByteArray P2P::makeCmd() {
 		res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());
 		res.append(data);
 		// 200 OK
-		QByteArray data200;
-		QByteArray resData200;
 	
 		data200 ="MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
 
@@ -218,8 +223,8 @@ QByteArray P2P::makeCmd() {
 		data200.append(QByteArray::fromHex("000000"));
 		resData200 = QByteArray(QString("MSG 4 D " + QString::number(data200.size()) + "\r\n").toUtf8().data());
 		resData200.append(data200);
-		qDebug() << "#### ACK ##"<< res.toHex();
-		qDebug() << "#### 200 OK ##"<< resData200.toHex();
+		// qDebug() << "#### ACK ##"<< res.toHex();
+		// qDebug() << "#### 200 OK ##"<< resData200.toHex();
 		res.append(resData200);
 		return res;
 	}
@@ -227,9 +232,140 @@ QByteArray P2P::makeCmd() {
 		if (m_p2pType == "INVITE" and m_ContentType == "application/x-msnmsgr-transreqbody") {
 			if (m_connType == "Direct-Connect") 
 				qDebug() << "Inicio Conexion Directa misma IP mismo Puerto";
+			if (m_connType == "Firewall") 
+				qDebug() << "Inicio conexión con Firewall";
+				//MSNSLP/1.0 200 OK\r\n
+				//To: <msnmsgr:probando_msnpy2@hotmail.com>\r\n
+				//From: <msnmsgr:probando_msnpy@hotmail.com>\r\n
+				//Via: MSNSLP/1.0/TLP ;branch={20187971-E9D6-498A-BFFF-232B2FEA9AE1}\r\n
+				//CSeq: 1 \r\n
+				//Call-ID: {C39C6A94-D263-4CD7-933D-DF6179A4E714}\r\n
+				//Max-Forwards: 0\r\n
+				//Content-Type: application/x-msnmsgr-transrespbody\r\n
+				//Content-Length: 157\r\n\r\n
+				//Bridge: TCPv1\r\n
+				//Listening: true\r\n
+				//Hashed-Nonce: {74A6CD4C-7774-ECE4-C66C-27609828426B}\r\n
+				//IPv4Internal-Addrs: 10.0.0.10 10.10.1.178\r\n
+				//IPv4Internal-Port: 1140\r\n\r\n
+				//.....
+				QByteArray msnslpDataData;
+				msnslpDataData.append("Bridge: TCPv1\r\n");
+				msnslpDataData.append("Listening: true\r\n");
+				msnslpDataData.append("Hashed-Nonce: {74A6CD4C-7774-ECE4-C66C-27609828426B}\r\n");
+                                msnslpDataData.append("IPv4Internal-Addrs: " + m_clientIp + "\r\n");
+                                msnslpDataData.append("IPv4Internal-Port: " + m_clientPort + "\r\n\r\n");
+
+				data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+				binaryHeader = m_sessionID + increase(m_identifier) + m_dataOffset + m_totalDataSize + m_totalDataSize.mid (0,4) + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00 ") + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("0000 0000 0000 0000");
+
+				data.append(binaryHeader);
+				res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());
+				res.append(data);
+
+				data200 ="MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+
+				msnslpData.append("MSNSLP/1.0 200 OK\r\n");
+				msnslpData.append("To: <msnmsgr:" + m_from + ">\r\n");
+				msnslpData.append("From: <msnmsgr:"+ m_to + ">\r\n");
+				msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
+				msnslpData.append("CSeq: 1 \r\n");
+				msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
+				msnslpData.append("Max-Forwards: 0\r\n");
+				msnslpData.append("Content-Type: application/x-msnmsgr-transrespbody\r\n");
+				msnslpData.append("Content-Length: " + QString::number(msnslpDataData.size()) + "\r\n\r\n");
+				msnslpData.append(msnslpDataData);
+
+				binaryHeader = QByteArray::fromHex("00 00 00 00") + increase(m_identifier) + m_dataOffset + int2qbyte(msnslpData.size()+2, 16) + int2qbyte(msnslpData.size()+2, 8) + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00") + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");
+				msnslpData.append(QByteArray::fromHex("00000"));
+				resData200 = QByteArray(QString("MSG 4 D " + QString::number(data200.size()) + "\r\n").toUtf8().data());
+				//qDebug() << "#### 200 OK ##" << QByteArray(msnslpData).replace("\r\n","\\r\\n") << QByteArray(data200).replace("\r\n","\\r\\n") << binaryHeader.toHex() << QByteArray(msnslpData).replace("\r\n","\\r\\n");
+				data200.append(binaryHeader);
+				data200.append(msnslpData);
+				data200.append(QByteArray::fromHex("000000"));
+				resData200 = QByteArray(QString("MSG 8 D " + QString::number(data200.size()) + "\r\n").toUtf8().data());
+				resData200.append(data200);
+				//qDebug() << "#### ACK ##"<< res.toHex();
+				//qDebug() << "#### 200 OK ##"<< resData200.toHex();
+				res.append(resData200);
+				return res;
+
 			if (m_connType == "Port-Restrict-NAT") 
 				qDebug() << "Inicio conexión por misma IP diferente Puerto";
 			if (m_connType == "IP-Restrict-NAT") 
+
+				// << 00 00 00 00  c5 c9 02 00  00 00 00 00  00 00 00 00 
+				// << cd 01 00 00  00 00 00 00  cd 01 00 00  00 00 00 00 
+				// << 17 30 07 00  00 00 00 00  00 00 00 00  00 00 00 00 
+
+				// ACK 
+				// >> 00 00 00 00  e9 bb 05 00  00 00 00 00  00 00 00 00 
+				// >> cd 01 00 00  00 00 00 00  00 00 00 00  02 00 00 00 
+				// >> c5 c9 02 00  17 30 07 00  cd 01 00 00  00 00 00 00
+
+				data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+				binaryHeader = m_sessionID + increase(m_identifier) + m_dataOffset + m_totalDataSize + m_totalDataSize.mid (0,4) + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00 ") + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("0000 0000 0000 0000");
+
+				data.append(binaryHeader);
+				res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());
+				res.append(data);
+
+				// 200 OK
+				// >> 00 00 00 00  ea bb 05 00  00 00 00 00  00 00 00 00 
+				// >> 95 01 00 00  00 00 00 00  95 01 00 00  00 00 00 00 
+				// >> e6 e2 24 00  00 00 00 00  00 00 00 00  00 00 00 00
+
+
+				// MSG probando_msnpy3@hotmail.com probando_msnpy3@hotmail.com 498\r\n
+				// MIME-Version: 1.0\r\n
+				// Content-Type: application/x-msnmsgrp2p\r\n
+				// P2P-Dest: probando_msnpy@hotmail.com\r\n
+				// ................[.......[.........E.............
+				// MSNSLP/1.0 200 OK\r\n
+				// To: <msnmsgr:probando_msnpy@hotmail.com>\r\n
+				// From: <msnmsgr:probando_msnpy3@hotmail.com>\r\n
+				// Via: MSNSLP/1.0/TLP ;branch={CB64D584-F815-D581-35C7-ED0435A3FF95}\r\n
+				// CSeq: 1\r\n
+				// Call-ID: {2EA1A9A2-FD64-BF04-379C-2FE1A4F85805}\r\n
+				// Max-Forwards: 0\r\n
+				// Content-Type: application/x-msnmsgr-sessionreqbody\r\n
+				// Content-Length: 83\r\n
+				// Bridge: TCPv1\r\n
+				// Listening: false\r\n
+				// Nonce: {00000000-0000-0000-0000-000000000000}\r\n
+				// .....
+
+
+				data200 ="MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+
+				msnslpData.append("MSNSLP/1.0 200 OK\r\n");
+				msnslpData.append("To: <msnmsgr:" + m_from + ">\r\n");
+				msnslpData.append("From: <msnmsgr:"+ m_to + ">\r\n");
+				msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
+				msnslpData.append("CSeq: 1 \r\n");
+				msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
+				msnslpData.append("Max-Forwards: 0\r\n");
+				msnslpData.append("Content-Type: application/x-msnmsgr-transrespbody\r\n");
+				msnslpData.append("Content-Length: 83\r\n\r\n");
+				msnslpData.append("Bridge: TCPv1\r\n" );
+				msnslpData.append("Listening: false\r\n" );
+				msnslpData.append("Nonce: {00000000-0000-0000-0000-000000000000}\r\n" );
+				//qDebug() << "#### 200 OK ##" << QByteArray(msnslpData).replace("\r\n","\\r\\n");
+				//qDebug() << msnslpData.size() << increase(m_identifier).toHex() << int2qbyte(msnslpData.size()+2, 16).toHex() << int2qbyte(msnslpData.size()+2, 8).toHex();
+
+				binaryHeader = QByteArray::fromHex("00 00 00 00") + increase(m_identifier) + m_dataOffset + int2qbyte(msnslpData.size()+2, 16) + int2qbyte(msnslpData.size()+2, 8) + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00") + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");
+				msnslpData.append(QByteArray::fromHex("00000"));
+				resData200 = QByteArray(QString("MSG 4 D " + QString::number(data200.size()) + "\r\n").toUtf8().data());
+				//qDebug() << "#### 200 OK ##" << QByteArray(msnslpData).replace("\r\n","\\r\\n") << QByteArray(data200).replace("\r\n","\\r\\n") << binaryHeader.toHex() << QByteArray(msnslpData).replace("\r\n","\\r\\n");
+				data200.append(binaryHeader);
+				data200.append(msnslpData);
+				data200.append(QByteArray::fromHex("000000"));
+				resData200 = QByteArray(QString("MSG 8 D " + QString::number(data200.size()) + "\r\n").toUtf8().data());
+				resData200.append(data200);
+				//qDebug() << "#### ACK ##"<< res.toHex();
+				//qDebug() << "#### 200 OK ##"<< resData200.toHex();
+				res.append(resData200);
+				return res;
 				qDebug() << "Inicio conexión por distinta IP mismo Puerto";
 			if (m_connType == "Symmetric-NAT" or m_connType == "Unknown-NAT")
 				qDebug() << "Inicio conexion por distinta IP y distinto Puerto";

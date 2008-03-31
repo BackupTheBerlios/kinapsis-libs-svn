@@ -20,7 +20,25 @@ class P2P : public Command {
 
 public:
 	P2P (int);
+	// TODO: check this P2P()
+	//P2P ();
 	virtual ~P2P();
+	void setClientIp(QString ip) {m_clientIp = ip;}
+	void setClientPort(QString port) {m_clientPort = port;}
+	
+	QByteArray getId() {return m_sessionID;}	
+	QByteArray getType() {return m_ContentType;}	
+	void setAccepted() { m_accepted = 1;}
+	void setDenied() { m_accepted = -1;}
+	int isAccepted() {return m_accepted;}
+	
+	QByteArray getDataOffset() {return m_dataOffset;}
+	QByteArray getTotalDataSize() {return m_totalDataSize;}
+	QByteArray getMessageLength() {return m_messageLength;}
+	QByteArray getP2pSessionId() {return m_p2pSessionId;}
+	//int get() {return m_;}
+	//int get() {return m_;}
+
 	QByteArray makeCmd();
 	void parse (QByteArray);
 private:
@@ -49,6 +67,8 @@ private:
 	QByteArray m_p2pSessionId;
 	QByteArray m_appId;
 	QByteArray m_context;
+	
+	int m_accepted;
 		
 	// initial dc
 	QByteArray m_netId;
@@ -60,6 +80,9 @@ private:
 	QByteArray m_hashedNonce;
 	QByteArray m_sChannelState;
 	QByteArray m_capabilities;
+
+	QString m_clientIp;
+	QString m_clientPort;
 	
 	// BYE
 	bool m_closeSession;

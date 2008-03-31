@@ -30,6 +30,8 @@
 #include "cmdlogin.h"
 #include "roster.h"
 
+#include "cmdp2p.h"
+
 #include <QObject>
 #include <QStringList>
 
@@ -63,6 +65,8 @@ public:
 
 	QString getClientName () {return QString("libMsn");}
 	QString getClientVer () {return QString("0.1beta");}
+	QString getClientIp () {return m_ip;}
+	QString getClientPort () {return m_port;}
 	int getClientIsLogging () {return 1;}
 
         // Listener's connections
@@ -81,6 +85,7 @@ public:
 	virtual ~Client();
 
 public slots:
+	void clientIpPort(QString ip, QString port);
 	void connected ();
 	void disconnected (ConnectionError e);
 
@@ -96,6 +101,8 @@ public slots:
 	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
 	void chatIsTyping(int chatId, QString chatMsnPassport);
 	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
+
+        void incomingFileTransfer (P2P* msg, int chatId);
 //	void contactDisconnected (QString msnPassport);
 //	void chatCreated (QString hostPort, QString ticket);
 //
@@ -125,6 +132,8 @@ private:
 	int m_chatCount;
 	State m_initialStatus;
 	Roster* m_roster;
+	QString m_ip;
+	QString m_port;
 
 	typedef QMap<int, ParserSB*> ChatMap;
 	ChatMap m_chatList;

@@ -12,8 +12,6 @@
 */
 #include <QRegExp>
 #include "parserswichboardserver.h"
-#include "cmdswichboardserver.h"
-#include "cmdp2p.h"
 
 namespace libimmsnp {
 ParserSB::ParserSB (QString address, int port, int chatId, QString msnPassport, QString ticket, QString sessid, Client* c){
@@ -102,6 +100,14 @@ void ParserSB::parseAns(){
 		m_socket->send(m.makeCmd());
 	}
 	else m_hasCommand = false;
+}
+void ParserSB::acceptFileTransfer (P2P* msg) {
+	m_p2pList[msg->getId()]->setAccepted();
+	qDebug("@############# Tansferencia Aceptada");
+	if (!m_p2pList[msg->getId()]->makeCmd().isNull()) {
+		qDebug() << "ENVIO:" << m_p2pList[msg->getId()]->makeCmd().toHex();
+		m_socket->send(m_p2pList[msg->getId()]->makeCmd());
+	}
 }
 
 void ParserSB::parseMsg () {
@@ -214,16 +220,49 @@ void ParserSB::parseMsg () {
 				if (rx.indexIn(data) != -1){
 					//qDebug("MSN::ParserSB::Log #1#%i: MSG archivo datos:<%s>", m_chatId, data.data());
 					//qDebug("MSN::ParserSB::Log #2#%i: MSG archivo datos:<%s>", m_chatId, data.toHex().data());
-					P2P msg(nextIdtr());
-					msg.parse(data);
-					if (!msg.makeCmd().isNull()) {
-						qDebug() << "ENVIO:" << msg.makeCmd().toHex();
-						m_socket->send(msg.makeCmd());
+
+					P2P* msg = new P2P(nextIdtr());
+					msg->setClientIp(m_client->getClientIp());
+					msg->setClientPort(m_client->getClientPort());
+					msg->parse(data);
+					
+					//qRegisterMetaType<P2P>("P2P");
+					if (!m_p2pList.contains(msg->getId())){
+						qDebug("## TRANSFERENCIA ENTRANTE");
+						if (msg->getType() == "application/x-msnmsgr-sessionreqbody") {
+							m_p2pList[msg->getId()] = msg;
+							emit incomingFileTransfer (msg,m_chatId);
+						}
+						//if (!msg.makeCmd().isNull()) {
+						//	qDebug() << "ENVIO:" << msg.makeCmd().toHex();
+						//	m_socket->send(msg.makeCmd());
+						//}
 					}
-					else {
-						qDebug() << "No ha creado comando";
-						m_hasCommand = false;
+
+					else{
+						if (m_p2pList[msg->getId()]->isAccepted()) {
+							qDebug("## INICIO TRANSFERENCIA");
+					//		// leo
+					//		// emito señal (leido,total)
+					//		// escribo en fichero
+					//		// si pos_actual = fin_fichero:
+					//		//	emito ficheroRecibido(msg.id)
+					//		//	elimino msg de p2pList
+						}
+						else {
+							qDebug("## TRANSFERENCIA No acceptada todavia");
+					//		// emito denegacion
+						}
 					}
+						
+					//if (!msg.makeCmd().isNull()) {
+					//	qDebug() << "ENVIO:" << msg.makeCmd().toHex();
+					//	m_socket->send(msg.makeCmd());
+					//}
+					//else {
+					//	qDebug() << "No ha creado comando";
+					//	m_hasCommand = false;
+					//}
 					// ahora envio esto:
 					//MSG 242 D 496\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: darth_leviathan@hotmail.com\r\n\r\n
 					//res = SessionID + (anteriorRandom++) + Data offset+ Total data size 8B +  Total data size 4B  + 00 00 00 00 + Identifier + random + 00 00 00 00 00 00 00 00

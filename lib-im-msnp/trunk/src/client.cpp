@@ -49,6 +49,7 @@ namespace libimmsnp {
 
 		if (m_mainSocket->connect("messenger.hotmail.com",1863)){
 			m_parser = new ParserNS (m_msnPassport, m_msnPass, m_initialStatus, this, m_mainSocket, "MSNP12");
+			QObject::connect(m_parser, SIGNAL(clientIpPort (QString, QString)), this, SLOT(clientIpPort(QString, QString)));
 			QObject::connect(m_parser, SIGNAL(connected()), this, SLOT(connected()));
 			QObject::connect(m_parser, SIGNAL(disconnected(ConnectionError)), this, SLOT(disconnected(ConnectionError)));
 			QObject::connect(m_parser, SIGNAL(newGroupArrived(Group*)), this, SLOT(newGroupArrived(Group*)));
@@ -182,6 +183,11 @@ namespace libimmsnp {
 	/**************************
 	 * ******* SLOTS **********
 	 * ************************/
+	void Client::clientIpPort (QString ip, QString port){
+		qDebug () << "# CLIENT IP PORT" << ip << port;
+		m_ip = ip;
+		m_port = port;
+	}
 
 	void Client::connected() {
 		//qDebug ("MSN::Client::SIGNAL ## notifyConnect");
@@ -252,6 +258,7 @@ namespace libimmsnp {
 		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
+		QObject::connect(chatParser, SIGNAL(incomingFileTransfer(P2P*, int)), this, SLOT(incomingFileTransfer(P2P*,int)));
 		chatParser->start();
 	}
 
@@ -273,6 +280,12 @@ namespace libimmsnp {
 	void Client::chatLeavedTheRoom (int chatId, QString passport) {
 		//printf ("MSN::Client::SIGNAL ## chatLeaved by:%s from:%i\n", passport.toUtf8().data(), chatId ); 
 		emit notifyChatLeavedTheRoom (chatId, passport);
+	}
+
+	void Client::incomingFileTransfer (P2P* msg, int chatId) {
+		
+		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER form chat %i", chatId); 
+		m_chatList[chatId]->acceptFileTransfer(msg);
 	}
 
 

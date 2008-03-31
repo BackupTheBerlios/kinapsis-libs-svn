@@ -20,6 +20,7 @@
 #include "client.h"
 #include "command.h"
 #include "cmdswichboardserver.h"
+#include "cmdp2p.h"
 #include <qobject.h>
 #include <qthread.h>
 
@@ -43,6 +44,9 @@ public:
 
 	void parseIro();
 	void parseAns();
+
+	void acceptFileTransfer (P2P*);
+
 	void parseMsg();
 	void parseUsr();
 	void parseCal();
@@ -62,6 +66,7 @@ signals:
        void chatIsTyping (int, QString);
        void chatLeavedTheRoom(int, QString);
        void newChat (int, QString);
+       void incomingFileTransfer (P2P* , int);
 
 private:
 	QString m_address;
@@ -73,6 +78,9 @@ private:
 	QString m_msnPassport;
 	QString m_ticket;
 	QString m_sessid;
+
+	typedef QMap<QByteArray, P2P*> P2PMap;
+	P2PMap m_p2pList;
 
 	QByteArray m_buf;
 
