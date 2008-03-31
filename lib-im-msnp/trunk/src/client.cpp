@@ -259,6 +259,8 @@ namespace libimmsnp {
 		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
 		QObject::connect(chatParser, SIGNAL(incomingFileTransfer(P2P*, int)), this, SLOT(incomingFileTransfer(P2P*,int)));
+       		QObject::connect(chatParser, SIGNAL(fileTransferProgress(QByteArray ,int, int)), this, SLOT(fileTransferProgress(QByteArray ,int, int)));	
+       		QObject::connect(chatParser, SIGNAL(fileTransferFinished(QByteArray)), this, SLOT(fileTransferFinished(QByteArray)));
 		chatParser->start();
 	}
 
@@ -285,7 +287,14 @@ namespace libimmsnp {
 	void Client::incomingFileTransfer (P2P* msg, int chatId) {
 		
 		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER form chat %i", chatId); 
-		m_chatList[chatId]->acceptFileTransfer(msg);
+		QByteArray path = QByteArray("/storage/received/file.txt");
+		m_chatList[chatId]->acceptFileTransfer(msg, path);
+	}
+       	void Client::fileTransferProgress(QByteArray ftId,int received, int total) {
+		qDebug ("MSN::Client::SIGNAL ## RECEIVED for %s : %i of %i", ftId.data(), received, total); 
+	}
+       	void Client::fileTransferFinished(QByteArray ftId){
+		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER FINISHED : %s", ftId.data()); 
 	}
 
 

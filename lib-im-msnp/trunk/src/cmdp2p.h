@@ -26,16 +26,19 @@ public:
 	void setClientIp(QString ip) {m_clientIp = ip;}
 	void setClientPort(QString port) {m_clientPort = port;}
 	
-	QByteArray getId() {return m_sessionID;}	
+	QByteArray getId() {return m_identifier.toHex();}	
 	QByteArray getType() {return m_ContentType;}	
 	void setAccepted() { m_accepted = 1;}
 	void setDenied() { m_accepted = -1;}
 	int isAccepted() {return m_accepted;}
+	void setPath(QByteArray path) {m_path = path;}
+	QByteArray getPath() {return m_path;}
+	QByteArray getData() {return m_data;}
 	
-	QByteArray getDataOffset() {return m_dataOffset;}
-	QByteArray getTotalDataSize() {return m_totalDataSize;}
-	QByteArray getMessageLength() {return m_messageLength;}
-	QByteArray getP2pSessionId() {return m_p2pSessionId;}
+	int getDataOffset(); 
+	int getTotalDataSize();
+	int getMessageLength();
+	int getP2pSessionId();
 	//int get() {return m_;}
 	//int get() {return m_;}
 
@@ -69,6 +72,7 @@ private:
 	QByteArray m_context;
 	
 	int m_accepted;
+	QByteArray m_path;
 		
 	// initial dc
 	QByteArray m_netId;
@@ -83,6 +87,9 @@ private:
 
 	QString m_clientIp;
 	QString m_clientPort;
+	
+	// DATA
+	QByteArray m_data;
 	
 	// BYE
 	bool m_closeSession;

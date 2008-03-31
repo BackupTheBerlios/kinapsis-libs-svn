@@ -45,7 +45,7 @@ public:
 	void parseIro();
 	void parseAns();
 
-	void acceptFileTransfer (P2P*);
+	void acceptFileTransfer (P2P*, QByteArray);
 
 	void parseMsg();
 	void parseUsr();
@@ -66,7 +66,10 @@ signals:
        void chatIsTyping (int, QString);
        void chatLeavedTheRoom(int, QString);
        void newChat (int, QString);
+
        void incomingFileTransfer (P2P* , int);
+       void fileTransferProgress(QByteArray ,int, int);
+       void fileTransferFinished(QByteArray);
 
 private:
 	QString m_address;
