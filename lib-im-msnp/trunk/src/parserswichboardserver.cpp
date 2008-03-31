@@ -103,13 +103,14 @@ void ParserSB::parseAns(){
 	else m_hasCommand = false;
 }
 void ParserSB::acceptFileTransfer (P2P* msg, QByteArray path) {
-	m_p2pList[msg->getId()]->setAccepted();
-	m_p2pList[msg->getId()]->setPath(path);
+	m_p2pList[msg->getId()+2].setAccepted();
+	m_p2pList[msg->getId()+2].setPath(path);
+	printf("############# Tansferencia Aceptada en: %s\n", m_p2pList[msg->getId()+2].getPath().data());
 	//qDebug() << "@############# Tansferencia Aceptada en:" << m_p2pList[msg->getId()]->getPath() << " con id " << msg->getId();
-	qDebug() << "@############# Tansferencia Aceptada en:" << msg->getPath() << " con id " << msg->getId();
-	if (!m_p2pList[msg->getId()]->makeCmd().isNull()) {
-		qDebug() << "ENVIO:" << m_p2pList[msg->getId()]->makeCmd().toHex();
-		m_socket->send(m_p2pList[msg->getId()]->makeCmd());
+	//qDebug() << "@############# Tansferencia Aceptada en:" << msg->getPath() << " con id " << msg->getId();
+	if (!m_p2pList[msg->getId()+2].makeCmd().isNull()) {
+		qDebug() << "ENVIO:" << m_p2pList[msg->getId()+2].makeCmd().toHex();
+		m_socket->send(m_p2pList[msg->getId()+2].makeCmd());
 	}
 }
 
@@ -229,31 +230,34 @@ void ParserSB::parseMsg () {
 					msg->setClientPort(m_client->getClientPort());
 					msg->parse(data);
 					
-					//qRegisterMetaType<P2P>("P2P");
+					qRegisterMetaType<P2P>("P2P");
+					
+					qDebug() << "##~~~ ID " << msg->getId();
 					if (!m_p2pList.contains(msg->getId())){
 						if (msg->getType() == "application/x-msnmsgr-sessionreqbody") {
-							m_p2pList[msg->getId()] = msg;
+							m_p2pList[msg->getId()+2] = *msg;
 							emit incomingFileTransfer (msg,m_chatId);
-						}
-						else {
-							if (msg->getMessageLength()) {
-								//qDebug() << "# RECIBIENDO " << msg->getType() << msg->getDataOffset() << (msg->getDataOffset() + msg->getMessageLength()) << msg->getTotalDataSize() << m_p2pList[msg->getId()]->getPath();
-								//QFile * fd =  new QFile(m_p2pList[msg->getId()]->getPath());
-								//if (fd->open(QIODevice::Append)){
-								//	qDebug() << "ESCRIBIENDO";
-								//	fd->write(msg->getData());
-								//	fd->close();
-								//}	
-								//qDebug() << "# RECIBIENDO " << msg->getType() << (msg->getDataOffset() + msg->getMessageLength()) << msg->getTotalDataSize();
-								emit fileTransferProgress(msg->getId(), (msg->getDataOffset() + msg->getMessageLength()), msg->getTotalDataSize());
-								if ((msg->getDataOffset() + msg->getMessageLength())== msg->getTotalDataSize()) {
-									//qDebug() << "# RECEPCION FINALIZADA \n\n";
-									emit fileTransferFinished(msg->getId()); 
-	
-								}
-							}
+							
 						}
 					}
+					else {
+						qDebug() << "# RECIBIENDO " << msg->getId() << msg->getDataOffset() << (msg->getDataOffset() + msg->getMessageLength()) << msg->getTotalDataSize() << m_p2pList[msg->getId()].getPath() << "FIN";
+						QFile * fd =  new QFile(m_p2pList[msg->getId()].getPath());
+						if (fd->open(QIODevice::Append)){
+							qDebug() << "ESCRIBIENDO" << msg->getId();
+							fd->write(msg->getData());
+							fd->close();
+						}	
+						qDebug() << "# RECIBIENDO " << msg->getType() << (msg->getDataOffset() + msg->getMessageLength()) << msg->getTotalDataSize();
+						emit fileTransferProgress(msg->getId(), (msg->getDataOffset() + msg->getMessageLength()), msg->getTotalDataSize());
+						if ((msg->getDataOffset() + msg->getMessageLength())== msg->getTotalDataSize()) {
+							//qDebug() << "# RECEPCION FINALIZADA \n\n";
+							emit fileTransferFinished(msg->getId()); 
+	
+						}
+						
+					}
+					
 					//MSG 242 D 496\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: darth_leviathan@hotmail.com\r\n\r\n
 					//res = SessionID + (anteriorRandom++) + Data offset+ Total data size 8B +  Total data size 4B  + 00 00 00 00 + Identifier + random + 00 00 00 00 00 00 00 00
 					//response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + msgLen + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");

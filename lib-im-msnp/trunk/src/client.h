@@ -103,8 +103,8 @@ public slots:
 	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
 
         void incomingFileTransfer (P2P* msg, int chatId);
-       	void fileTransferProgress(QByteArray ftId,int received, int total);
-       	void fileTransferFinished(QByteArray ftId);
+       	void fileTransferProgress(int ftId,int received, int total);
+       	void fileTransferFinished(int ftId);
 	
 //	void contactDisconnected (QString msnPassport);
 //	void chatCreated (QString hostPort, QString ticket);

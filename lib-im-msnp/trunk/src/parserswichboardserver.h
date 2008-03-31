@@ -68,8 +68,8 @@ signals:
        void newChat (int, QString);
 
        void incomingFileTransfer (P2P* , int);
-       void fileTransferProgress(QByteArray ,int, int);
-       void fileTransferFinished(QByteArray);
+       void fileTransferProgress(int ,int, int);
+       void fileTransferFinished(int);
 
 private:
 	QString m_address;
@@ -82,7 +82,7 @@ private:
 	QString m_ticket;
 	QString m_sessid;
 
-	typedef QMap<QByteArray, P2P*> P2PMap;
+	typedef QMap<int, P2P> P2PMap;
 	P2PMap m_p2pList;
 
 	QByteArray m_buf;

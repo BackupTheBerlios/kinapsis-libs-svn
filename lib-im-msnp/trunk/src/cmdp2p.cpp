@@ -16,9 +16,9 @@
 #include <QtEndian>
 #include "cmdp2p.h"
 namespace libimmsnp {
-//P2P::P2P ():Command ("MSG", 0, "")  {
-//	m_accepted = 0;
-//	}
+P2P::P2P ():Command ("MSG", 0, "")  {
+	m_accepted = 0;
+	}
 P2P::P2P (int idtr):Command ("MSG", idtr, "")  {
 	m_accepted = 0;
 	}
@@ -65,6 +65,8 @@ int P2P::getDataOffset() {return qbyte2int(m_dataOffset);}
 int P2P::getTotalDataSize() {return qbyte2int(m_totalDataSize);}
 int P2P::getMessageLength() {return qbyte2int(m_messageLength);}
 int P2P::getP2pSessionId() {return qbyte2int(m_p2pSessionId);}
+int P2P::getAckUniqueID() {return qbyte2int(m_ackUniqueID);}
+int P2P::getId() {return qbyte2int(m_identifier);}
 
 QByteArray increase(QByteArray num){
 	int data = qbyte2int (num);
@@ -72,7 +74,8 @@ QByteArray increase(QByteArray num){
 	return int2qbyte(data, 8);
 }
 void P2P::parse(QByteArray data){
-	
+	qDebug() << "##### PARSING";
+	m_prevAck = m_ackIdentifier;	
 	QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
 	//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
 	// Little-endian abcd = dbca in memory
@@ -89,15 +92,14 @@ void P2P::parse(QByteArray data){
 	m_ackIdentifier  = binaryHeader.mid(32,4);	
 	m_ackDataSize	 = binaryHeader.mid(36,8);	
 	//qDebug() << "### SLP BIN DATA" << binaryHeader.toHex();
-	//qDebug () << "SLP BIN: sid"<< m_sessionID.toHex() << "Id" << m_identifier.toHex() << "dataOffset" << m_dataOffset.toHex() << "totalDataSize" << m_totalDataSize.toHex() << "messageLength" << m_messageLength.toHex() << "flag" << m_flag.toHex() << "ackIdentifier" << m_ackIdentifier.toHex() << "ackUniqueID" << m_ackUniqueID.toHex() << "ackDataSize" << m_ackDataSize.toHex();
-
+	qDebug () << "SLP BIN: sid"<< m_sessionID.toHex() << "Id" << getId() << "dataOffset" << m_dataOffset.toHex() << "totalDataSize" << getTotalDataSize() << "messageLength" << getMessageLength() << "flag" << m_flag.toHex() << "ackIdentifier" << m_ackIdentifier.toHex() << "ackUniqueID" << m_ackUniqueID.toHex() << "ackDataSize" << m_ackDataSize.toHex();
 	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
-	m_data = invitation;
+	int dataLen = invitation.size() - 4;
+	m_data = invitation.mid(0,dataLen);
 	//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
 	bool ok;
 	QRegExp fx;
-	//qDebug() << "### SLP INV DATA" << QByteArray(invitation).replace("\n","\\n").replace("\r","\\r");
-	//fx.setPattern("(^(\\S+) MSNMSGR:\\S+ MSNSLP/1.0\r\nTo: <msnmsgr:(\\S+)>\r\nFrom: <msnmsgr:(\\S+)>\r\nVia: MSNSLP/1.0/TLP ;branch=\\{(\\S+)\\}\r\nCSeq: (\\d+)\r\nCall-ID: \\{(\\S+)\\}\r\nMax-Forwards: (\\d+)\r\nContent-Type: (\\S+)\r\nContent-Length: (\\d+)\r\n\r\n)");
+	qDebug() << "### SLP INV DATA" << QByteArray(invitation).replace("\n","\\n").replace("\r","\\r");
 	fx.setPattern("^(\\S+) MSNMSGR");
 	if (fx.indexIn(invitation) != -1)
 		m_p2pType 	= QByteArray(fx.cap(1).toUtf8().data());		
@@ -125,7 +127,7 @@ void P2P::parse(QByteArray data){
 	fx.setPattern("Content-Length: (\\d+)\r\n");
 	if (fx.indexIn(invitation) != -1)
 		m_ContentLength = QByteArray(fx.cap(1).toUtf8().data());
-	//qDebug() << "SLP MSG: " << m_p2pType << m_to << m_from << m_branch << m_CsEq << m_callId << m_maxForwards << m_ContentType << m_ContentLength;
+	qDebug() << "SLP MSG: " << m_p2pType << m_to << m_from << m_branch << m_CsEq << m_callId << m_maxForwards << m_ContentType << m_ContentLength;
 	
 	// INVITATION PHASE
 	if (m_ContentType == "application/x-msnmsgr-sessionreqbody"){
@@ -178,7 +180,7 @@ void P2P::parse(QByteArray data){
 		fx.setPattern("Capabilities-Flags: (\\d+)\r\n)");
 		if (fx.indexIn(invitation) != -1)
 			m_capabilities	= QByteArray(fx.cap(20).toUtf8().data());
-		//qDebug() << "SLP REQ: " << m_bridges << m_netId << m_connType << m_tcpConnType << m_UPnpNat << m_Icf << m_hashedNonce << m_sChannelState << m_capabilities;
+		qDebug() << "SLP REQ: " << m_bridges << m_netId << m_connType << m_tcpConnType << m_UPnpNat << m_Icf << m_hashedNonce << m_sChannelState << m_capabilities;
 	}
 	if (m_ContentType == "application/x-msnmsgr-sessionclosebody"){
 		m_closeSession = true;

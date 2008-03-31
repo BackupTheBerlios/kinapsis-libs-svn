@@ -21,12 +21,12 @@ class P2P : public Command {
 public:
 	P2P (int);
 	// TODO: check this P2P()
-	//P2P ();
+	P2P ();
 	virtual ~P2P();
 	void setClientIp(QString ip) {m_clientIp = ip;}
 	void setClientPort(QString port) {m_clientPort = port;}
 	
-	QByteArray getId() {return m_identifier.toHex();}	
+	int getId();	
 	QByteArray getType() {return m_ContentType;}	
 	void setAccepted() { m_accepted = 1;}
 	void setDenied() { m_accepted = -1;}
@@ -34,11 +34,15 @@ public:
 	void setPath(QByteArray path) {m_path = path;}
 	QByteArray getPath() {return m_path;}
 	QByteArray getData() {return m_data;}
+	QByteArray getEUF_GUID() {return m_EUF_GUID;}
+	
+	bool isAckMsg() {return m_prevAck == m_ackIdentifier;}
 	
 	int getDataOffset(); 
 	int getTotalDataSize();
 	int getMessageLength();
 	int getP2pSessionId();
+	int getAckUniqueID();
 	//int get() {return m_;}
 	//int get() {return m_;}
 
@@ -54,6 +58,8 @@ private:
 	QByteArray m_ackUniqueID;	
 	QByteArray m_ackIdentifier; 
 	QByteArray m_ackDataSize;	
+
+	QByteArray m_prevAck; 
 
 	QByteArray m_p2pType;
 	QByteArray m_to;
