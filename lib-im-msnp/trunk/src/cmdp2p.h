@@ -34,7 +34,9 @@ public:
 	void setDenied() { m_accepted = -1;}
 	int isAccepted() {return m_accepted;}
 	void setPath(QByteArray path) {m_path = path;}
+
 	QByteArray getPath() {return m_path;}
+	QByteArray getFileName() {return m_context;}
 	QByteArray getData() {return m_data;}
 	QByteArray getEUF_GUID() {return m_EUF_GUID;}
 	

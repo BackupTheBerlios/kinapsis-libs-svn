@@ -14,6 +14,7 @@
 #include <QRegExp>
 #include <QDebug>
 #include <QtEndian>
+#include <QTextCodec>
 #include "cmdp2p.h"
 namespace libimmsnp {
 P2P::P2P ():Command ("MSG", 0, "")  {
@@ -152,8 +153,8 @@ void P2P::parse(QByteArray data){
 			m_appId = QByteArray(fx.cap(1).toUtf8().data());
 		fx.setPattern("Context: (\\S+)");
 		if (fx.indexIn(invitation) != -1)
-			m_context 	=  QByteArray(fx.cap(1).toUtf8().data());
-		qDebug() << "### SLP INV: " << m_EUF_GUID << m_p2pSessionId << m_appId << QByteArray::fromBase64(m_context).mid(19) << m_bh_identifier.mid(1,1).toInt(&ok,16);
+			m_context 	=  QByteArray::fromHex(QByteArray::fromBase64(QByteArray(fx.cap(1).toUtf8().data())).mid(20).toHex().replace("00",""));
+		qDebug() << "### SLP INV: " << m_EUF_GUID << m_p2pSessionId << m_appId << m_context << m_bh_identifier.mid(1,1).toInt(&ok,16);
 	}
 	
 	

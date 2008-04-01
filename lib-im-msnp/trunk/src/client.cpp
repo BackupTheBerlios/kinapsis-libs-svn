@@ -286,7 +286,7 @@ namespace libimmsnp {
 
 	void Client::incomingFileTransfer (P2P* msg, int chatId) {
 		
-		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER form chat %i", chatId); 
+		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER %s form chat %i", msg->getFileName().data(),chatId); 
 		
 		QByteArray path = QByteArray(QByteArray("./file-") + QByteArray::number(msg->getBHid()) + QByteArray(".txt"));
 		m_chatList[chatId]->acceptFileTransfer(msg, path);
