@@ -1,0 +1,30 @@
+PROJECT(IMPROGRAMS)
+
+SET(IMPROGRAMS_SRCS
+	test.cpp
+	manager.cpp
+        improgram.cpp
+	kopete.cpp
+)
+
+SET(IMPROGRAMS_HDRS
+        manager.h
+        improgram.h
+        kopete.h
+)
+
+FIND_PACKAGE(Qt4 REQUIRED)
+
+INCLUDE( ${QT_USE_FILE} )
+
+INCLUDE_DIRECTORIES(
+        ${CMAKE_CURRENT_BINARY_DIR}
+	${QT_QTXML_INCLUDE_DIR}
+)
+
+ADD_EXECUTABLE(test ${IMPROGRAMS_SRCS} ${IMPROGRAMS_HDRS})
+
+TARGET_LINK_LIBRARIES(test  
+	${QT_QTXML_LIBRARY}
+)
+
