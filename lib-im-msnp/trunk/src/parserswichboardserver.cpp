@@ -103,8 +103,8 @@ void ParserSB::parseAns(){
 	else m_hasCommand = false;
 }
 void ParserSB::acceptFileTransfer (P2P* msg, QByteArray path) {
-	m_p2pList[msg->getBHid()+3] = path;
-	qDebug() << "@############# Tansferencia Aceptada en:" << m_p2pList[msg->getBHid()+3] << " con id " << msg->getBHid();
+	m_p2pList[msg->getBHid()] = path;
+	qDebug() << "@############# Tansferencia Aceptada en:" << m_p2pList[msg->getBHid()] << " con id " << msg->getBHid();
 	if (!msg->makeCmd().isNull()) {
 		qDebug() << "ENVIO:" << msg->makeCmd().toHex();
 		m_socket->send(msg->makeCmd());
