@@ -103,14 +103,11 @@ void ParserSB::parseAns(){
 	else m_hasCommand = false;
 }
 void ParserSB::acceptFileTransfer (P2P* msg, QByteArray path) {
-	m_p2pList[msg->getId()+2].setAccepted();
-	m_p2pList[msg->getId()+2].setPath(path);
-	printf("############# Tansferencia Aceptada en: %s\n", m_p2pList[msg->getId()+2].getPath().data());
-	//qDebug() << "@############# Tansferencia Aceptada en:" << m_p2pList[msg->getId()]->getPath() << " con id " << msg->getId();
-	//qDebug() << "@############# Tansferencia Aceptada en:" << msg->getPath() << " con id " << msg->getId();
-	if (!m_p2pList[msg->getId()+2].makeCmd().isNull()) {
-		qDebug() << "ENVIO:" << m_p2pList[msg->getId()+2].makeCmd().toHex();
-		m_socket->send(m_p2pList[msg->getId()+2].makeCmd());
+	m_p2pList[msg->getBHid()+3] = path;
+	qDebug() << "@############# Tansferencia Aceptada en:" << m_p2pList[msg->getBHid()+3] << " con id " << msg->getBHid();
+	if (!msg->makeCmd().isNull()) {
+		qDebug() << "ENVIO:" << msg->makeCmd().toHex();
+		m_socket->send(msg->makeCmd());
 	}
 }
 
@@ -229,38 +226,40 @@ void ParserSB::parseMsg () {
 					msg->setClientIp(m_client->getClientIp());
 					msg->setClientPort(m_client->getClientPort());
 					msg->parse(data);
-					
+					qDebug() << "\n ##FT STATUS" << msg->getStatus();	
 					qRegisterMetaType<P2P>("P2P");
-					
-					qDebug() << "##~~~ ID " << msg->getId();
-					if (!m_p2pList.contains(msg->getId())){
-						if (msg->getType() == "application/x-msnmsgr-sessionreqbody") {
-							m_p2pList[msg->getId()+2] = *msg;
-							emit incomingFileTransfer (msg,m_chatId);
-							
-						}
+					if (msg->getStatus()){
+						qDebug() << "##  FILETRANSFER STEP 2 \n\n\n\n" << msg->getBHid();
+						m_socket->send(msg->makeCmd());
 					}
-					else {
-						qDebug() << "# RECIBIENDO " << msg->getId() << msg->getDataOffset() << (msg->getDataOffset() + msg->getMessageLength()) << msg->getTotalDataSize() << m_p2pList[msg->getId()].getPath() << "FIN";
-						QFile * fd =  new QFile(m_p2pList[msg->getId()].getPath());
-						if (fd->open(QIODevice::Append)){
-							qDebug() << "ESCRIBIENDO" << msg->getId();
-							fd->write(msg->getData());
-							fd->close();
-						}	
-						qDebug() << "# RECIBIENDO " << msg->getType() << (msg->getDataOffset() + msg->getMessageLength()) << msg->getTotalDataSize();
-						emit fileTransferProgress(msg->getId(), (msg->getDataOffset() + msg->getMessageLength()), msg->getTotalDataSize());
-						if ((msg->getDataOffset() + msg->getMessageLength())== msg->getTotalDataSize()) {
-							//qDebug() << "# RECEPCION FINALIZADA \n\n";
-							emit fileTransferFinished(msg->getId()); 
+					if (msg->getBHsessionID()){
+						qDebug() << "# RECIBIENDO " << msg->getBHid() << msg->getBHdataOffset() << (msg->getBHdataOffset() + msg->getBHmessageLength()) << msg->getBHtotalDataSize() << "FIN";
+							QFile * fd =  new QFile(m_p2pList[msg->getBHid()]);
+							if (fd->open(QIODevice::Append)){
+								qDebug() << "ESCRIBIENDO" << msg->getBHid();
+								fd->write(msg->getData());
+								fd->close();
+							}	
+						emit fileTransferProgress(msg->getBHid(), (msg->getBHdataOffset() + msg->getBHmessageLength()), msg->getBHtotalDataSize());
+						if ((msg->getBHdataOffset() + msg->getBHmessageLength())== msg->getBHtotalDataSize()) {
+							emit fileTransferFinished(msg->getBHid()); 
 	
 						}
-						
 					}
-					
-					//MSG 242 D 496\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: darth_leviathan@hotmail.com\r\n\r\n
-					//res = SessionID + (anteriorRandom++) + Data offset+ Total data size 8B +  Total data size 4B  + 00 00 00 00 + Identifier + random + 00 00 00 00 00 00 00 00
-					//response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + msgLen + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");
+					if (msg->getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
+						qDebug("##  EMOTICONO");
+					}
+					if (msg->getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
+						qDebug("##  WEBCAM");
+					}
+					if (msg->getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){
+						qDebug("##  FILETRANSFER STEP 1 \n\n\n\n");
+						emit incomingFileTransfer (msg,m_chatId);
+
+						//MSG 242 D 496\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: darth_leviathan@hotmail.com\r\n\r\n
+						//res = SessionID + (anteriorRandom++) + Data offset+ Total data size 8B +  Total data size 4B  + 00 00 00 00 + Identifier + random + 00 00 00 00 00 00 00 00
+						//response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + msgLen + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");
+					}
 				}
 			}
 		}
@@ -368,11 +367,222 @@ void ParserSB::parseError () {
 	rx.setPattern("(^(\\d{3}) \\d+\r\n)"); 
 	if (rx.indexIn(m_buf) != -1){
 		qDebug ("MSN::ParserSB::Log #%i ## ERROR : %s", m_chatId, rx.cap(2).toUtf8().data());
-		if (rx.cap(2) == "215") {
+		QString reason = rx.cap(2);
+		m_buf.remove(0,rx.cap(1).size());
+		if (reason == "200") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid Syntax");
+		}
+		if (reason == "201") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid parameter");
+		}
+		if (reason == "205") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid principal");
+		}
+		if (reason == "206") {
+		        qDebug("MSN::ERROR::ParserNS : Domain name missing");
+		}
+		if (reason == "207") {
+		        qDebug("MSN::ERROR::ParserNS : Already logged in");
+		}
+		if (reason == "208") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid principal");
+		}
+		if (reason == "209") {
+		        qDebug("MSN::ERROR::ParserNS : Nickname change illegal");
+		}
+		if (reason == "210") {
+		        qDebug("MSN::ERROR::ParserNS : Principal list full");
+		}
+		if (reason == "213") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid rename request?");
+		}
+		if (reason == "215") {
 			m_socket->close();	
 			m_endChat = true;
 		}
-		m_buf.remove(0,rx.cap(1).size());
+		if (reason == "216") {
+		        qDebug("MSN::ERROR::ParserNS : Principal not on list");
+		}
+		if (reason == "217") {
+		        qDebug("MSN::ERROR::ParserNS : Principal not online");
+		}
+		if (reason == "218") {
+		        qDebug("MSN::ERROR::ParserNS : Already in mode");
+		}
+		if (reason == "219") {
+		        qDebug("MSN::ERROR::ParserNS : Principal is in the opposite list");
+		}
+		if (reason == "223") {
+		        qDebug("MSN::ERROR::ParserNS : Too many groups");
+		}
+		if (reason == "224") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid group");
+		}
+		if (reason == "225") {
+		        qDebug("MSN::ERROR::ParserNS : Principal not in group");
+		}
+		if (reason == "227") {
+		        qDebug("MSN::ERROR::ParserNS : Group not empty");
+		}
+		if (reason == "228") {
+		        qDebug("MSN::ERROR::ParserNS : Group with same name already exists");
+		}
+		if (reason == "229") {
+		        qDebug("MSN::ERROR::ParserNS : Group name too long");
+		}
+		if (reason == "230") {
+		        qDebug("MSN::ERROR::ParserNS : Cannot remove group zero");
+		}
+		if (reason == "231") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid group");
+		}
+		if (reason == "240") {
+		        qDebug("MSN::ERROR::ParserNS : Empty domain");
+		}
+		if (reason == "280") {
+		        qDebug("MSN::ERROR::ParserNS : Switchboard failed");
+		}
+		if (reason == "281") {
+		        qDebug("MSN::ERROR::ParserNS : Transfer to switchboard failed");
+		}
+		if (reason == "282") {
+		        qDebug("MSN::ERROR::ParserNS : P2P Error?");
+		}
+		if (reason == "300") {
+		        qDebug("MSN::ERROR::ParserNS : Required field missing");
+		}
+		if (reason == "302") {
+		        qDebug("MSN::ERROR::ParserNS : Not logged in");
+		}
+		if (reason == "402") {
+		        qDebug("MSN::ERROR::ParserNS : Error accessing contact list");
+		}
+		if (reason == "403") {
+		        qDebug("MSN::ERROR::ParserNS : Error accessing contact list");
+		}
+		if (reason == "420") {
+		        qDebug("MSN::ERROR::ParserNS : Invalid Account Permissions");
+		}
+		if (reason == "500") {
+		        qDebug("MSN::ERROR::ParserNS : Internal server error");
+		}
+		if (reason == "501") {
+		        qDebug("MSN::ERROR::ParserNS : Database server error");
+		}
+		if (reason == "502") {
+		        qDebug("MSN::ERROR::ParserNS : Command disabled");
+		}
+		if (reason == "510") {
+		        qDebug("MSN::ERROR::ParserNS : File operation failed");
+		}
+		if (reason == "511") {
+		        qDebug("MSN::ERROR::ParserNS : User account you are attempting to connect with is banned.");
+		}
+		if (reason == "520") {
+		        qDebug("MSN::ERROR::ParserNS : Memory allocation failed");
+		}
+		if (reason == "540") {
+		        qDebug("MSN::ERROR::ParserNS : Challenge response failed");
+		}
+		if (reason == "600") {
+		        qDebug("MSN::ERROR::ParserNS : Server is busy");
+		}
+		if (reason == "601") {
+		        qDebug("MSN::ERROR::ParserNS : Server is unavailable");
+		}
+		if (reason == "602") {
+		        qDebug("MSN::ERROR::ParserNS : Peer nameserver is down");
+		}
+		if (reason == "603") {
+		        qDebug("MSN::ERROR::ParserNS : Database connection failed");
+		}
+		if (reason == "604") {
+		        qDebug("MSN::ERROR::ParserNS : Server is going down");
+		}
+		if (reason == "605") {
+		        qDebug("MSN::ERROR::ParserNS : Server unavailable");
+		}
+		if (reason == "700") {
+		        qDebug("MSN::ERROR::ParserNS : Could not create connection");
+		}
+		if (reason == "710") {
+		        qDebug("MSN::ERROR::ParserNS : Bad CVR parameters sent");
+		}
+		if (reason == "711") {
+		        qDebug("MSN::ERROR::ParserNS : Write is blocking");
+		}
+		if (reason == "712") {
+		        qDebug("MSN::ERROR::ParserNS : Session is overloaded");
+		}
+		if (reason == "713") {
+		        qDebug("MSN::ERROR::ParserNS : Calling too rapidly");
+		}
+		if (reason == "714") {
+		        qDebug("MSN::ERROR::ParserNS : Too many sessions");
+		}
+		if (reason == "715") {
+		        qDebug("MSN::ERROR::ParserNS : Not expected");
+		}
+		if (reason == "717") {
+		        qDebug("MSN::ERROR::ParserNS : Bad friend file");
+		}
+		if (reason == "731") {
+		        qDebug("MSN::ERROR::ParserNS : Not expected");
+		}
+		if (reason == "800") {
+		        qDebug("MSN::ERROR::ParserNS : Changing too rapidly");
+		}
+		if (reason == "910") {
+		        qDebug("MSN::ERROR::ParserNS : Server too busy");
+		}
+		if (reason == "911") {
+		        qDebug("MSN::ERROR::ParserNS : Server is busy");
+		}
+		if (reason == "912") {
+		        qDebug("MSN::ERROR::ParserNS : Server too busy");
+		}
+		if (reason == "913") {
+		        qDebug("MSN::ERROR::ParserNS : Not allowed when hidden");
+		}
+		if (reason == "914") {
+		        qDebug("MSN::ERROR::ParserNS : Server unavailable");
+		}
+		if (reason == "915") {
+		        qDebug("MSN::ERROR::ParserNS : Server unavailable");
+		}
+		if (reason == "916") {
+		        qDebug("MSN::ERROR::ParserNS : Server unavailable");
+		}
+		if (reason == "917") {
+		        qDebug("MSN::ERROR::ParserNS : Authentication failed");
+		}
+		if (reason == "918") {
+		        qDebug("MSN::ERROR::ParserNS : Server too busy");
+		}
+		if (reason == "919") {
+		        qDebug("MSN::ERROR::ParserNS : Server too busy");
+		}
+		if (reason == "920") {
+		        qDebug("MSN::ERROR::ParserNS : Not accepting new principals");
+		}
+		if (reason == "921") {
+		        qDebug("MSN::ERROR::ParserNS : Server too busy");
+		}
+		if (reason == "922") {
+		        qDebug("MSN::ERROR::ParserNS : Server too busy");
+		}
+		if (reason == "923") {
+		        qDebug("MSN::ERROR::ParserNS : Kids' Passport without parental consent");
+		}
+		if (reason == "924") {
+		        qDebug("MSN::ERROR::ParserNS : Passport account not yet verified");
+		}
+		if (reason == "928") {
+		        qDebug("MSN::ERROR::ParserNS : Bad ticket");
+		}
+		if (reason == "931") {
+		        qDebug("MSN::ERROR::ParserNS : Account not on this server");
+		}
 	}
 	else m_hasCommand = false;
 }

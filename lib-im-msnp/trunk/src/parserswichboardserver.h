@@ -82,7 +82,7 @@ private:
 	QString m_ticket;
 	QString m_sessid;
 
-	typedef QMap<int, P2P> P2PMap;
+	typedef QMap<int, QByteArray> P2PMap;
 	P2PMap m_p2pList;
 
 	QByteArray m_buf;

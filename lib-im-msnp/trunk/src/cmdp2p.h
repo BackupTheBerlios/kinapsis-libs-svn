@@ -26,6 +26,8 @@ public:
 	void setClientIp(QString ip) {m_clientIp = ip;}
 	void setClientPort(QString port) {m_clientPort = port;}
 	
+	int getStatus(){return m_status;}
+	
 	int getId();	
 	QByteArray getType() {return m_ContentType;}	
 	void setAccepted() { m_accepted = 1;}
@@ -36,31 +38,40 @@ public:
 	QByteArray getData() {return m_data;}
 	QByteArray getEUF_GUID() {return m_EUF_GUID;}
 	
-	bool isAckMsg() {return m_prevAck == m_ackIdentifier;}
+	bool isAckMsg() {return m_prevAck == m_bh_ackIdentifier;}
 	
-	int getDataOffset(); 
-	int getTotalDataSize();
-	int getMessageLength();
+	int getBHsessionID();	
+	int getBHid(); 		
+	int getBHdataOffset();
+	int getBHtotalDataSize();
+	int getBHflag();	
+	int getBHmessageLength();
+	int getBHackUniqueID();
+	int getBHackIdentifier(); 	
+	int getBHackDataSize();
+
 	int getP2pSessionId();
-	int getAckUniqueID();
 	//int get() {return m_;}
 	//int get() {return m_;}
 
 	QByteArray makeCmd();
 	void parse (QByteArray);
 private:
-	QByteArray m_sessionID;	
-	QByteArray m_identifier;	
-	QByteArray m_dataOffset;
-	QByteArray m_totalDataSize;
-	QByteArray m_flag;		
-	QByteArray m_messageLength;
-	QByteArray m_ackUniqueID;	
-	QByteArray m_ackIdentifier; 
-	QByteArray m_ackDataSize;	
+	
+	// BINARY HEADER
+	QByteArray m_bh_sessionID;	
+	QByteArray m_bh_identifier;	
+	QByteArray m_bh_dataOffset;
+	QByteArray m_bh_totalDataSize;
+	QByteArray m_bh_flag;		
+	QByteArray m_bh_messageLength;
+	QByteArray m_bh_ackUniqueID;	
+	QByteArray m_bh_ackIdentifier; 
+	QByteArray m_bh_ackDataSize;	
 
 	QByteArray m_prevAck; 
 
+	// MSG HEADER
 	QByteArray m_p2pType;
 	QByteArray m_to;
 	QByteArray m_from;
@@ -71,29 +82,31 @@ private:
 	QByteArray m_ContentType;
 	QByteArray m_ContentLength;
 
-	// Invitation
+	// INVITATION
 	QByteArray m_EUF_GUID;
 	QByteArray m_p2pSessionId;
 	QByteArray m_appId;
 	QByteArray m_context;
 	
-	int m_accepted;
-	QByteArray m_path;
-		
-	// initial dc
-	QByteArray m_netId;
-	QByteArray m_bridges;
-	QByteArray m_connType;
-	QByteArray m_tcpConnType;
-	QByteArray m_UPnpNat;
-	QByteArray m_Icf;
-	QByteArray m_hashedNonce;
-	QByteArray m_sChannelState;
-	QByteArray m_capabilities;
+	// DIRECT CONNECT
+	QByteArray m_dc_bridges;
+	QByteArray m_dc_netId;
+	QByteArray m_dc_connType;
+	QByteArray m_dc_tcpConnType;
+	QByteArray m_dc_UPnpNat;
+	QByteArray m_dc_Icf;
+	QByteArray m_dc_hashedNonce;
+	QByteArray m_dc_sChannelState;
+	QByteArray m_dc_capabilities;
+	QByteArray m_dc_sessionID;
 
+	// MORE STUFF
+	int m_status;
 	QString m_clientIp;
 	QString m_clientPort;
-	
+	int m_accepted;
+	QByteArray m_path;
+
 	// DATA
 	QByteArray m_data;
 	

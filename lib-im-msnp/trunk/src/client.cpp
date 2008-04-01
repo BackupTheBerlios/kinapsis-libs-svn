@@ -288,7 +288,7 @@ namespace libimmsnp {
 		
 		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER form chat %i", chatId); 
 		
-		QByteArray path = QByteArray(QByteArray("./file-") + QByteArray::number(msg->getId()) + QByteArray(".txt"));
+		QByteArray path = QByteArray(QByteArray("./file-") + QByteArray::number(msg->getBHid()+3) + QByteArray(".txt"));
 		m_chatList[chatId]->acceptFileTransfer(msg, path);
 	}
        	void Client::fileTransferProgress(int ftId,int received, int total) {
