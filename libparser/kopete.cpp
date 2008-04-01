@@ -50,110 +50,57 @@ using namespace std;
                 QString home = QDir::homePath();
                 QString dir;
 
-                    if (version == "3.5"){
-                            //XML para los metacontactos
-                            //TODO
-                            dir.clear();
-                            dir.append(home);
-                            dir.append("/.kde3.5/share/apps/kopete");
-                            QDir::setCurrent(dir);
-                            file.setFileName("contactlist.xml");
-                            if (!file.open(QIODevice::ReadOnly)){
-                                    return; //FIXME
-                            }
-                            if (!doc.setContent(&file)) {
-                                    file.close();
-                                    return;//FIXME
-                            }
+                //XML para los metacontactos
+                //TODO
+                dir.append(home);
+                dir.append("/.kde/share/apps/kopete");
+                QDir::setCurrent(dir);
+                file.setFileName("contactlist.xml");
+                if (!file.open(QIODevice::ReadOnly)){
+                        return; //FIXME
+                }
+                if (!doc.setContent(&file)) {
+                        file.close();
+                        return;//FIXME
+                }
 
-                            QDomElement docElem = doc.documentElement();
-                            QDomNode n = docElem.firstChild();
-                            while(!n.isNull()) {
-//                                    if (n.isElement())
-                                    QDomElement e = n.toElement(); // try to convert the node to an element.
-                                    if(!e.isNull()) {
-//                                            qDebug() << e.tagName() << endl; // the node really is an element.
-                                    }
-                                    n = n.nextSibling();
-                            } 
-                            file.close();
-                            //XML para los logs
-                            //TODO
-                            //buscar en dir ../kopete/logs
-                            //MSNProtocol->cuentas,
-                            //JabberProtocol->cuentas 
-                            //etc, etc
+                QDomElement docElem = doc.documentElement();
+                QDomNode n = docElem.firstChild();
+                while(!n.isNull()) {
+                        // if (n.isElement())
+                        // try to convert the node to an element.
+                        QDomElement e = n.toElement();
+                        if(!e.isNull()) {
+                        // // the node really is an element.
+                        // qDebug() << e.tagName() << endl; 
+                        }
+                        n = n.nextSibling();
+                } 
+                file.close();
+                //XML para los logs
+                //TODO
+                //buscar en dir ../kopete/logs
+                //MSNProtocol->cuentas,
+                //JabberProtocol->cuentas 
+                //etc, etc
 
-                            //kdeRC format para las cuentas y protocolos
-                            //TODO-ING
-                            dir.clear();
-                            dir.append(home);
-                            dir.append("/.kde3.5/share/config");
-                            QDir::setCurrent(dir);
-                            file.setFileName("kopeterc");
-                            if (file.exists()){
-                                    file.open(QIODevice::ReadOnly | QIODevice::Text);
-                                    QTextStream in(&file);
-                                    while (!in.atEnd()) {
-                                            QString line = in.readLine();
-                                            processLine(line);
-                                    }
-                                    file.close();
-                            }
-                    }
-                    else if (version == "4.0"){
-                            //XML para los metacontactos
-                            //TODO
-                            dir.clear();
-                            dir.append(home);
-                            dir.append("/.kde4.0/share/apps/kopete");
-                            QDir::setCurrent(dir);
-                            file.setFileName("contactlist.xml");
-                            if (!file.open(QIODevice::ReadOnly)){
-                                    return; //FIXME
-                            }
-                            if (!doc.setContent(&file)) {
-                                    file.close();
-                                    return;//FIXME
-                            }
-
-                            QDomElement docElem = doc.documentElement();
-                            QDomNode n = docElem.firstChild();
-                            while(!n.isNull()) {
-//                                    if (n.isElement())
-                                    QDomElement e = n.toElement(); // try to convert the node to an element.
-                                    if(!e.isNull()) {
-//                                            qDebug() << e.tagName() << endl; // the node really is an element.
-                                    }
-                                    n = n.nextSibling();
-                            } 
-                            file.close();
-                            //XML para los logs
-                            //TODO
-                            //buscar en dir ../kopete/logs
-                            //MSNProtocol->cuentas,
-                            //JabberProtocol->cuentas 
-                            //etc, etc
-
-                            //kdeRC format para las cuentas y protocolos
-                            //TODO-ING
-                            dir.clear();
-                            dir.append(home);
-                            dir.append("/.kde4.0/share/config");
-                            QDir::setCurrent(dir);
-                            file.setFileName("kopeterc");
-                            if (file.exists()){
-                                    file.open(QIODevice::ReadOnly | QIODevice::Text);
-                                    QTextStream in(&file);
-                                    while (!in.atEnd()) {
-                                            QString line = in.readLine();
-                                            processLine(line);
-                                    }
-                                    file.close();
-                            }
-                    }
+                //kdeRC format para las cuentas y protocolos
+                //TODO-ING
+                dir.clear();
+                dir.append(home);
+                dir.append("/.kde/share/config");
+                QDir::setCurrent(dir);
+                file.setFileName("kopeterc");
+                if (file.exists()){
+                        file.open(QIODevice::ReadOnly | QIODevice::Text);
+                        QTextStream in(&file);
+                        while (!in.atEnd()) {
+                                QString line = in.readLine();
+                                processLine(line);
+                        }
+                        file.close();
+                }
             }
-
 
             QList<QString> Kopete::getMetaContacts(){
                     return metacontacts;
@@ -187,15 +134,10 @@ using namespace std;
 
                   if (line.size() > 0){
                     //Revisar si dominios pueden tener numeros 
-                    rx.setPattern("(AccountId)(=)([a-z|A-Z|0-9]+@[a-z|A-Z]+.[a-z|A-Z]+)");  
+                    rx.setPattern("(AccountId=)([a-z|A-Z|0-9]+@[a-z|A-Z|0-9]+.[a-z|A-Z]+)");  
                     pos = rx.indexIn(line,0);
                     if (pos > -1){
-//                            a = rx.cap(1);
-//                            port = rx.cap(2);
-                            accounts << rx.cap(3);
-//                            qDebug() << a;
-//                            qDebug() << port;
-//                            qDebug() << account;
+                            accounts << rx.cap(2);
                     }
                 }
             }
