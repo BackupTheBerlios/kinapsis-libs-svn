@@ -85,7 +85,6 @@ using namespace std;
                 //etc, etc
 
                 //kdeRC format para las cuentas y protocolos
-                //TODO-ING
                 dir.clear();
                 dir.append(home);
                 dir.append("/.kde/share/config");
