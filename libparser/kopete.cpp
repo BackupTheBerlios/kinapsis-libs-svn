@@ -128,17 +128,103 @@ using namespace std;
                 int pos=-1;
                 QRegExp rx;
                 QString account;
-                QString port;
-                QString a;
+                QString tmp;
 //                rx.setPatternSyntax(QRegExp::Wildcard);
-
+//FIXME: ICQ, AOL
+//
                   if (line.size() > 0){
-                    //Revisar si dominios pueden tener numeros 
-                    rx.setPattern("(AccountId=)([a-z|A-Z|0-9]+@[a-z|A-Z|0-9]+.[a-z|A-Z]+)");  
+                    //account
+                    rx.setPattern("(^AccountId=)([a-z|A-Z|0-9]+@[a-z|A-Z|0-9]+.[a-z|A-Z]+)");
                     pos = rx.indexIn(line,0);
                     if (pos > -1){
                             accounts << rx.cap(2);
+                            tmp.clear();
+                            tmp.append("Account:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
                     }
+                    //Plain text
+                    rx.setPattern("(^AllowPlainTextPassword=)([a-z|A-Z]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("PlainTextPassword:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+                    //port (jabber)
+                    rx.setPattern("(^Port=)([0-9]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("Port:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+                    //protocol
+                    rx.setPattern("(^Protocol=)([a-z|A-Z]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("Protocol:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+                    //server (jabber)
+                    rx.setPattern("(^Server=)([a-z|A-Z|0-9|.]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("Server:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+                    //ssl-tls
+                    rx.setPattern("(^UseSSL=)([a-z|A-Z]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("SSL:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+                    //MFN  FIXME: posibilidad de caracteres raros
+                    rx.setPattern("(^MFN=)([a-z|A-Z|0-9]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("MFN:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+                    //serverName (MSN)
+                    rx.setPattern("(^serverName=)([a-z|A-Z|0-9|.]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("Server:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+                    //serverPort (MSN)
+                    rx.setPattern("(^serverPort=)([0-9]+)");  
+                    pos = rx.indexIn(line,0);
+                    if (pos > -1){
+                            tmp.clear();
+                            tmp.append("Port:");
+                            tmp.append(rx.cap(2));
+                            protocols << tmp;
+                            return;
+                    }
+
                 }
             }
 
