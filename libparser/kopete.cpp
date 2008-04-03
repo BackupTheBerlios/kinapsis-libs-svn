@@ -227,5 +227,4 @@ using namespace std;
 
                 }
             }
-
 // fin kopete.cpp
