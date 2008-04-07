@@ -60,7 +60,7 @@ void ParserNS::parseVer () {
 		QString s = rx.cap(1);
 		m_buf.remove(0,s.size());
 		CVR c(m_client->nextIdtr());
-		c.addLocaleId ("0x0409");
+		c.addLocaleId ("0x0c0a");
         	c.addOs ("winnt", "5.1");
         	c.addArch ("i386");
         	c.addClient ("MSNMSGR", "8.1.0178");

@@ -57,9 +57,12 @@ public:
 	//int get() {return m_;}
 
 	QByteArray makeCmd();
+	QByteArray makeBId();
+	QByteArray makeAck();
+	QByteArray make200ok();
+	QByteArray makeDecline();
 	void parse (QByteArray);
 private:
-	
 	// BINARY HEADER
 	QByteArray m_bh_sessionID;	
 	QByteArray m_bh_identifier;	

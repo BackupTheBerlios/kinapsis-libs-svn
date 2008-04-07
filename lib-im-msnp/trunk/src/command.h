@@ -25,6 +25,7 @@ public:
 	QString beginCmd() {return m_cmdName + QString((hasTransaction()) ? QString(" %1").arg(m_trid):"");};
 	bool hasTransaction () {return (m_trid)?true:false;};
 	bool addTrid (int trid) {m_trid = trid;};
+	int getTrid() {return m_trid;}
 	QString endCmd () {return m_endCmd;};
 
 private:

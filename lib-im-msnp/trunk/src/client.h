@@ -102,7 +102,7 @@ public slots:
 	void chatIsTyping(int chatId, QString chatMsnPassport);
 	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
 
-        void incomingFileTransfer (P2P* msg, int chatId);
+        void incomingFileTransfer (P2P msg, int chatId);
        	void fileTransferProgress(int ftId,int received, int total);
        	void fileTransferFinished(int ftId);
 	

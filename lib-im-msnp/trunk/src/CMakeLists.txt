@@ -24,6 +24,7 @@ SET(LibImMsnP_SRCS
 	chatlistener.cpp
 	cmdp2p.cpp
 	msnobj.cpp
+	transfer.cpp
 )
 
 SET(LibImMsnP_HDRS
@@ -47,6 +48,7 @@ SET(LibImMsnP_HDRS
 	chatlistener.h
 	cmdp2p.h
 	msnobj.h
+	transfer.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

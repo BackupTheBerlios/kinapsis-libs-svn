@@ -21,6 +21,7 @@
 #include "command.h"
 #include "cmdswichboardserver.h"
 #include "cmdp2p.h"
+#include "transfer.h"
 #include <qobject.h>
 #include <qthread.h>
 
@@ -45,7 +46,7 @@ public:
 	void parseIro();
 	void parseAns();
 
-	void acceptFileTransfer (P2P*, QByteArray);
+	void acceptFileTransfer (P2P, QByteArray);
 
 	void parseMsg();
 	void parseUsr();
@@ -67,7 +68,7 @@ signals:
        void chatLeavedTheRoom(int, QString);
        void newChat (int, QString);
 
-       void incomingFileTransfer (P2P* , int);
+       void incomingFileTransfer (P2P , int);
        void fileTransferProgress(int ,int, int);
        void fileTransferFinished(int);
 
@@ -85,8 +86,12 @@ private:
 	typedef QMap<int, QByteArray> P2PMap;
 	P2PMap m_p2pList;
 
+	typedef QMap<int, Transfer> TransferMap;
+	TransferMap m_FTList;
+
 	QByteArray m_buf;
 
+	P2P m_p2p;
 	bool m_isParsing;
 	bool m_hasCommand;
 
