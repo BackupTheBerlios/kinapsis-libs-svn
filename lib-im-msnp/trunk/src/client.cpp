@@ -71,6 +71,19 @@ namespace libimmsnp {
 		XFR x(nextIdtr());
 		send (x);
 	}
+
+	void Client::getEmoticon(QString destPassport){
+		
+	}
+		
+	void Client::sendIsTyping(int chatId){
+		if (m_chatList[chatId]){
+			MSG msg = MSG();
+			msg.addClientName(m_msnPassport);
+			msg.addType(MSG_ISTYPING);
+			sendChat (chatId, msg);
+		}
+	}
                 
 	void Client::disconnect(){
 		OUT out;

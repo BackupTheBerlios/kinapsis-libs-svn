@@ -56,6 +56,11 @@ QByteArray MSG::makeCmd(){
 			res.append(beginCmd() + " U " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
 			return res;
 			break;
+		case MSG_ISTYPING:
+			msg = "MIME-Version: 1.0\r\nContent-Type: text/x-msmsgscontrol\r\nTypingUser: " + m_clientName + "\r\n\r\n";
+			res.append(beginCmd() + " U " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
+			return res;
+			break;
 		default:
 			break;
 		}

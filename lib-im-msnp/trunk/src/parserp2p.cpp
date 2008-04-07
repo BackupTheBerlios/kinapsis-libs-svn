@@ -44,11 +44,11 @@ int  ParserP2P::getBHAckDataSize 	() {return byte2int(m_bh_ackDataSize 	);}
 
 bool ParserP2P::isFinished() {
 	bool st = (byte2int(m_bh_dataOffset) + byte2int(m_bh_messageLength)) == byte2int(m_bh_totalDataSize);
-	qDebug() << byte2int(m_bh_dataOffset) << "+" << byte2int(m_bh_messageLength) << byte2int(m_bh_totalDataSize) << st;
 	return st;
 }
 
 void ParserP2P::parse(QByteArray data){
+	qDebug() << "\n\n NEW DATA \n\n";
 	QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
 	//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
 	// SessionID[4]	Identifier[4]	Data offset[8] 		Total data size[8]	Message length[4]	Flag [4]       	identifier[4]	unique ID[4]    	data size[8]
@@ -63,7 +63,7 @@ void ParserP2P::parse(QByteArray data){
 	m_bh_ackIdentifier 	= binaryHeader.mid(32,4);	
 	m_bh_ackDataSize	= binaryHeader.mid(36,8);	
 
-//	qDebug () << "#&&# PARSER P2P:  SLP BIN:" << m_bh_sessionID.toHex() << m_bh_identifier.toHex() << m_bh_dataOffset.toHex() << m_bh_totalDataSize.toHex() << m_bh_flag.toHex() << m_bh_messageLength.toHex() << m_bh_ackUniqueID.toHex() << m_bh_ackIdentifier.toHex() << m_bh_ackDataSize.toHex();
+	qDebug () << "#&&# PARSER P2P:  SLP BIN:" << m_bh_sessionID.toHex() << m_bh_identifier.toHex() << m_bh_dataOffset.toHex() << m_bh_totalDataSize.toHex() << m_bh_flag.toHex() << m_bh_messageLength.toHex() << m_bh_ackUniqueID.toHex() << m_bh_ackIdentifier.toHex() << m_bh_ackDataSize.toHex();
 
 	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 	int dataLen = invitation.size() - 4;
@@ -99,7 +99,7 @@ void ParserP2P::parse(QByteArray data){
 	if (fx.indexIn(invitation) != -1)
 		m_ContentLength = QByteArray(fx.cap(1).toUtf8().data());
 
-//	qDebug() << "#&&# PARSER P2P:  SLP DTA" << QByteArray(invitation).replace("\n","\\n").replace("\r","\\r");
+	qDebug() << "#&&# PARSER P2P:  SLP DTA" << QByteArray(invitation).replace("\n","\\n").replace("\r","\\r");
 	//if (m_data.size() == 0) {
 	//	qDebug() << "\n\n## RECIBO ACK " << m_data.size() <<"\n";
 	//	m_step = P2P_ACK;

@@ -55,6 +55,7 @@ namespace libimmsnp {
 	enum MsgType {
 		MSG_TXT,
 		MSG_IDENTIFICATION,
+		MSG_ISTYPING,
 		MSG_P2P
 	};
 	enum P2pStep {

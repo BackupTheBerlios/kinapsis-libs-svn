@@ -46,12 +46,7 @@ public:
 
 	QByteArray make();
 
-	QByteArray makeCmd();
-	QByteArray makeBId();
-	QByteArray makeAck();
-	QByteArray make200ok();
-	QByteArray makeNeg200ok();
-	QByteArray makeDecline();
+	QByteArray makeCmd(){return QByteArray("");}
 private:
 	// BINARY HEADER
 	QByteArray m_bh_sessionID;	

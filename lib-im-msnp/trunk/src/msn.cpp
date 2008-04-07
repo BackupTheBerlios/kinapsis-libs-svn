@@ -61,7 +61,8 @@ void MsnTest::presenceChanged (Contact* c){
 	switch (c->getStatus()){
 		case STATUS_NLN:
 			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Online", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data());
-			m_client->initChat(c->getPassport());
+			m_client->getEmoticon(c->getPassport());
+			//m_client->initChat(c->getPassport());
 			break;
 		case STATUS_BSY:
 			printf("#CLIENT # State Changed. User:%s State:%s Capabilies:%s Personal MSG:%s\n",c->getPassport().toUtf8().data(),"Do Not Disturb", c->getCapabilities().toUtf8().data(), c->getDisplayName().toUtf8().data()); 
@@ -117,6 +118,9 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMs
 		m.addEffect(EFFECT_BOLD);
 		m.addEffect(EFFECT_UNDERLINE);
 		m_client->sendChat(chatId, m);
+	}
+	if (chatMsg.getMsg() == "type") {
+		m_client->sendIsTyping(chatId);
 	}
 	if (chatMsg.getMsg() == "exit") m_client->disconnect();
 	if (chatMsg.getMsg() == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);

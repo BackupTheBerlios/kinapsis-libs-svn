@@ -48,8 +48,10 @@ Q_OBJECT
 public:
 	Client(QString msnPassport, QString msnPass, State initialStatus);
 	void connect ();
+	void sendIsTyping(int chatId);
 	void disconnect();
 	void initChat(QString);
+	void getEmoticon(QString);
 	int nextIdtr();
 	int nextChatCount();
 	QString nextChatPassport();

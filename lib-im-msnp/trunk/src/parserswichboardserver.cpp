@@ -244,13 +244,15 @@ void ParserSB::parseMsg () {
 					ParserP2P p = ParserP2P();
 					p.parse(data);
 
-					if (p.step() == P2P_ACK) {
-						if (m_FTList.contains(p.getBHid()-1)) {
-							m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
-							qDebug() << "\nActualizo en ACK" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
-						}
-						return ;
-					}
+					//if (p.step() == P2P_ACK) {
+					//	if (m_FTList.contains(p.getBHid()-1)) {
+					//		m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
+					//		qDebug() << "\nActualizo en ACK" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+					//	}
+					//	else qDebug() << "NO RECORRIDO 1";
+					//	return ;
+					//}
+					//	else qDebug() << "NO RECORRIDO 2";
 
 					if (! m_FTList.contains(p.getBHid())) {
 						if (m_FTList.contains(p.getBHid()-1)) {
@@ -285,6 +287,7 @@ void ParserSB::parseMsg () {
 
 									qDebug() << "INVITACION No finalizada" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
 								}
+								else qDebug() << "NO RECORRIDO 3";
 								break;
 							
 							case P2P_NEGOTIATION:
@@ -332,8 +335,6 @@ void ParserSB::parseMsg () {
 								if (p.isFinished()){
 									qDebug() << "INVITACION finalizada";
 									qRegisterMetaType<Transfer*>("Transfer");
-									printf("La direccion en SB es %X\n" , m_FTList[p.getBHid()]);
-
 									m_FTList[p.getBHid()]->setBHIdentifier	 (p.getBHid());
 									m_FTList[p.getBHid()]->setBHAckIdentifier(p.getBHAckIdentifier());
 									m_FTList[p.getBHid()]->setBHTotalDataSize(p.getBHTotalDataSize());
@@ -341,6 +342,7 @@ void ParserSB::parseMsg () {
 									emit incomingFileTransfer (m_FTList[p.getBHid()], m_chatId);
 									t->setStep(P2P_NEGOTIATION);
 								}
+								else qDebug() << "NO RECORRIDO 4";
 								break;
 
 							case P2P_NEGOTIATION:
