@@ -28,7 +28,6 @@ ParserSB::ParserSB (QString address, int port, int chatId, QString msnPassport, 
 	m_hasCommand = false;
 	m_isParsing = false;
 	m_endChat = false;
-	m_p2p = P2P(1);
 }
 
 void ParserSB::run(){
@@ -103,18 +102,35 @@ void ParserSB::parseAns(){
 	}
 	else m_hasCommand = false;
 }
-void ParserSB::acceptFileTransfer (P2P msg, QByteArray path) {
-	m_FTList[msg.getBHid()].setDestination(path);
-	//m_p2pList[msg->getBHid()] = path;
-	//qDebug() << "@############# Tansferencia Aceptada en:" << m_p2pList[msg->getBHid()] << " con id " << msg->getBHid();
-	qDebug() << "@############# Transferencia Aceptada en:" << m_FTList[msg.getBHid()].getDestination() << " con id " << msg.getBHid();
-	if (!msg.makeCmd().isNull()) {
-		//qDebug() << "ENVIO: 200 OK :" << msg.makeCmd().toHex();
-		m_socket->send(msg.makeBId());
-		//m_socket->send(msg.makeDecline());
-		m_socket->send(msg.make200ok());
+void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
+	//m_FTList[msg.getBHid()].setDestination(path);
+	qDebug() << "@############# Transferencia Aceptada en:" << path;
+	P2P bid = P2P(nextIdtr());	
+	bid.setCmd(P2PC_INITID);
+	bid.setBHIdentifier	(QByteArray::fromHex("32f99c10"));
+	bid.setBHTotalDataSize	(msg->getBHTotalDataSize());
+	bid.setBHFlag		(QByteArray::fromHex("02 00 00 00"));
+	bid.setBHAckUniqueID	(msg->getBHIdentifier());
+	bid.setBHAckIdentifier	(msg->getBHAckIdentifier());
+	bid.setBHAckDataSize	(msg->getBHTotalDataSize());
+	//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
+	m_socket->send(bid.make());
 
-	}
+	P2P ok200 = P2P(nextIdtr());	
+	ok200.setStep (P2P_INVITATION);
+	ok200.setCmd(P2PC_200OK);
+	ok200.setFrom			(msg->getTo());
+	ok200.setTo			(msg->getFrom());
+	ok200.setBranch			(msg->getBranch());
+	ok200.setCallId			(msg->getCallId());
+	ok200.setp2pSessionId		(msg->getp2pSessionId());
+	
+	ok200.setBHIdentifier		(QByteArray::fromHex("33f99c10"));
+	ok200.setBHAckUniqueID		(QByteArray::fromHex("63 72 ed 0d"));
+
+	//qDebug() << "ENVIO: 200 OK" << ok200.make().toHex();
+
+	m_socket->send(ok200.make());
 }
 
 void ParserSB::parseMsg () {
@@ -225,73 +241,166 @@ void ParserSB::parseMsg () {
 			if (msgType == QString("application/x-msnmsgrp2p")){
 				rx.setPattern("\r\nP2P-Dest: (\\S+)\r\n\r\n");
 				if (rx.indexIn(data) != -1){
-					m_p2p.parse(data);
-					//if (msg->getStatus()){
-					//	qDebug() << "##  FILETRANSFER STEP 2 \n\n\n\n" << msg->getBHid();
-					//	m_socket->send(msg->makeCmd());
-					//}
-					//if (msg->getBHsessionID()){
-					//	qDebug() << "# RECIBIENDO " << msg->getBHid() << msg->getBHdataOffset() << (msg->getBHdataOffset() + msg->getBHmessageLength()) << msg->getBHtotalDataSize() << "FIN";
-					//		QFile * fd =  new QFile(m_p2pList[msg->getBHid()]);
-					//		if (fd->open(QIODevice::Append)){
-					//			qDebug() << "ESCRIBIENDO" << msg->getBHid();
-					//			fd->write(msg->getData());
-					//			fd->close();
-					//		}	
-					//	emit fileTransferProgress(msg->getBHid(), (msg->getBHdataOffset() + msg->getBHmessageLength()), msg->getBHtotalDataSize());
-					//	if ((msg->getBHdataOffset() + msg->getBHmessageLength())== msg->getBHtotalDataSize()) {
-					//		emit fileTransferFinished(msg->getBHid()); 
-	
-					//	}
-					//}
-					if (m_p2p.getBHtotalDataSize() != (m_p2p.getBHdataOffset() + m_p2p.getBHmessageLength())){
-						qDebug() << "\nMensaje incompleto " << m_p2p.getBHid() << "\n";
-						if (m_FTList.contains(m_p2p.getBHid())){
-							m_FTList[m_p2p.getBHid()].addData(m_p2p.getData());
+					ParserP2P p = ParserP2P();
+					p.parse(data);
+
+					if (p.step() == P2P_ACK) {
+						if (m_FTList.contains(p.getBHid()-1)) {
+							m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
+							qDebug() << "\nActualizo en ACK" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+						}
+						return ;
+					}
+
+					if (! m_FTList.contains(p.getBHid())) {
+						if (m_FTList.contains(p.getBHid()-1)) {
+							m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
+							qDebug() << "\nActualizo" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
 						}
 						else {
-							Transfer t = Transfer();
-							t.setP2P(m_p2p);
-							t.addData(m_p2p.getData());
-							m_FTList[m_p2p.getBHid()] = t;
+							qDebug() << "NO LO Contiene" << p.getBHid();
+							Transfer* t = new Transfer();
+							t->setStep(p.step());
+							t->addData(p.getData());
+							if (p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){ 
+								qDebug() << "## FILETRANSFER\n";
+							}
+							if (p.getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
+								qDebug() << "##  EMOTICONO\n";
+							}
+							if (p.getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
+								qDebug() << "##  WEBCAM\n";
+							}
+							m_FTList[p.getBHid()] = t;
 						}
-						return;
+						switch (p.step()){
+							case P2P_INVITATION:
+								if (!p.isFinished()){
+									m_FTList[p.getBHid()]->setFileName(p.getFileName());
+									m_FTList[p.getBHid()]->setTo	   	(p.getTo	      	()); 
+									m_FTList[p.getBHid()]->setFrom	    	(p.getFrom	      	());
+									m_FTList[p.getBHid()]->setBranch	(p.getBranch      	());    
+									m_FTList[p.getBHid()]->setCallId	(p.getCallId      	());	    
+									m_FTList[p.getBHid()]->setp2pSessionId  (p.getp2pSessionId	());  
+
+									qDebug() << "INVITACION No finalizada" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+								}
+								break;
+							
+							case P2P_NEGOTIATION:
+								if (!p.isFinished()){
+									qDebug() << "INICIO NEGOCIACIONES NO finalizada";
+								}
+								else { 
+									qDebug() << "INICIO NEGOCIACIONES finalizada";
+									P2P ack = P2P(nextIdtr());	
+									ack.setCmd(P2PC_INITID);
+									ack.setBHIdentifier	(QByteArray::fromHex("32f99c10"));
+									ack.setBHTotalDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
+									ack.setBHFlag		(QByteArray::fromHex("02 00 00 00"));
+									ack.setBHAckUniqueID	(m_FTList[p.getBHid()]->getBHIdentifier());
+									ack.setBHAckIdentifier	(m_FTList[p.getBHid()]->getBHAckIdentifier());
+									ack.setBHAckDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
+									//qDebug() << "ENVIO: ACK" << ack.make().toHex();
+									m_socket->send(ack.make());
+
+									P2P neg = P2P(nextIdtr());	
+									neg.setCmd(P2PC_200OK);
+									neg.setStep(P2P_NEGOTIATION);
+									neg.setFrom			(m_FTList[p.getBHid()]->getTo());
+									neg.setTo			(m_FTList[p.getBHid()]->getFrom());
+									neg.setBranch			(m_FTList[p.getBHid()]->getBranch());
+									neg.setCallId			(m_FTList[p.getBHid()]->getCallId());
+									neg.setp2pSessionId		(m_FTList[p.getBHid()]->getp2pSessionId());
+									
+									neg.setBHIdentifier		(QByteArray::fromHex("34f99c10"));
+									neg.setBHAckUniqueID		(QByteArray::fromHex("63 72 ed 0d"));
+									//qDebug() << "ENVIO: 200 OK NEGOTIATION" << neg.make().toHex();
+									m_socket->send(neg.make());
+									m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
+								}
+								break;
+							default:
+								break;
+						}
 					}
 					else {
-						qDebug() << "\nMensaje completo " << m_p2p.getBHid();
-						//qDebug() << "ENVIO: ACK :" << m_p2p.makeAck().toHex();
-						//m_socket->send(m_p2p.makeAck());
-						if (m_FTList.contains(m_p2p.getBHid())){
-							m_FTList[m_p2p.getBHid()].addData(m_p2p.getData());
-							if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){
-								qDebug() << m_FTList[m_p2p.getBHid()].getData();
-								qDebug("##  FILETRANSFER STEP 1 \n\n\n\n");
-								qRegisterMetaType<P2P>("P2P");
-								emit incomingFileTransfer (m_FTList[m_p2p.getBHid()].getP2P(), m_chatId);
-							}
-							
-						}
-							
-					}
-						
-					return;
-						
-					
-					if (m_p2p.getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
-						qDebug("##  EMOTICONO");
-					}
-					if (m_p2p.getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
-						qDebug("##  WEBCAM");
-					}
-					if (m_p2p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){
-						qDebug("##  FILETRANSFER STEP 1 \n\n\n\n");
-						qRegisterMetaType<P2P>("P2P");
-						//emit incomingFileTransfer (m_p2p, m_chatId);
+						qDebug() << "LO Contiene";
+						Transfer* t = m_FTList[p.getBHid()];
+						switch (t->getStep()){
+							case P2P_INVITATION:
+								if (p.isFinished()){
+									qDebug() << "INVITACION finalizada";
+									qRegisterMetaType<Transfer*>("Transfer");
+									printf("La direccion en SB es %X\n" , m_FTList[p.getBHid()]);
 
-						//MSG 242 D 496\r\nMIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: darth_leviathan@hotmail.com\r\n\r\n
-						//res = SessionID + (anteriorRandom++) + Data offset+ Total data size 8B +  Total data size 4B  + 00 00 00 00 + Identifier + random + 00 00 00 00 00 00 00 00
-						//response = sessionID + QByteArray::fromHex("3B 99 4F 02") + dataOffset + totalDataSize + msgLen + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("69 44 1e 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");
+									m_FTList[p.getBHid()]->setBHIdentifier	 (p.getBHid());
+									m_FTList[p.getBHid()]->setBHAckIdentifier(p.getBHAckIdentifier());
+									m_FTList[p.getBHid()]->setBHTotalDataSize(p.getBHTotalDataSize());
+
+									emit incomingFileTransfer (m_FTList[p.getBHid()], m_chatId);
+									t->setStep(P2P_NEGOTIATION);
+								}
+								break;
+
+							case P2P_NEGOTIATION:
+								qDebug() << "INICIO NEGOCIACIONES finalizada";
+								break;
+									
+							case P2P_TRANSFER:
+								qDebug() << "Recibido" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize(); 
+								if (p.isFinished()){
+									qDebug() << "Finalizado" << p.getBHid();
+								}
+								break;
+							default:
+								break;
+						}
+						
 					}
+					//if (m_p2p.getBHtotalDataSize() != (m_p2p.getBHdataOffset() + m_p2p.getBHmessageLength())){
+					//	qDebug() << "\nMensaje incompleto " << m_p2p.getBHid() << "\n";
+					//	if (m_FTList.contains(m_p2p.getBHid())){
+					//		m_FTList[m_p2p.getBHid()].addData(m_p2p.getData());
+					//	}
+					//	else {
+					//		Transfer t = Transfer();
+					//		t.setP2P(m_p2p);
+					//		t.addData(m_p2p.getData());
+					//		m_FTList[m_p2p.getBHid()] = t;
+					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
+					//			qDebug("##  EMOTICONO");
+					//			return;
+					//		}
+					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
+					//			qDebug("##  WEBCAM");
+					//			return;
+					//		}
+					//	}
+					//	return;
+					//}
+					//else {
+					//	qDebug() << "\nMensaje completo " << m_p2p.getBHid();
+					//	if (m_FTList.contains(m_p2p.getBHid())){
+					//		m_FTList[m_p2p.getBHid()].addData(m_p2p.getData());
+					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){
+					//			qDebug() << m_FTList[m_p2p.getBHid()].getData();
+					//			qDebug("##  FILETRANSFER STEP 1 \n\n\n\n");
+					//			qRegisterMetaType<P2P>("P2P");
+					//			emit incomingFileTransfer (m_FTList[m_p2p.getBHid()].getP2P(), m_chatId);
+					//			return;
+					//		}
+					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
+					//			qDebug("##  EMOTICONO");
+					//			return;
+					//		}
+					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
+					//			qDebug("##  WEBCAM");
+					//			return;
+					//		}
+					//	}
+					//}
+					
 				}
 			}
 		}

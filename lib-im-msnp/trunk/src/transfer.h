@@ -11,40 +11,90 @@
   This software is distributed without any warranty.
 */
 
-#ifndef _Transfer_H_
-#define _Transfer_H_
-#include "cmdp2p.h"
+#ifndef _TRANSFER_H_
+#define _TRANSFER_H_
+
 #include "libimmsnp.h"
+#include <QObject>
 namespace libimmsnp {
-class Transfer {
+
+class Transfer : public  QObject{
+
+Q_OBJECT
 
 public:
 	Transfer ();
 	virtual ~Transfer();
 
-	void setId (int id) {m_id = id;}
+	void setBHSessionID 	 (int sessionID		);
+	void setBHIdentifier 	 (int identifier 	);
+	void setBHDataOffset 	 (int dataOffset 	);
+	void setBHTotalDataSize	 (int totalDataSize 	);
+	void setBHFlag 		 (int flag 		);
+	void setBHMessageLength	 (int messageLength 	);
+	void setBHAckUniqueID 	 (int ackUniqueID 	);
+	void setBHAckIdentifier	 (int ackIdentifier	);
+	void setBHAckDataSize 	 (int ackDataSize 	);
+
+	QByteArray getBHIdentifier  () {return m_bh_identifier;}
+	QByteArray getBHTotalDataSize  () {return m_bh_totalDataSize;}
+	QByteArray getBHAckIdentifier  () {return m_bh_ackIdentifier;}
+
+	void setTo	  	(QByteArray to		) {m_to		 = to		;}
+	void setFrom	  	(QByteArray from	) {m_from	 = from		;}
+	void setBranch	  	(QByteArray branch	) {m_branch	 = branch	;}
+	void setCallId	  	(QByteArray callId	) {m_callId	 = callId	;}
+	void setp2pSessionId	(QByteArray p2pSessionId) {m_p2pSessionId= p2pSessionId	;}
+
+	QByteArray getTo		(){return m_to		;}	
+	QByteArray getFrom		(){return m_from	;}	
+	QByteArray getBranch		(){return m_branch	;}	
+	QByteArray getCallId		(){return m_callId	;}	
+	QByteArray getp2pSessionId	(){return m_p2pSessionId;}
+
+
+
+	void setFileName (QByteArray fn) {m_filename = fn;}
 	void setType (QByteArray type) {m_type = type;}
-	void setStep (int step) {m_step = step;}
-	void setP2P (P2P p2p) {m_ftObj = p2p;}
+	void setStep (P2pStep step) {m_step = step;}
 	void setDestination(QByteArray dest){m_destination = dest;}
 	void addData(QByteArray data){m_data += data;}
 	
-	int getId() {return m_id;}
+	QByteArray getFileName() {return m_filename;}
 	QByteArray getType(){return m_type;}
-	int getStep(){return m_step;}
+	P2pStep getStep(){return m_step;}
 	QByteArray getDestination(){return m_destination;}
-	P2P getP2P (){return m_ftObj;}
 	QByteArray getData(){return m_data;}
 
 private:
-	int m_id;
+	QByteArray m_filename;
 	QByteArray m_type;
-	int m_step;
+	P2pStep m_step;
 	QByteArray m_destination;
-	P2P m_ftObj;	
 	QByteArray m_data;
+
+	// BINARY HEADER
+	QByteArray m_bh_sessionID;	
+	QByteArray m_bh_identifier;	
+	QByteArray m_bh_dataOffset;
+	QByteArray m_bh_totalDataSize;
+	QByteArray m_bh_flag;		
+	QByteArray m_bh_messageLength;
+	QByteArray m_bh_ackUniqueID;	
+	QByteArray m_bh_ackIdentifier; 
+	QByteArray m_bh_ackDataSize;	
+
+	// MSG HEADER
+	QByteArray m_to;
+	QByteArray m_from;
+	QByteArray m_branch; 
+	QByteArray m_callId;
+
+	// INVITATION
+	QByteArray m_EUF_GUID;
+	QByteArray m_p2pSessionId;
 };
 
 }
-#endif //_Transfer_H_
+#endif //_TRANSFER_H_
 

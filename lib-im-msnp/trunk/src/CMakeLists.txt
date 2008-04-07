@@ -3,7 +3,8 @@
 #   set(QT_USE_OPENGL TRUE)
 # -> this will cause cmake to include and link against the OpenGL module
 INCLUDE(${QT_USE_FILE})
-
+SET(CMAKE_BUILD_TYPE          "Debug")
+SET(CMAKE_VERBOSE_MAKEFILE      ON)
 # the variable "LibImMsnP_SRCS" contains all .cpp files of this project
 SET(LibImMsnP_SRCS
 	client.cpp
@@ -25,6 +26,7 @@ SET(LibImMsnP_SRCS
 	cmdp2p.cpp
 	msnobj.cpp
 	transfer.cpp
+	parserp2p.cpp
 )
 
 SET(LibImMsnP_HDRS
@@ -49,6 +51,7 @@ SET(LibImMsnP_HDRS
 	cmdp2p.h
 	msnobj.h
 	transfer.h
+	parserp2p.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

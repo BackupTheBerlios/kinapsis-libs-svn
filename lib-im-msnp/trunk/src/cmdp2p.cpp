@@ -17,15 +17,16 @@
 #include <QTextCodec>
 #include "cmdp2p.h"
 namespace libimmsnp {
-P2P::P2P ():Command ("MSG", 0, "")  {
-	m_accepted = 0;
-	m_status = 0;
-	m_CsEq = 0;
-	}
 P2P::P2P (int idtr):Command ("MSG", idtr, "")  {
-	m_accepted = 0;
-	m_status = 0;
-	m_CsEq = 0;
+	m_bh_sessionID 		= QByteArray::fromHex("00 00 00 00");	
+	m_bh_identifier 	= QByteArray::fromHex("00 00 00 00");	
+	m_bh_dataOffset 	= QByteArray::fromHex("00000000 00000000");
+	m_bh_totalDataSize 	= QByteArray::fromHex("00000000 00000000");
+	m_bh_flag 		= QByteArray::fromHex("00 00 00 00");		
+	m_bh_messageLength 	= QByteArray::fromHex("00 00 00 00");
+	m_bh_ackUniqueID 	= QByteArray::fromHex("00 00 00 00");	
+	m_bh_ackIdentifier	= QByteArray::fromHex("00 00 00 00"); 
+	m_bh_ackDataSize 	= QByteArray::fromHex("00000000 00000000");	
 	}
 P2P::~P2P() {}
 
@@ -67,212 +68,52 @@ QByteArray int2qbyte (int num, int len){
 	return QByteArray::fromHex(tmp3.data());
 }
 
-int P2P::getBHsessionID() 	{return qbyte2int(m_bh_sessionID);}
-int P2P::getBHid() 		{return qbyte2int(m_bh_identifier);}
-int P2P::getBHdataOffset() 	{return qbyte2int(m_bh_dataOffset);}
-int P2P::getBHtotalDataSize() 	{return qbyte2int(m_bh_totalDataSize);}
-int P2P::getBHflag() 		{return qbyte2int(m_bh_flag);}
-int P2P::getBHmessageLength() 	{return qbyte2int(m_bh_messageLength);}
-int P2P::getBHackUniqueID() 	{return qbyte2int(m_bh_ackUniqueID);}
-int P2P::getBHackIdentifier() 	{return qbyte2int(m_bh_ackIdentifier);}
-int P2P::getBHackDataSize() 	{return qbyte2int(m_bh_ackDataSize);}
-
-
-int P2P::getP2pSessionId() 	{return qbyte2int(m_p2pSessionId);}
-
 QByteArray increase(QByteArray num){
 	int data = qbyte2int (num);
 	data++;
 	return int2qbyte(data, 8);
 }
-void P2P::parse(QByteArray data){
-	qDebug() << "##### PARSING";
-	QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
-	//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
-	// SessionID[4]	Identifier[4]	Data offset[8] 		Total data size[8]	Message length[4]	Flag [4]       	identifier[4]	unique ID[4]    	data size[8]
-	// 00 00 00 00 	51 67 07 00	00 00 00 00 00 00 00 00 2a 02 00 00 00 00 00 00 2a 02 00 00 		00 00 00 00   	dd 30 48 00  	00 00 00 00    	00 00 00 00 00 00 00 00
-	m_bh_sessionID	 	= binaryHeader.mid(0,4);	
-	m_bh_identifier	 	= binaryHeader.mid(4,4);	
-	m_bh_dataOffset	 	= binaryHeader.mid(8,8);	
-	m_bh_totalDataSize  	= binaryHeader.mid(16,8);	
-	m_bh_flag		= binaryHeader.mid(20,4);	
-	m_bh_messageLength  	= binaryHeader.mid(24,4);	
-	m_bh_ackUniqueID	= binaryHeader.mid(28,4);	
-	m_bh_ackIdentifier 	= binaryHeader.mid(32,4);	
-	m_bh_ackDataSize	= binaryHeader.mid(36,8);	
 
-	//qDebug() << "### SLP BIN DATA" << binaryHeader.toHex();
-	qDebug () << "### SLP BIN: sid"<< getBHsessionID() << "Id" << getBHid() << "dataOffset" << getBHdataOffset() << "totalDataSize" << getBHtotalDataSize() << "messageLength" << getBHmessageLength() << "flag" << getBHflag() << "ackIdentifier" << getBHackIdentifier() << "ackUniqueID" << getBHackUniqueID() << "ackDataSize" << getBHackDataSize();
+QByteArray P2P::make(){
+	QByteArray binaryHeader, res, data, msnslpData;
+	if (m_cmd == P2PC_200OK){
+		msnslpData.append("MSNSLP/1.0 200 OK\r\n");
+		msnslpData.append("To: <msnmsgr:" + m_from + ">\r\n");
+		msnslpData.append("From: <msnmsgr:"+ m_to + ">\r\n");
+		msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
+		msnslpData.append("CSeq: 1 \r\n");
+		msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
+		msnslpData.append("Max-Forwards: 0\r\n");
+		if (m_step == P2P_INVITATION) {
+			msnslpData.append("Content-Type: application/x-msnmsgr-sessionreqbody\r\n");
+			msnslpData.append("Content-Length: " + QByteArray::number(m_p2pSessionId.size() + 16 )+ "\r\n\r\n");
+			msnslpData.append("SessionID: " + m_p2pSessionId + "\r\n\r\n");
+		}
 
-	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
-	int dataLen = invitation.size() - 4;
-	m_data = invitation.mid(0,dataLen);
+		else if (m_step = P2P_NEGOTIATION) {
+			msnslpData.append("Content-Type: application/x-msnmsgr-transrespbody\r\n");
+			msnslpData.append("Content-Length: 83\r\n\r\n");
+			msnslpData.append("Bridge: TCPv1\r\n" );
+			msnslpData.append("Listening: false\r\n" );
+			msnslpData.append("Nonce: {00000000-0000-0000-0000-000000000000}\r\n\r\n" );
+		}
 
-	//INVITE MSNMSGR:probando_msnpy@hotmail.com MSNSLP/1.0\r\nTo: <msnmsgr:probando_msnpy@hotmail.com>\r\nFrom: <msnmsgr:vaticano666@hotmail.com>\r\nVia: MSNSLP/1.0/TLP ;branch={39844FA1-2352-F681-92ED-5180CBD34F21}\r\nCSeq: 0\r\nCall-ID: {D4F03DF4-E61A-5A2E-2588-ACEE1BA9706A}\r\nMax-Forwards: 0\r\nContent-Type: application/x-msnmsgr-sessionreqbody\r\nContent-Length: 199\r\n\r\nEUF-GUID: {4BD96FC0-AB17-4425-A14A-439185962DC8}\r\nSessionID: 94449907\r\nAppID: 4\r\nContext: ewBCADgAQgBFADcAMABEAEUALQBFADIAQwBBAC0ANAA0ADAAMAAtAEEARQAwADMALQA4ADgARgBGADgANQBCADkARgA0AEUAOAB9AA==\r\n\r\n 00 00 00 00 00
-	qDebug() << "### SLP INV DATA" << QByteArray(invitation).replace("\n","\\n").replace("\r","\\r");
-
-	bool ok;
-	QRegExp fx;
-
-	fx.setPattern("^(\\S+) MSNMSGR");
-	if (fx.indexIn(invitation) != -1)
-		m_p2pType 	= QByteArray(fx.cap(1).toUtf8().data());		
-	fx.setPattern("To: <msnmsgr:(\\S+)>");
-	if (fx.indexIn(invitation) != -1)
-		m_to 		= QByteArray(fx.cap(1).toUtf8().data());
-	fx.setPattern("From: <msnmsgr:(\\S+)>");
-	if (fx.indexIn(invitation) != -1)
-		m_from 		= QByteArray(fx.cap(1).toUtf8().data());
-	fx.setPattern("branch=\\{(\\S+)\\}");
-	if (fx.indexIn(invitation) != -1)
-		m_branch	= QByteArray(fx.cap(1).toUtf8().data());
-	fx.setPattern("CSeq: (\\d+)\r\n");
-	if (fx.indexIn(invitation) != -1)
-		m_CsEq 		= QByteArray(fx.cap(1).toUtf8().data()).toInt();
-	fx.setPattern("Call-ID: \\{(\\S+)\\}\r\n");
-	if (fx.indexIn(invitation) != -1)
-		m_callId	= QByteArray(fx.cap(1).toUtf8().data());
-	fx.setPattern("Max-Forwards: (\\d+)\r\n");
-	if (fx.indexIn(invitation) != -1)
-		m_maxForwards 	= QByteArray(fx.cap(1).toUtf8().data());
-	fx.setPattern("Content-Type: (\\S+)\r\n");
-	if (fx.indexIn(invitation) != -1)
-		m_ContentType 	= QByteArray(fx.cap(1).toUtf8().data());
-	fx.setPattern("Content-Length: (\\d+)\r\n");
-	if (fx.indexIn(invitation) != -1)
-		m_ContentLength = QByteArray(fx.cap(1).toUtf8().data());
-	qDebug() << "### SLP MSG: " << m_p2pType << m_to << m_from << m_branch << m_CsEq << m_callId << m_maxForwards << m_ContentType << m_ContentLength;
-	
-	// INVITATION PHASE
-	if (m_ContentType == "application/x-msnmsgr-sessionreqbody"){
-		fx.setPattern("EUF-GUID: \\{(\\S+)\\}");
-		if (fx.indexIn(invitation) != -1)
-			m_EUF_GUID = QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("SessionID: (\\d+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_p2pSessionId 	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("AppID: (\\d+)\r\n)");
-		if (fx.indexIn(invitation) != -1)
-			m_appId = QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("Context: (\\S+)");
-		if (fx.indexIn(invitation) != -1)
-			m_context 	=  QByteArray::fromHex(QByteArray::fromBase64(QByteArray(fx.cap(1).toUtf8().data())).mid(20).toHex().replace("00",""));
-		qDebug() << "### SLP INV: " << m_EUF_GUID << m_p2pSessionId << m_appId << m_context << m_bh_identifier.mid(1,1).toInt(&ok,16);
+		msnslpData.append(QByteArray::fromHex("00"));
+		m_bh_totalDataSize = int2qbyte(msnslpData.size(), 16);
+		m_bh_messageLength = int2qbyte(msnslpData.size(), 8);
 	}
-	
-	
-	if (m_ContentType == "application/x-msnmsgr-transreqbody"){
-		m_status = 1;
-		// REQUEST PHASE
-		fx.setMinimal(TRUE);
-		fx.setPattern("Bridges?: (.*)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_bridges	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("NetID: (\\S+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_netId		= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("Conn-Type: (\\S+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_connType	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("TCP-Conn-Type: (\\S+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_tcpConnType	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("UPnPNat: (\\S+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_UPnpNat	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("ICF: (\\S+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_Icf		= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("Hashed-Nonce: \\{(\\S+)\\}\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_hashedNonce	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("SessionID: (\\d+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_sessionID	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("SChannelState: (\\d+)\r\n");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_sChannelState	= QByteArray(fx.cap(1).toUtf8().data());
-		fx.setPattern("Capabilities-Flags: (\\d+)\r\n)");
-		if (fx.indexIn(invitation) != -1)
-			m_dc_capabilities	= QByteArray(fx.cap(20).toUtf8().data());
-		qDebug() << "### SLP REQ: " << m_dc_bridges << m_dc_netId << m_dc_connType << m_dc_tcpConnType << m_dc_UPnpNat << m_dc_Icf << m_dc_hashedNonce << m_dc_sChannelState << m_dc_capabilities;
-	}
-	if (m_ContentType == "application/x-msnmsgr-sessionclosebody"){
-		m_closeSession = true;
-		qDebug() << "### SLP BYE: Yes"; 
-	}
-}
 
-QByteArray P2P:: makeAck(){
-	QByteArray res;
-	QByteArray data;
-	QByteArray binaryHeader;
-	QByteArray randomBaseId = QByteArray::fromHex("11 11 11 11");
+	binaryHeader =  m_bh_sessionID + m_bh_identifier + m_bh_dataOffset;
+	binaryHeader += m_bh_totalDataSize + m_bh_messageLength + m_bh_flag;
+	binaryHeader += m_bh_ackIdentifier + m_bh_ackUniqueID + m_bh_ackDataSize;
+
 	data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
-	binaryHeader =  QByteArray::fromHex("00 00 00 00") + randomBaseId + QByteArray::fromHex("00000000 00000000");
-	binaryHeader += m_bh_totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00");
-	binaryHeader += m_bh_identifier + m_bh_ackIdentifier + m_bh_totalDataSize;
-	binaryHeader += QByteArray::fromHex("00 00 00 00");
-
 	data.append(binaryHeader);
-	res = QByteArray("MSG 9 D " + QByteArray::number(data.size()) + "\r\n");
-	res.append(data);
-	return res;
-}
+	data.append(msnslpData);
+	data.append(QByteArray::fromHex("00 00 00 00"));
 
-QByteArray P2P::makeBId(){
-	QByteArray res;
-	QByteArray data;
-	QByteArray binaryHeader;
-	QByteArray msnslpData;
-	// ACK for invite 
-	QByteArray myId = QByteArray::fromHex("79700100");
-	data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
-	binaryHeader = QByteArray::fromHex("00 00 00 00") + myId + QByteArray::fromHex("00000000 00000000");
-	binaryHeader += m_bh_totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00");
-	binaryHeader += m_bh_identifier + m_bh_ackIdentifier + m_bh_totalDataSize;
-	binaryHeader += QByteArray::fromHex("00 00 00 00");
-	data.append(binaryHeader);
 	res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());
 	res.append(data);
-	return res;
-}
-
-QByteArray P2P:: makeDecline(){
-	QByteArray res;
-	QByteArray data;
-	QByteArray binaryHeader;
-	QByteArray msnslpData;
-	QByteArray data200;
-	QByteArray resData200;
-
-	msnslpData.append("MSNSLP/1.0 603 Decline\r\n");
-	msnslpData.append("To: <msnmsgr:" + m_to + ">\r\n");
-	msnslpData.append("From: <msnmsgr:"+ m_from + ">\r\n");
-	msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
-	//msnslpData.append("CSeq: " + QByteArray::number(m_CsEq + 1) + "\r\n");
-	msnslpData.append("CSeq: 1 \r\n");
-	msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
-	msnslpData.append("Max-Forwards: 0\r\n");
-	msnslpData.append("Content-Type: application/x-msnmsgr-sessionreqbody\r\n");
-	msnslpData.append("Content-Length: " + QByteArray::number(m_p2pSessionId.size() + 16 )+ "\r\n\r\n");
-	msnslpData.append("SessionID: " + m_p2pSessionId + "\r\n\r\n");
-
-	QByteArray myId = QByteArray::fromHex("12 34 56 78");
-	QByteArray randomBaseId = QByteArray::fromHex("98 76 54 32");
-
-	binaryHeader = QByteArray::fromHex("00 00 00 00") + myId +QByteArray::fromHex("00000000 00000000");
-	binaryHeader += int2qbyte(msnslpData.size(), 16) + int2qbyte(msnslpData.size(), 8) + QByteArray::fromHex("00 00 00 00");
-	binaryHeader += randomBaseId + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("00 00 00 00 00 00 00 00");
-
-	data200 ="MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
-	qDebug() << "#### 200 OK ##" << QByteArray(data200).replace("\r\n","\\r\\n") << binaryHeader.toHex() << QByteArray(msnslpData).replace("\r\n","\\r\\n");
-	data200.append(binaryHeader);
-	data200.append(msnslpData);
-	data200.append(QByteArray::fromHex("00 00 00 00 00"));
-	//res = QByteArray(beginCmd().toUtf8().data())  + " D " + QByteArray::number(data200.size()) + "\r\n";
-	res = "MSG 10 D " + QByteArray::number(data200.size()) + "\r\n";
-	res.append(data200);
 	return res;
 }
 
@@ -296,6 +137,113 @@ QByteArray P2P:: make200ok(){
 	msnslpData.append("Content-Type: application/x-msnmsgr-sessionreqbody\r\n");
 	msnslpData.append("Content-Length: " + QByteArray::number(m_p2pSessionId.size() + 16 )+ "\r\n\r\n");
 	msnslpData.append("SessionID: " + m_p2pSessionId + "\r\n\r\n");
+	msnslpData.append(QByteArray::fromHex("00"));
+
+	QByteArray myId = QByteArray::fromHex("33f99c10");
+	QByteArray random = QByteArray::fromHex("63 72 ed 0d");
+	binaryHeader = QByteArray::fromHex("00 00 00 00") + myId + QByteArray::fromHex("00000000 00000000");
+	binaryHeader += int2qbyte(msnslpData.size(), 16) + int2qbyte(msnslpData.size(), 8) + QByteArray::fromHex("00 00 00 00");
+	binaryHeader += random + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("00000000 00000000");
+ 		
+	data200.append(binaryHeader);
+	data200.append(msnslpData);
+	data200.append(QByteArray::fromHex("00 00 00 00"));
+	resData200 = QByteArray(QString(beginCmd() + " D " + QString::number(data200.size()) + "\r\n").toUtf8().data());
+	resData200.append(data200);
+	return resData200;
+}
+
+
+QByteArray P2P::makeAck(){
+	QByteArray res;
+	QByteArray data;
+	QByteArray binaryHeader;
+	QByteArray randomBaseId = QByteArray::fromHex("11 11 11 11");
+	data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+	binaryHeader =  QByteArray::fromHex("00 00 00 00") + randomBaseId + QByteArray::fromHex("00000000 00000000");
+	binaryHeader += m_bh_totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00");
+	binaryHeader += m_bh_identifier + m_bh_ackIdentifier + m_bh_totalDataSize;
+	binaryHeader += QByteArray::fromHex("00 00 00 00");
+
+	data.append(binaryHeader);
+	res = QByteArray("MSG 9 D " + QByteArray::number(data.size()) + "\r\n");
+	res.append(data);
+	return res;
+}
+
+QByteArray P2P::makeBId(){
+	QByteArray res;
+	QByteArray data;
+	QByteArray binaryHeader;
+	QByteArray msnslpData;
+	// ACK for invite 
+	QByteArray myId = QByteArray::fromHex("32f99c10");
+	data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+	binaryHeader = QByteArray::fromHex("00 00 00 00") + myId + QByteArray::fromHex("00000000 00000000");
+	binaryHeader += m_bh_totalDataSize + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("02 00 00 00");
+	binaryHeader += m_bh_identifier + m_bh_ackIdentifier + m_bh_totalDataSize;
+	binaryHeader += QByteArray::fromHex("00 00 00 00");
+	data.append(binaryHeader);
+	res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());
+	res.append(data);
+	return res;
+}
+
+QByteArray P2P:: makeDecline(){
+	QByteArray res;
+	QByteArray data;
+	QByteArray binaryHeader;
+	QByteArray msnslpData;
+	QByteArray data200;
+	QByteArray resData200;
+	
+	data200 ="MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+
+	msnslpData.append("MSNSLP/1.0 603 Decline\r\n");
+	msnslpData.append("To: <msnmsgr:" + m_from + ">\r\n");
+	msnslpData.append("From: <msnmsgr:"+ m_to + ">\r\n");
+	msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
+	msnslpData.append("CSeq: 1 \r\n");
+	msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
+	msnslpData.append("Max-Forwards: 0\r\n");
+	msnslpData.append("Content-Type: application/x-msnmsgr-sessionreqbody\r\n");
+	msnslpData.append("Content-Length: " + QByteArray::number(m_p2pSessionId.size() + 16 )+ "\r\n\r\n");
+	msnslpData.append("SessionID: " + m_p2pSessionId + "\r\n\r\n");
+	msnslpData.append(QByteArray::fromHex("00"));
+
+	QByteArray myId = QByteArray::fromHex("33f99c10");
+	QByteArray random = QByteArray::fromHex("63 72 ed 0d");
+	binaryHeader = QByteArray::fromHex("00 00 00 00") + myId + QByteArray::fromHex("00000000 00000000");
+	binaryHeader += int2qbyte(msnslpData.size(), 16) + int2qbyte(msnslpData.size(), 8) + QByteArray::fromHex("00 00 00 00");
+	binaryHeader += random + QByteArray::fromHex("00 00 00 00") + QByteArray::fromHex("00000000 00000000");
+	
+	data200.append(binaryHeader);
+	data200.append(msnslpData);
+	data200.append(QByteArray::fromHex("00 00 00 00"));
+	resData200 = QByteArray(QString(beginCmd() + " D " + QString::number(data200.size()) + "\r\n").toUtf8().data());
+	resData200.append(data200);
+	return resData200;
+}
+
+QByteArray P2P:: makeNeg200ok(){
+	QByteArray res;
+	QByteArray data;
+	QByteArray binaryHeader;
+	QByteArray msnslpData;
+	QByteArray data200;
+	QByteArray resData200;
+	
+	data200 ="MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+	msnslpData.append("MSNSLP/1.0 200 OK\r\n");
+	msnslpData.append("To: <msnmsgr:" + m_from + ">\r\n");
+	msnslpData.append("From: <msnmsgr:"+ m_to + ">\r\n");
+	msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
+	msnslpData.append("CSeq: 1 \r\n");
+	msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
+	msnslpData.append("Max-Forwards: 0\r\n");
+	msnslpData.append("Content-Type: application/x-msnmsgr-transrespbody\r\n");
+	msnslpData.append("Content-Length: 90\r\n\r\n");
+	msnslpData.append("Bridge: TCPv1\r\nListening: false\r\nHashed-Nonce: {47FEFBE0-50F5-79B7-0356-F358635DE475}\r\n\r\n");
 	msnslpData.append(QByteArray::fromHex("00"));
 
 	QByteArray myId = QByteArray::fromHex("7a 70 01 00");
@@ -333,8 +281,8 @@ QByteArray P2P::makeCmd() {
 		data200 ="MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
 
 		msnslpData.append("MSNSLP/1.0 200 OK\r\n");
-		msnslpData.append("To: <msnmsgr:" + m_from + ">\r\n");
-		msnslpData.append("From: <msnmsgr:"+ m_to + ">\r\n");
+		msnslpData.append("To: <msnmsgr:" + m_to + ">\r\n");
+		msnslpData.append("From: <msnmsgr:"+ m_from + ">\r\n");
 		msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
 		msnslpData.append("CSeq: 1 \r\n");
 		msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
@@ -506,12 +454,4 @@ QByteArray P2P::makeCmd() {
 			return QByteArray();
 	}
 }
-//void P2P::addProductId (QString productId) {
-//	m_productId = productId;
-//}
-//void P2P::addMd5(QString md5){
-//	m_md5 = md5; 
-//}
-
-
 }

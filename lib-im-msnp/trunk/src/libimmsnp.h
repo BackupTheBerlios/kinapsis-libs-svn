@@ -57,5 +57,22 @@ namespace libimmsnp {
 		MSG_IDENTIFICATION,
 		MSG_P2P
 	};
+	enum P2pStep {
+		P2P_INVITATION,
+		P2P_NEGOTIATION,
+		P2P_TRANSFER,
+		P2P_ACK,
+		P2P_NULL
+	};
+	
+	enum P2pCmd {
+		P2PC_INVITATION,
+		P2PC_NEGOTIATION,
+		P2PC_TRANSFER,
+		P2PC_200OK,
+		P2PC_ACK,
+		P2PC_INITID,
+	};
+
 }
 #endif // LIBIMMSNP_H__

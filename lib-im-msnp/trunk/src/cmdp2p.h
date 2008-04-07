@@ -14,54 +14,44 @@
 #ifndef _CMDP2P_H_
 #define _CMDP2P_H_
 #include "command.h" 
+#include "libimmsnp.h"
 
 namespace libimmsnp {
 class P2P : public Command {
 
 public:
 	P2P (int);
-	// TODO: check this P2P()
-	P2P ();
 	virtual ~P2P();
 	void setClientIp(QString ip) {m_clientIp = ip;}
 	void setClientPort(QString port) {m_clientPort = port;}
-	
-	int getStatus(){return m_status;}
-	
-	int getId();	
-	QByteArray getType() {return m_ContentType;}	
-	void setAccepted() { m_accepted = 1;}
-	void setDenied() { m_accepted = -1;}
-	int isAccepted() {return m_accepted;}
-	void setPath(QByteArray path) {m_path = path;}
 
-	QByteArray getPath() {return m_path;}
-	QByteArray getFileName() {return m_context;}
-	QByteArray getData() {return m_data;}
-	QByteArray getEUF_GUID() {return m_EUF_GUID;}
-	
-	bool isAckMsg() {return m_prevAck == m_bh_ackIdentifier;}
-	
-	int getBHsessionID();	
-	int getBHid(); 		
-	int getBHdataOffset();
-	int getBHtotalDataSize();
-	int getBHflag();	
-	int getBHmessageLength();
-	int getBHackUniqueID();
-	int getBHackIdentifier(); 	
-	int getBHackDataSize();
+	void setBHSessionID 	 (QByteArray sessionID 		) {m_bh_sessionID	= sessionID	;}
+	void setBHIdentifier 	 (QByteArray identifier 	) {m_bh_identifier 	= identifier 	;}
+	void setBHDataOffset 	 (QByteArray dataOffset 	) {m_bh_dataOffset 	= dataOffset 	;}
+	void setBHTotalDataSize	 (QByteArray totalDataSize 	) {m_bh_totalDataSize 	= totalDataSize ;}
+	void setBHFlag 		 (QByteArray flag 		) {m_bh_flag 	 	= flag 	 	;}
+	void setBHMessageLength	 (QByteArray messageLength 	) {m_bh_messageLength	= messageLength ;}
+	void setBHAckUniqueID 	 (QByteArray ackUniqueID 	) {m_bh_ackUniqueID 	= ackUniqueID 	;}
+	void setBHAckIdentifier	 (QByteArray ackIdentifier	) {m_bh_ackIdentifier	= ackIdentifier ;}
+	void setBHAckDataSize 	 (QByteArray ackDataSize 	) {m_bh_ackDataSize 	= ackDataSize 	;}
 
-	int getP2pSessionId();
-	//int get() {return m_;}
-	//int get() {return m_;}
+	void setStep(P2pStep step) {m_step = step;}
+	void setCmd(P2pCmd cmd) {m_cmd = cmd;}
+	void setFrom (QByteArray from) {m_from = from;}
+	void setTo (QByteArray to) {m_to = to;}
+
+	void setBranch(QByteArray branch) {m_branch = branch;}
+	void setCallId(QByteArray callId) {m_callId = callId;}
+	void setp2pSessionId(QByteArray p2pSessionId) {m_p2pSessionId = p2pSessionId;}
+
+	QByteArray make();
 
 	QByteArray makeCmd();
 	QByteArray makeBId();
 	QByteArray makeAck();
 	QByteArray make200ok();
+	QByteArray makeNeg200ok();
 	QByteArray makeDecline();
-	void parse (QByteArray);
 private:
 	// BINARY HEADER
 	QByteArray m_bh_sessionID;	
@@ -73,8 +63,6 @@ private:
 	QByteArray m_bh_ackUniqueID;	
 	QByteArray m_bh_ackIdentifier; 
 	QByteArray m_bh_ackDataSize;	
-
-	QByteArray m_prevAck; 
 
 	// MSG HEADER
 	QByteArray m_p2pType;
@@ -106,15 +94,10 @@ private:
 	QByteArray m_dc_sessionID;
 
 	// MORE STUFF
-	int m_status;
 	QString m_clientIp;
 	QString m_clientPort;
-	int m_accepted;
-	QByteArray m_path;
-
-	// DATA
-	QByteArray m_data;
-	
+	P2pStep m_step;	
+	P2pCmd m_cmd;
 	// BYE
 	bool m_closeSession;
 };
