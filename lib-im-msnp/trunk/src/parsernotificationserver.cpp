@@ -336,8 +336,8 @@ void ParserNS::parseLst () {
 			CHG c (m_client->nextIdtr());
 			c.addStatusCode (m_initialStatus);
 			//c.addCapabilities ("1342558252");
-			//c.addCapabilities ("1879343140");
-			c.addCapabilities ("1342488612"); // msn 7.5 capabilities
+			c.addCapabilities ("1879343140"); // amsn
+			//c.addCapabilities ("1342488612"); // msn 7.5 capabilities
 			m_client->send (c);
 			emit connected();
 		}
