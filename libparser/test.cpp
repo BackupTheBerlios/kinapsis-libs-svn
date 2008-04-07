@@ -41,7 +41,7 @@ int main(){
                     qDebug() << "\t" << metacontacts << endl;
                     qDebug() << "\tLogs:";
                     qDebug() << "\t" << logs << endl;
-                    p->saveLogs(); //esta llamada salga el atrib. logs en el fichero log de kinapsis
+                    p->saveLogs(); //esta llamada salva el atrib. logs en el fichero log de kinapsis
                     i.next();
                     j++;
                 }

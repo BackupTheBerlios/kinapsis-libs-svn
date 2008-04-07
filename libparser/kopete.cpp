@@ -28,19 +28,19 @@ using namespace std;
             Kopete::~Kopete(){ }
             
             QString Kopete::getName(){
-                return name;
+                return m_name;
             }
             
             QString Kopete::getVersion(){
-                return version;
+                return m_version;
             }
             
             void Kopete::setName(QString name){
-                this->name=name;
+                m_name=name;
             }
             
             void Kopete::setVersion(QString version){
-                this->version=version;
+                m_version=version;
             }
 
             void Kopete::parser(){
@@ -85,6 +85,7 @@ using namespace std;
                 //etc, etc
 
                 //kdeRC format para las cuentas y protocolos
+                //TODO-ING
                 dir.clear();
                 dir.append(home);
                 dir.append("/.kde/share/config");
@@ -102,19 +103,19 @@ using namespace std;
             }
 
             QList<QString> Kopete::getMetaContacts(){
-                    return metacontacts;
+                    return m_metacontacts;
             }
 
             QList<QString> Kopete::getAccounts(){
-                    return accounts;
+                    return m_accounts;
             }
 
             QList<QString> Kopete::getProtocols(){
-                    return protocols;
+                    return m_protocols;
             }
 
             QList<QString> Kopete::getLogs(){
-                    return logs;
+                    return m_logs;
             }
 
             void Kopete::saveLogs(){
@@ -126,7 +127,6 @@ using namespace std;
             void Kopete::processLine(QString line){
                 int pos=-1;
                 QRegExp rx;
-                QString account;
                 QString tmp;
 //                rx.setPatternSyntax(QRegExp::Wildcard);
 //FIXME: ICQ, AOL
@@ -136,11 +136,11 @@ using namespace std;
                     rx.setPattern("(^AccountId=)([a-z|A-Z|0-9]+@[a-z|A-Z|0-9]+.[a-z|A-Z]+)");
                     pos = rx.indexIn(line,0);
                     if (pos > -1){
-                            accounts << rx.cap(2);
+                            m_accounts << rx.cap(2);
                             tmp.clear();
                             tmp.append("Account:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //Plain text
@@ -150,7 +150,7 @@ using namespace std;
                             tmp.clear();
                             tmp.append("PlainTextPassword:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //port (jabber)
@@ -160,7 +160,7 @@ using namespace std;
                             tmp.clear();
                             tmp.append("Port:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //protocol
@@ -170,7 +170,7 @@ using namespace std;
                             tmp.clear();
                             tmp.append("Protocol:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //server (jabber)
@@ -180,7 +180,7 @@ using namespace std;
                             tmp.clear();
                             tmp.append("Server:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //ssl-tls
@@ -190,7 +190,7 @@ using namespace std;
                             tmp.clear();
                             tmp.append("SSL:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //MFN  FIXME: posibilidad de caracteres raros
@@ -200,7 +200,7 @@ using namespace std;
                             tmp.clear();
                             tmp.append("MFN:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //serverName (MSN)
@@ -210,7 +210,7 @@ using namespace std;
                             tmp.clear();
                             tmp.append("Server:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
                     //serverPort (MSN)
@@ -220,10 +220,11 @@ using namespace std;
                             tmp.clear();
                             tmp.append("Port:");
                             tmp.append(rx.cap(2));
-                            protocols << tmp;
+                            m_protocols << tmp;
                             return;
                     }
 
                 }
             }
+
 // fin kopete.cpp

@@ -13,12 +13,12 @@ class IMProgram{
         private:
 
         protected: //inherited
-            QString name;
-            QString version;
-            QList<QString> metacontacts;
-            QList<QString> accounts;
-            QList<QString> protocols; //asocia a una cuenta su conf
-            QList<QString> logs;
+            QString m_name;
+            QString m_version;
+            QList<QString> m_metacontacts;
+            QList<QString> m_accounts;
+            QList<QString> m_protocols; //asocia a una cuenta su conf
+            QList<QString> m_logs;
             //cuentas
             
         public:

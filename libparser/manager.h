@@ -12,9 +12,10 @@ using namespace std;
 
 class Manager{
         private:
-            int numberIMP;
-            QList<IMProgram*> programs; //Vector con los ptros a las instancias de Kopete,pidgin...
-            bool existPrograms;
+            int m_numberIMP;
+            QList<IMProgram*> m_programs; //Vector con los ptros a las instancias de Kopete,pidgin...
+            bool m_existPrograms;
+
             void searchIMPrograms(); 
             
         public:

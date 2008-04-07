@@ -8,16 +8,16 @@ using namespace std;
 //Clase abstracta padre para las clases derivadas Kopete, Pidgin, Psi...
 
             IMProgram::IMProgram()
-            :   name("Null"),version("Null"),accounts(),protocols(),metacontacts(),logs()
+            :   m_name("Null"),m_version("Null"),m_accounts(),m_protocols(),m_metacontacts(),m_logs()
             {}
 
             IMProgram::IMProgram(QString nom, QString ver)
-            :   name(nom),version(ver)
+            :   m_name(nom),m_version(ver)
             {}
 
             IMProgram::IMProgram(QString nom, QString ver, QList<QString> acc, QList<QString> pro, 
                                                 QList<QString> con, QList<QString> lg)
-            :   name(nom),version(ver),accounts(acc),protocols(pro),metacontacts(con),logs(lg)
+            :   m_name(nom),m_version(ver),m_accounts(acc),m_protocols(pro),m_metacontacts(con),m_logs(lg)
             {}
 
             IMProgram::~IMProgram()

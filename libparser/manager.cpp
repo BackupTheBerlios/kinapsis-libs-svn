@@ -15,7 +15,7 @@ using namespace std;
 /* Public methods */
 
     Manager::Manager()
-    : numberIMP(0), existPrograms(false)
+    : m_numberIMP(0), m_existPrograms(false)
     { }
 
     Manager::~Manager()
@@ -23,15 +23,15 @@ using namespace std;
 
     bool Manager::existIMPrograms(){
             searchIMPrograms();
-            return existPrograms;
+            return m_existPrograms;
     }
 
     QList<IMProgram*> Manager::getIMPrograms(){
-            return programs;
+            return m_programs;
     }
 
     int Manager::getNumberIMPrograms(){
-            return numberIMP;
+            return m_numberIMP;
     }
 
 /* Private methods */
@@ -51,15 +51,15 @@ using namespace std;
             file.setFileName("kopeterc");
             QDir::setCurrent(dir);
             if (file.exists()){
-                    existPrograms = true;
+                    m_existPrograms = true;
                     p = new Kopete();
                     p->setName("Kopete");
-                    programs.append(p);
-                    numberIMP=numberIMP++;
+                    m_programs.append(p);
             }
             else{
                 qDebug() << "Kopete not found";
             }
+            m_numberIMP=m_programs.count();
     }
 
 // fin manager.cpp
