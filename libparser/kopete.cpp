@@ -1,6 +1,5 @@
 #include <iostream>
 #include <QtDebug>
-#include <QDomNode>
 #include <QFile>
 #include <QDir>
 
@@ -72,7 +71,7 @@ using namespace std;
                         QDomElement e = n.toElement();
                         if(!e.isNull()) {
                         // // the node really is an element.
-                        // qDebug() << e.tagName() << endl; 
+                        processMetacontacts(e);
                         }
                         n = n.nextSibling();
                 } 
@@ -124,6 +123,17 @@ using namespace std;
 
 /* Private methods */
 
+            void Kopete::processMetacontacts(QDomElement e){
+                    QDomAttr a;
+//                    qDebug() << e.text() << endl; 
+                    a = e.attributeNode("contactId");
+                    //FIXME
+                    if (a.specified()){
+                        qDebug() << a.value() << endl; 
+                    }
+
+            }
+            
             void Kopete::processLine(QString line){
                 int pos=-1;
                 QRegExp rx;

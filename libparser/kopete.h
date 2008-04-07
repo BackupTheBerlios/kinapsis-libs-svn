@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QString>
 #include <QList>
+#include <QDomNode>
 
 using namespace std;
 
@@ -12,6 +13,7 @@ using namespace std;
 class Kopete : public IMProgram {
         private:
             void processLine(QString line);
+            void processMetacontacts(QDomElement e);
             
         public:
             Kopete();
