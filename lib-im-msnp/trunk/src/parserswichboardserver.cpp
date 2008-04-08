@@ -258,7 +258,7 @@ void ParserSB::parseMsg () {
 					//	return ;
 					//}
 					//	else qDebug() << "NO RECORRIDO 2";
-
+					
 					if (m_FTList.contains(p.getBHid()-1)) {
 						m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
 						m_FTList.remove(p.getBHid()-1);
@@ -296,33 +296,34 @@ void ParserSB::parseMsg () {
 								qDebug() << "INICIO INVITACION" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
 						}
 						if (p.step() == P2P_NEGOTIATION){
-								qDebug() << "INICIO NEGOCIACIONES";
+							qDebug() << "INICIO NEGOCIACIONES";
 
-								P2P ack = P2P(nextIdtr());	
-								ack.setCmd(P2PC_ACK);
-								ack.setBHIdentifier	(m_FTList[p.getBHid()]->incMyIdentifier(1));
-								ack.setBHTotalDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
-								ack.setBHFlag		(QByteArray::fromHex("02 00 00 00"));
-								ack.setBHAckIdentifier	(m_FTList[p.getBHid()]->getBHIdentifier());
-								ack.setBHAckUniqueID	(m_FTList[p.getBHid()]->getBHAckIdentifier());
-								ack.setBHAckDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
-								//qDebug() << "ENVIO: ACK" << ack.make().toHex();
-								m_socket->send(ack.make());
+							P2P ack = P2P(nextIdtr());	
+							ack.setCmd(P2PC_ACK);
+							ack.setBHIdentifier	(m_FTList[p.getBHid()]->incMyIdentifier(1));
+							ack.setBHTotalDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
+							ack.setBHMessageLength	(m_FTList[p.getBHid()]->getBHTotalDataSize().mid(0,4));
+							ack.setBHAckIdentifier	(QByteArray::fromHex("98 76 54 32"));
+							//qDebug() << "ENVIO: ACK" << ack.make().toHex();
+							m_socket->send(ack.make());
 
-								P2P neg = P2P(nextIdtr());	
-								neg.setStep(P2P_NEGOTIATION);
-								neg.setCmd(P2PC_200OK);
-								neg.setFrom			(m_FTList[p.getBHid()]->getTo());
-								neg.setTo			(m_FTList[p.getBHid()]->getFrom());
-								neg.setBranch			(m_FTList[p.getBHid()]->getBranch());
-								neg.setCallId			(m_FTList[p.getBHid()]->getCallId());
-								neg.setp2pSessionId		(m_FTList[p.getBHid()]->getp2pSessionId());
-								
-								neg.setBHIdentifier		(m_FTList[p.getBHid()]->incMyIdentifier(1));
-								neg.setBHAckUniqueID		(QByteArray::fromHex("63 72 ed 0d"));
-								//qDebug() << "ENVIO: 200 OK NEGOTIATION" << neg.make().toHex();
-								m_socket->send(neg.make());
-								m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
+							P2P neg = P2P(nextIdtr());	
+							neg.setStep(P2P_NEGOTIATION);
+							neg.setCmd(P2PC_200OK);
+							neg.setFrom			(p.getTo());
+							neg.setTo			(p.getFrom());
+							neg.setBranch			(p.getBranch());
+							neg.setCallId			(p.getCallId());
+							neg.setp2pSessionId		(p.getp2pSessionId());
+							
+							neg.setBHIdentifier		(m_FTList[p.getBHid()]->incMyIdentifier(0));
+							neg.setBHAckIdentifier		(QByteArray::fromHex("63 72 ed 0d"));
+							//qDebug() << "ENVIO: 200 OK NEGOTIATION" << neg.make().toHex();
+							m_socket->send(neg.make());
+							m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
+						}
+						if (p.step() == P2P_TRANSFER){
+							qDebug() << "Inicio Transferencia";
 						}
 					}
 					else {

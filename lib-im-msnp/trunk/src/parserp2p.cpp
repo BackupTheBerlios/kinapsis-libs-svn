@@ -69,6 +69,10 @@ void ParserP2P::parse(QByteArray data){
 	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 	int dataLen = invitation.size() - 4;
 	m_data = invitation.mid(0,dataLen);
+	if (m_bh_sessionID != QByteArray::fromHex("00000000")){
+		m_step = P2P_TRANSFER;
+		return;
+	}
 	bool ok;
 	QRegExp fx;
 
