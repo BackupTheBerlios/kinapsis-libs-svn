@@ -107,12 +107,11 @@ void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	qDebug() << "@############# Transferencia Aceptada en:" << path;
 	P2P bid = P2P(nextIdtr());	
 	bid.setCmd(P2PC_INITID);
+	bid.setTo		(msg->getFrom());
 	bid.setBHIdentifier	(msg->incMyIdentifier(0));
 	bid.setBHTotalDataSize	(msg->getBHTotalDataSize());
-	bid.setBHFlag		(QByteArray::fromHex("02 00 00 00"));
-	bid.setBHAckIdentifier	(msg->getBHIdentifier());
-	bid.setBHAckUniqueID	(msg->getBHAckIdentifier());
-	bid.setBHAckDataSize	(msg->getBHTotalDataSize());
+	bid.setBHMessageLength	(msg->getBHTotalDataSize().mid(0,4));
+	bid.setBHAckIdentifier	(QByteArray::fromHex("98 76 54 32"));
 	//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
 	m_socket->send(bid.make());
 
@@ -126,7 +125,7 @@ void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	ok200.setp2pSessionId		(msg->getp2pSessionId());
 	
 	ok200.setBHIdentifier		(msg->incMyIdentifier(-3));
-	ok200.setBHAckIdentifier	(QByteArray::fromHex("63 72 ed 12"));
+	ok200.setBHAckIdentifier	(QByteArray::fromHex("98 76 54 32"));
 
 	//qDebug() << "ENVIO: 200 OK" << ok200.make().toHex();
 

@@ -109,13 +109,14 @@ QByteArray P2P::make(){
 	binaryHeader += m_bh_totalDataSize + m_bh_messageLength + m_bh_flag;
 	binaryHeader += m_bh_ackIdentifier + m_bh_ackUniqueID + m_bh_ackDataSize;
 
-	data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_from + "\r\n\r\n";
+	data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_to + "\r\n\r\n";
 	data.append(binaryHeader);
 	data.append(msnslpData);
-	data.append(QByteArray::fromHex("00 00 00 00"));
-
+	if (m_cmd == P2PC_200OK){
+		data.append(QByteArray::fromHex("00 00 00 00"));
+	}
 	res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());
-	qDebug() << "\nENVIO " << QByteArray(res).replace("\n","\\n").replace("\r","\\r") << "MIME-Version: 1.0\\r\\nContent-Type: application/x-msnmsgrp2p\\r\\nP2P-Dest: " + m_from + "\\r\\n\\r\\n" << binaryHeader.toHex() << QByteArray(msnslpData).replace("\n","\\n").replace("\r","\\r");
+	qDebug() << "\nENVIO " << QByteArray(res).replace("\n","\\n").replace("\r","\\r") << "MIME-Version: 1.0\\r\\nContent-Type: application/x-msnmsgrp2p\\r\\nP2P-Dest: " + m_to + "\\r\\n\\r\\n" << binaryHeader.toHex() << QByteArray(msnslpData).replace("\n","\\n").replace("\r","\\r");
 	res.append(data);
 	return res;
 }
