@@ -107,11 +107,11 @@ void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	qDebug() << "@############# Transferencia Aceptada en:" << path;
 	P2P bid = P2P(nextIdtr());	
 	bid.setCmd(P2PC_INITID);
-	bid.setBHIdentifier	(QByteArray::fromHex("32f99c10"));
+	bid.setBHIdentifier	(msg->incMyIdentifier(0));
 	bid.setBHTotalDataSize	(msg->getBHTotalDataSize());
 	bid.setBHFlag		(QByteArray::fromHex("02 00 00 00"));
-	bid.setBHAckUniqueID	(msg->getBHIdentifier());
-	bid.setBHAckIdentifier	(msg->getBHAckIdentifier());
+	bid.setBHAckIdentifier	(msg->getBHIdentifier());
+	bid.setBHAckUniqueID	(msg->getBHAckIdentifier());
 	bid.setBHAckDataSize	(msg->getBHTotalDataSize());
 	//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
 	m_socket->send(bid.make());
@@ -125,8 +125,8 @@ void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	ok200.setCallId			(msg->getCallId());
 	ok200.setp2pSessionId		(msg->getp2pSessionId());
 	
-	ok200.setBHIdentifier		(QByteArray::fromHex("33f99c10"));
-	ok200.setBHAckUniqueID		(QByteArray::fromHex("63 72 ed 0d"));
+	ok200.setBHIdentifier		(msg->incMyIdentifier(-3));
+	ok200.setBHAckIdentifier	(QByteArray::fromHex("63 72 ed 12"));
 
 	//qDebug() << "ENVIO: 200 OK" << ok200.make().toHex();
 
@@ -244,6 +244,12 @@ void ParserSB::parseMsg () {
 					ParserP2P p = ParserP2P();
 					p.parse(data);
 
+					if (p.getData().size() == 0){
+						// Es un ACK 
+						
+						qDebug() << "RECIBO ACK";
+						return ;
+					}
 					//if (p.step() == P2P_ACK) {
 					//	if (m_FTList.contains(p.getBHid()-1)) {
 					//		m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
@@ -254,109 +260,101 @@ void ParserSB::parseMsg () {
 					//}
 					//	else qDebug() << "NO RECORRIDO 2";
 
+					if (m_FTList.contains(p.getBHid()-1)) {
+						m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
+						m_FTList.remove(p.getBHid()-1);
+						qDebug() << "\nActualizo y borro" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+					}
+
 					if (! m_FTList.contains(p.getBHid())) {
-						if (m_FTList.contains(p.getBHid()-1)) {
-							m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
-							qDebug() << "\nActualizo" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+						qDebug() << "NO LO Contiene" << p.getBHid();
+						Transfer* t = new Transfer();
+						t->setStep		(p.step());
+						t->createMyIdentifier	();
+						t->addData		(p.getData());
+						t->setBHIdentifier	(p.getBHid());
+						t->setBHAckIdentifier	(p.getBHAckIdentifier());
+						t->setBHTotalDataSize	(p.getBHTotalDataSize());
+						if (p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){ 
+							qDebug() << "## FILETRANSFER with id " << t->incMyIdentifier(0).toHex();
 						}
-						else {
-							qDebug() << "NO LO Contiene" << p.getBHid();
-							Transfer* t = new Transfer();
-							t->setStep(p.step());
-							t->addData(p.getData());
-							if (p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){ 
-								qDebug() << "## FILETRANSFER\n";
-							}
-							if (p.getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
-								qDebug() << "##  EMOTICONO\n";
-							}
-							if (p.getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
-								qDebug() << "##  WEBCAM\n";
-							}
-							m_FTList[p.getBHid()] = t;
+						if (p.getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
+							qDebug() << "##  EMOTICONO\n";
 						}
-						switch (p.step()){
-							case P2P_INVITATION:
-								if (!p.isFinished()){
-									m_FTList[p.getBHid()]->setFileName(p.getFileName());
-									m_FTList[p.getBHid()]->setTo	   	(p.getTo	      	()); 
-									m_FTList[p.getBHid()]->setFrom	    	(p.getFrom	      	());
-									m_FTList[p.getBHid()]->setBranch	(p.getBranch      	());    
-									m_FTList[p.getBHid()]->setCallId	(p.getCallId      	());	    
-									m_FTList[p.getBHid()]->setp2pSessionId  (p.getp2pSessionId	());  
+						if (p.getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
+							qDebug() << "##  WEBCAM\n";
+						}
+						m_FTList[p.getBHid()] = t;
+						
+						if (p.step() == P2P_INVITATION){
+								m_FTList[p.getBHid()]->setFileName(p.getFileName());
+								m_FTList[p.getBHid()]->setTo	   	(p.getTo	      	()); 
+								m_FTList[p.getBHid()]->setFrom	    	(p.getFrom	      	());
+								m_FTList[p.getBHid()]->setBranch	(p.getBranch      	());    
+								m_FTList[p.getBHid()]->setCallId	(p.getCallId      	());	    
+								m_FTList[p.getBHid()]->setp2pSessionId  (p.getp2pSessionId	());  
 
-									qDebug() << "INVITACION No finalizada" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
-								}
-								else qDebug() << "NO RECORRIDO 3";
-								break;
-							
-							case P2P_NEGOTIATION:
-								if (!p.isFinished()){
-									qDebug() << "INICIO NEGOCIACIONES NO finalizada";
-								}
-								else { 
-									qDebug() << "INICIO NEGOCIACIONES finalizada";
-									P2P ack = P2P(nextIdtr());	
-									ack.setCmd(P2PC_INITID);
-									ack.setBHIdentifier	(QByteArray::fromHex("32f99c10"));
-									ack.setBHTotalDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
-									ack.setBHFlag		(QByteArray::fromHex("02 00 00 00"));
-									ack.setBHAckUniqueID	(m_FTList[p.getBHid()]->getBHIdentifier());
-									ack.setBHAckIdentifier	(m_FTList[p.getBHid()]->getBHAckIdentifier());
-									ack.setBHAckDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
-									//qDebug() << "ENVIO: ACK" << ack.make().toHex();
-									m_socket->send(ack.make());
+								qDebug() << "INICIO INVITACION" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+						}
+						if (p.step() == P2P_NEGOTIATION){
+								qDebug() << "INICIO NEGOCIACIONES";
 
-									P2P neg = P2P(nextIdtr());	
-									neg.setCmd(P2PC_200OK);
-									neg.setStep(P2P_NEGOTIATION);
-									neg.setFrom			(m_FTList[p.getBHid()]->getTo());
-									neg.setTo			(m_FTList[p.getBHid()]->getFrom());
-									neg.setBranch			(m_FTList[p.getBHid()]->getBranch());
-									neg.setCallId			(m_FTList[p.getBHid()]->getCallId());
-									neg.setp2pSessionId		(m_FTList[p.getBHid()]->getp2pSessionId());
-									
-									neg.setBHIdentifier		(QByteArray::fromHex("34f99c10"));
-									neg.setBHAckUniqueID		(QByteArray::fromHex("63 72 ed 0d"));
-									//qDebug() << "ENVIO: 200 OK NEGOTIATION" << neg.make().toHex();
-									m_socket->send(neg.make());
-									m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
-								}
-								break;
-							default:
-								break;
+								P2P ack = P2P(nextIdtr());	
+								ack.setCmd(P2PC_ACK);
+								ack.setBHIdentifier	(m_FTList[p.getBHid()]->incMyIdentifier(1));
+								ack.setBHTotalDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
+								ack.setBHFlag		(QByteArray::fromHex("02 00 00 00"));
+								ack.setBHAckIdentifier	(m_FTList[p.getBHid()]->getBHIdentifier());
+								ack.setBHAckUniqueID	(m_FTList[p.getBHid()]->getBHAckIdentifier());
+								ack.setBHAckDataSize	(m_FTList[p.getBHid()]->getBHTotalDataSize());
+								//qDebug() << "ENVIO: ACK" << ack.make().toHex();
+								m_socket->send(ack.make());
+
+								P2P neg = P2P(nextIdtr());	
+								neg.setStep(P2P_NEGOTIATION);
+								neg.setCmd(P2PC_200OK);
+								neg.setFrom			(m_FTList[p.getBHid()]->getTo());
+								neg.setTo			(m_FTList[p.getBHid()]->getFrom());
+								neg.setBranch			(m_FTList[p.getBHid()]->getBranch());
+								neg.setCallId			(m_FTList[p.getBHid()]->getCallId());
+								neg.setp2pSessionId		(m_FTList[p.getBHid()]->getp2pSessionId());
+								
+								neg.setBHIdentifier		(m_FTList[p.getBHid()]->incMyIdentifier(1));
+								neg.setBHAckUniqueID		(QByteArray::fromHex("63 72 ed 0d"));
+								//qDebug() << "ENVIO: 200 OK NEGOTIATION" << neg.make().toHex();
+								m_socket->send(neg.make());
+								m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
 						}
 					}
 					else {
 						qDebug() << "LO Contiene";
 						Transfer* t = m_FTList[p.getBHid()];
-						switch (t->getStep()){
-							case P2P_INVITATION:
+						if (t->getStep() == P2P_INVITATION) {
 								if (p.isFinished()){
 									qDebug() << "INVITACION finalizada";
 									qRegisterMetaType<Transfer*>("Transfer");
-									m_FTList[p.getBHid()]->setBHIdentifier	 (p.getBHid());
-									m_FTList[p.getBHid()]->setBHAckIdentifier(p.getBHAckIdentifier());
-									m_FTList[p.getBHid()]->setBHTotalDataSize(p.getBHTotalDataSize());
-
 									emit incomingFileTransfer (m_FTList[p.getBHid()], m_chatId);
 									t->setStep(P2P_NEGOTIATION);
 								}
-								else qDebug() << "NO RECORRIDO 4";
-								break;
-
-							case P2P_NEGOTIATION:
-								qDebug() << "INICIO NEGOCIACIONES finalizada";
-								break;
+								else {
+									qDebug() << "RECIBIENDO Invitacion";
+									t->addData (p.getData());
+								}
+						}
+						else if (t->getStep() == P2P_NEGOTIATION){
+								if (p.isFinished()){
+									qDebug() << "INICIO NEGOCIACIONES finalizada";
 									
-							case P2P_TRANSFER:
+								}
+								else {
+									qDebug() << "RECIBIENDO Negociacion";
+								}
+						}	
+						else if (t->getStep() ==  P2P_TRANSFER){
 								qDebug() << "Recibido" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize(); 
 								if (p.isFinished()){
 									qDebug() << "Finalizado" << p.getBHid();
 								}
-								break;
-							default:
-								break;
 						}
 						
 					}

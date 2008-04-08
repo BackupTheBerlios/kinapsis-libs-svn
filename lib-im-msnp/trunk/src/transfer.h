@@ -15,6 +15,7 @@
 #define _TRANSFER_H_
 
 #include "libimmsnp.h"
+#include <stdlib.h>
 #include <QObject>
 namespace libimmsnp {
 
@@ -30,10 +31,10 @@ public:
 	void setBHIdentifier 	 (int identifier 	);
 	void setBHDataOffset 	 (int dataOffset 	);
 	void setBHTotalDataSize	 (int totalDataSize 	);
-	void setBHFlag 		 (int flag 		);
 	void setBHMessageLength	 (int messageLength 	);
-	void setBHAckUniqueID 	 (int ackUniqueID 	);
+	void setBHFlag 		 (int flag 		);
 	void setBHAckIdentifier	 (int ackIdentifier	);
+	void setBHAckUniqueID 	 (int ackUniqueID 	);
 	void setBHAckDataSize 	 (int ackDataSize 	);
 
 	QByteArray getBHIdentifier  () {return m_bh_identifier;}
@@ -52,7 +53,8 @@ public:
 	QByteArray getCallId		(){return m_callId	;}	
 	QByteArray getp2pSessionId	(){return m_p2pSessionId;}
 
-
+	void createMyIdentifier	();
+	QByteArray incMyIdentifier(int inc);
 
 	void setFileName (QByteArray fn) {m_filename = fn;}
 	void setType (QByteArray type) {m_type = type;}
@@ -72,6 +74,8 @@ private:
 	P2pStep m_step;
 	QByteArray m_destination;
 	QByteArray m_data;
+
+	int m_myIdentifier;
 
 	// BINARY HEADER
 	QByteArray m_bh_sessionID;	

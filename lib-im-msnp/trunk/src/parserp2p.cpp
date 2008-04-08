@@ -51,19 +51,20 @@ void ParserP2P::parse(QByteArray data){
 	qDebug() << "\n\n NEW DATA \n\n";
 	QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
 	//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
-	// SessionID[4]	Identifier[4]	Data offset[8] 		Total data size[8]	Message length[4]	Flag [4]       	identifier[4]	unique ID[4]    	data size[8]
-	// 00 00 00 00 	51 67 07 00	00 00 00 00 00 00 00 00 2a 02 00 00 00 00 00 00 2a 02 00 00 		00 00 00 00   	dd 30 48 00  	00 00 00 00    	00 00 00 00 00 00 00 00
+	// SessionID[4]	Identifier[4]	Data offset[8] 		Total data size[8]	Message length[4]	Flag [4]    ACKidentifier[4] ACKunique ID[4]       ACK data size[8]
+	// 00 00 00 00 	51 67 07 00	00 00 00 00 00 00 00 00 2a 02 00 00 00 00 00 00 2a 02 00 00 		00 00 00 00   dd 30 48 00     00 00 00 00    	00 00 00 00 00 00 00 00
 	m_bh_sessionID	 	= binaryHeader.mid(0,4);	
 	m_bh_identifier	 	= binaryHeader.mid(4,4);	
 	m_bh_dataOffset	 	= binaryHeader.mid(8,8);	
 	m_bh_totalDataSize  	= binaryHeader.mid(16,8);	
-	m_bh_flag		= binaryHeader.mid(20,4);	
 	m_bh_messageLength  	= binaryHeader.mid(24,4);	
-	m_bh_ackUniqueID	= binaryHeader.mid(28,4);	
+	m_bh_flag		= binaryHeader.mid(28,4);	
 	m_bh_ackIdentifier 	= binaryHeader.mid(32,4);	
-	m_bh_ackDataSize	= binaryHeader.mid(36,8);	
+	m_bh_ackUniqueID	= binaryHeader.mid(36,4);	
+	m_bh_ackDataSize	= binaryHeader.mid(40,8);	
 
-	qDebug () << "#&&# PARSER P2P:  SLP BIN:" << m_bh_sessionID.toHex() << m_bh_identifier.toHex() << m_bh_dataOffset.toHex() << m_bh_totalDataSize.toHex() << m_bh_flag.toHex() << m_bh_messageLength.toHex() << m_bh_ackUniqueID.toHex() << m_bh_ackIdentifier.toHex() << m_bh_ackDataSize.toHex();
+	qDebug () << data.toHex();
+	qDebug () << "#&&# PARSER P2P:  SLP BIN:" << m_bh_sessionID.toHex() << m_bh_identifier.toHex() << m_bh_dataOffset.toHex() << m_bh_totalDataSize.toHex() << m_bh_messageLength.toHex() << m_bh_flag.toHex() << m_bh_ackIdentifier.toHex()  << m_bh_ackUniqueID.toHex()<< m_bh_ackDataSize.toHex();
 
 	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);
 	int dataLen = invitation.size() - 4;

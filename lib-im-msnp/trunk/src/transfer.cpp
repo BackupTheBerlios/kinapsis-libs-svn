@@ -53,11 +53,19 @@ void Transfer::setBHSessionID 	 	(int sessionID 		) {m_bh_sessionID	= int2byte(s
 void Transfer::setBHIdentifier 	 	(int identifier 	) {m_bh_identifier 	= int2byte(identifier 	,8);}
 void Transfer::setBHDataOffset 	 	(int dataOffset 	) {m_bh_dataOffset 	= int2byte(dataOffset 	,16);}
 void Transfer::setBHTotalDataSize	(int totalDataSize 	) {m_bh_totalDataSize 	= int2byte(totalDataSize,16);}
-void Transfer::setBHFlag 		(int flag 		) {m_bh_flag 	 	= int2byte(flag 	,8);}
 void Transfer::setBHMessageLength	(int messageLength 	) {m_bh_messageLength	= int2byte(messageLength,8);}
-void Transfer::setBHAckUniqueID 	(int ackUniqueID 	) {m_bh_ackUniqueID 	= int2byte(ackUniqueID 	,8);}
+void Transfer::setBHFlag 		(int flag 		) {m_bh_flag 	 	= int2byte(flag 	,8);}
 void Transfer::setBHAckIdentifier	(int ackIdentifier	) {m_bh_ackIdentifier	= int2byte(ackIdentifier,8);}
+void Transfer::setBHAckUniqueID 	(int ackUniqueID 	) {m_bh_ackUniqueID 	= int2byte(ackUniqueID 	,8);}
 void Transfer::setBHAckDataSize 	(int ackDataSize 	) {m_bh_ackDataSize 	= int2byte(ackDataSize 	,16);}
 
+void Transfer::createMyIdentifier (){
+	m_myIdentifier = rand()%0x0FFFFFF0 + 4;
+}
+
+QByteArray Transfer::incMyIdentifier(int inc){
+	m_myIdentifier += inc;
+	return int2byte(m_myIdentifier, 8);
+}
 }
 #include "transfer.moc"

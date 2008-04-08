@@ -75,11 +75,11 @@ QByteArray increase(QByteArray num){
 }
 
 QByteArray P2P::make(){
-	QByteArray binaryHeader, res, data, msnslpData;
+	QByteArray binaryHeader, res = "", data = "", msnslpData= "";
 	if (m_cmd == P2PC_200OK){
 		msnslpData.append("MSNSLP/1.0 200 OK\r\n");
-		msnslpData.append("To: <msnmsgr:" + m_from + ">\r\n");
-		msnslpData.append("From: <msnmsgr:"+ m_to + ">\r\n");
+		msnslpData.append("To: <msnmsgr:" + m_to + ">\r\n");
+		msnslpData.append("From: <msnmsgr:"+ m_from + ">\r\n");
 		msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
 		msnslpData.append("CSeq: 1 \r\n");
 		msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
@@ -102,7 +102,9 @@ QByteArray P2P::make(){
 		m_bh_totalDataSize = int2qbyte(msnslpData.size(), 16);
 		m_bh_messageLength = int2qbyte(msnslpData.size(), 8);
 	}
-
+	//if (m_cmd == P2PC_INITID){
+	//	msnslpData = QByteArray::fromHex("00");
+	//}
 	binaryHeader =  m_bh_sessionID + m_bh_identifier + m_bh_dataOffset;
 	binaryHeader += m_bh_totalDataSize + m_bh_messageLength + m_bh_flag;
 	binaryHeader += m_bh_ackIdentifier + m_bh_ackUniqueID + m_bh_ackDataSize;

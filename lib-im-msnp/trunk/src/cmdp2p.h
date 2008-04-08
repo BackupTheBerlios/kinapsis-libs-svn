@@ -29,10 +29,10 @@ public:
 	void setBHIdentifier 	 (QByteArray identifier 	) {m_bh_identifier 	= identifier 	;}
 	void setBHDataOffset 	 (QByteArray dataOffset 	) {m_bh_dataOffset 	= dataOffset 	;}
 	void setBHTotalDataSize	 (QByteArray totalDataSize 	) {m_bh_totalDataSize 	= totalDataSize ;}
-	void setBHFlag 		 (QByteArray flag 		) {m_bh_flag 	 	= flag 	 	;}
 	void setBHMessageLength	 (QByteArray messageLength 	) {m_bh_messageLength	= messageLength ;}
-	void setBHAckUniqueID 	 (QByteArray ackUniqueID 	) {m_bh_ackUniqueID 	= ackUniqueID 	;}
+	void setBHFlag 		 (QByteArray flag 		) {m_bh_flag 	 	= flag 	 	;}
 	void setBHAckIdentifier	 (QByteArray ackIdentifier	) {m_bh_ackIdentifier	= ackIdentifier ;}
+	void setBHAckUniqueID 	 (QByteArray ackUniqueID 	) {m_bh_ackUniqueID 	= ackUniqueID 	;}
 	void setBHAckDataSize 	 (QByteArray ackDataSize 	) {m_bh_ackDataSize 	= ackDataSize 	;}
 
 	void setStep(P2pStep step) {m_step = step;}
