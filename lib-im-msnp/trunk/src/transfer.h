@@ -40,6 +40,7 @@ public:
 	QByteArray getBHIdentifier  () {return m_bh_identifier;}
 	QByteArray getBHTotalDataSize  () {return m_bh_totalDataSize;}
 	QByteArray getBHAckIdentifier  () {return m_bh_ackIdentifier;}
+	QByteArray getBHSessionID  () {return m_bh_sessionID;}
 
 	void setTo	  	(QByteArray to		) {m_to		 = to		;}
 	void setFrom	  	(QByteArray from	) {m_from	 = from		;}

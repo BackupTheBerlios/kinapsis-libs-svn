@@ -249,15 +249,6 @@ void ParserSB::parseMsg () {
 						qDebug() << "RECIBO ACK";
 						return ;
 					}
-					//if (p.step() == P2P_ACK) {
-					//	if (m_FTList.contains(p.getBHid()-1)) {
-					//		m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
-					//		qDebug() << "\nActualizo en ACK" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
-					//	}
-					//	else qDebug() << "NO RECORRIDO 1";
-					//	return ;
-					//}
-					//	else qDebug() << "NO RECORRIDO 2";
 					
 					if (m_FTList.contains(p.getBHid()-1)) {
 						m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
@@ -332,6 +323,7 @@ void ParserSB::parseMsg () {
 						if (t->getStep() == P2P_INVITATION) {
 								if (p.isFinished()){
 									qDebug() << "INVITACION finalizada";
+
 									qRegisterMetaType<Transfer*>("Transfer");
 									emit incomingFileTransfer (m_FTList[p.getBHid()], m_chatId);
 									t->setStep(P2P_NEGOTIATION);
@@ -351,56 +343,34 @@ void ParserSB::parseMsg () {
 								}
 						}	
 						else if (t->getStep() ==  P2P_TRANSFER){
+								
+								Transfer* tr = m_FTList[p.getBHid()];
 								qDebug() << "Recibido" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize(); 
 								if (p.isFinished()){
 									qDebug() << "Finalizado" << p.getBHid();
+									
+									
+									m_FTList[p.getBHid()]->setBHSessionID		(p.getBHSessionID()); 
+									m_FTList[p.getBHid()]->setBHTotalDataSize (p.getBHTotalDataSize());
+									m_FTList[p.getBHid()]->setBHIdentifier		(p.getBHid());    
+									m_FTList[p.getBHid()]->setBHAckIdentifier	(p.getBHAckIdentifier());	    
+									
+									P2P ackFin = P2P(nextIdtr());	
+									ackFin.setCmd(P2PC_ACK);
+									ackFin.setBHSessionID (t->getBHSessionID());
+									ackFin.setBHIdentifier	(t->incMyIdentifier(1));
+									ackFin.setBHTotalDataSize	(t->getBHTotalDataSize());
+									ackFin.setBHFlag(QByteArray::fromHex("02 00 00 00"));
+									ackFin.setBHAckIdentifier	(t->getBHIdentifier());
+								  	ackFin.setBHAckUniqueID (t->getBHAckIdentifier());
+									ackFin.setBHAckDataSize (t->getBHTotalDataSize());
+									ackFin.setTo		(t->getFrom());
+									qDebug() << "ENVIO: ACK a "<< t->getFrom() << ackFin.make().toHex();
+									m_socket->send(ackFin.make());
 								}
 						}
 						
 					}
-					//if (m_p2p.getBHtotalDataSize() != (m_p2p.getBHdataOffset() + m_p2p.getBHmessageLength())){
-					//	qDebug() << "\nMensaje incompleto " << m_p2p.getBHid() << "\n";
-					//	if (m_FTList.contains(m_p2p.getBHid())){
-					//		m_FTList[m_p2p.getBHid()].addData(m_p2p.getData());
-					//	}
-					//	else {
-					//		Transfer t = Transfer();
-					//		t.setP2P(m_p2p);
-					//		t.addData(m_p2p.getData());
-					//		m_FTList[m_p2p.getBHid()] = t;
-					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
-					//			qDebug("##  EMOTICONO");
-					//			return;
-					//		}
-					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
-					//			qDebug("##  WEBCAM");
-					//			return;
-					//		}
-					//	}
-					//	return;
-					//}
-					//else {
-					//	qDebug() << "\nMensaje completo " << m_p2p.getBHid();
-					//	if (m_FTList.contains(m_p2p.getBHid())){
-					//		m_FTList[m_p2p.getBHid()].addData(m_p2p.getData());
-					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){
-					//			qDebug() << m_FTList[m_p2p.getBHid()].getData();
-					//			qDebug("##  FILETRANSFER STEP 1 \n\n\n\n");
-					//			qRegisterMetaType<P2P>("P2P");
-					//			emit incomingFileTransfer (m_FTList[m_p2p.getBHid()].getP2P(), m_chatId);
-					//			return;
-					//		}
-					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
-					//			qDebug("##  EMOTICONO");
-					//			return;
-					//		}
-					//		if (m_FTList[m_p2p.getBHid()].getP2P().getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
-					//			qDebug("##  WEBCAM");
-					//			return;
-					//		}
-					//	}
-					//}
-					
 				}
 			}
 		}
