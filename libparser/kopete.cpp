@@ -96,12 +96,7 @@ using namespace std;
                         n = n.nextSibling();
                 } 
                 file.close();
-                //XML para los logs
-                //TODO
-                //buscar en dir ../kopete/logs
-                //MSNProtocol->cuentas,
-                //JabberProtocol->cuentas 
-                //etc, etc
+
 
                 //kdeRC format para las cuentas y protocolos
                 //TODO-ING
@@ -119,6 +114,64 @@ using namespace std;
                         }
                         file.close();
                 }
+
+                //XML para los logs
+                //TODO
+                dir.clear();
+                dir.append(home);
+                dir.append("/.kde/share/apps/kopete/logs");
+                QDir directory;
+                directory.setCurrent(dir);
+                //MSN
+                if (directory.exists("MSNProtocol")){
+                        //busqueda de cuentas
+                        QListIterator<QString> i(m_accounts);
+                        QString tmp;
+//                        tmp.append(dir);
+                        tmp.append("MSNProtocol/");
+                        while (i.hasNext()){
+                                QString acc;
+                                acc.append(i.next());
+//                                directory.setPath(tmp);
+                                acc.replace(QString("."), QString("-"));
+                                tmp.append(acc);
+                              qDebug() << tmp;
+                                if (directory.exists(tmp)){
+                                        QStringList files;
+                                        files = directory.entryList();
+                                        for (int j=0; j<files.size(); j++){
+                                                qDebug() << "file" << j << files.at(j);
+                                        }
+                                }
+                            tmp.clear();
+                            tmp.append(dir);
+                            tmp.append("/MSNProtocol/");
+                        }
+                }
+                //Jabber
+                if (directory.exists("JabberProtocol")){
+                        //busqueda de cuentas
+                        QListIterator<QString> i(m_accounts);
+//                        while (i.hasNext()){
+//                                dir.append("/.kde/share/apps/kopete/logs/JabberProtocol");
+//                                dir.append(i.next());
+//                                directory.setCurrent(dir);
+//                                QStringList files;
+//                                files = directory.entryList();
+//                                for (int j=0; j<files.size(); ++j){
+//                                        qDebug() << files.at(j);
+//                                }
+//                        }
+                }
+//                if (file.exists()){
+//                        file.open(QIODevice::ReadOnly | QIODevice::Text);
+//                        QTextStream in(&file);
+//                        while (!in.atEnd()) {
+//                                QString line = in.readLine();
+//                                processLine(line);
+//                        }
+//                        file.close();
+//                }
             }
 
             QList<QString> Kopete::getMetaContacts(){
