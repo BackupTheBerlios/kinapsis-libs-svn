@@ -165,8 +165,7 @@ void ParserP2P::parse(QByteArray data){
 		//qDebug() << "### SLP REQ: " << m_dc_bridges << m_dc_netId << m_dc_connType << m_dc_tcpConnType << m_dc_UPnpNat << m_dc_Icf << m_dc_hashedNonce << m_dc_sChannelState << m_dc_capabilities;
 	}
 	if (m_ContentType == "application/x-msnmsgr-sessionclosebody"){
-		m_closeSession = true;
-		//qDebug() << "### SLP BYE: Yes"; 
+		m_step = P2P_BYE;
 	}
 }
 

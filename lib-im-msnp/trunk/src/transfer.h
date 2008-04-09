@@ -55,7 +55,9 @@ public:
 	QByteArray getp2pSessionId	(){return m_p2pSessionId;}
 
 	void createMyIdentifier	();
+	void createAckIdentifier();
 	QByteArray incMyIdentifier(int inc);
+	QByteArray incAckIdentifier(int inc);
 
 	void setFileName (QByteArray fn) {m_filename = fn;}
 	void setType (QByteArray type) {m_type = type;}
@@ -77,6 +79,7 @@ private:
 	QByteArray m_data;
 
 	int m_myIdentifier;
+	int m_myAckIdentifier; 
 
 	// BINARY HEADER
 	QByteArray m_bh_sessionID;	

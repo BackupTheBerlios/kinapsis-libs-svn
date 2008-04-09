@@ -62,10 +62,17 @@ void Transfer::setBHAckDataSize 	(int ackDataSize 	) {m_bh_ackDataSize 	= int2by
 void Transfer::createMyIdentifier (){
 	m_myIdentifier = rand()%0x0FFFFFF0 + 4;
 }
+void Transfer::createAckIdentifier (){
+	m_myAckIdentifier = rand()%0x8FFFFFF0 + 4;
+}
 
 QByteArray Transfer::incMyIdentifier(int inc){
 	m_myIdentifier += inc;
 	return int2byte(m_myIdentifier, 8);
+}
+QByteArray Transfer::incAckIdentifier(int inc){
+	m_myAckIdentifier += inc;
+	return int2byte(m_myAckIdentifier, 8);
 }
 }
 #include "transfer.moc"

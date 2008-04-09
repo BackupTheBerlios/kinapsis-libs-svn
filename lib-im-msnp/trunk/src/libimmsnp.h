@@ -63,6 +63,7 @@ namespace libimmsnp {
 		P2P_NEGOTIATION,
 		P2P_TRANSFER,
 		P2P_ACK,
+		P2P_BYE,
 		P2P_NULL
 	};
 	
