@@ -31,6 +31,7 @@ ParserNS::ParserNS(QString msnPassport, QString msnPass, State initialStatus, Cl
 	//m_hasCommand = false;
 	m_isParsing = false;
 	m_protocol = protocol;
+	qRegisterMetaType<ConnectionError>("ConnectionError");
 }
 void ParserNS::init(){
 
