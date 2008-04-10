@@ -255,7 +255,7 @@ void ParserSB::parseMsg () {
 					}
 					
 					// Si hemos avanzado en el identificador, copiamos los datos anteriores, por si los necesitamos	
-					if (m_FTList.contains(p.getBHid()-1)) {
+					if (m_FTList.contains(p.getBHid()-1) && p.step() != P2P_INVITATION && p.step() != P2P_NULL) {
 						m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
 						m_FTList.remove(p.getBHid()-1);
 						qDebug() << "\nActualizo y borro - 1" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
@@ -268,7 +268,7 @@ void ParserSB::parseMsg () {
 					//}
 					// si no está lo añado, junto con sus datos
 					if (! m_FTList.contains(p.getBHid())) {
-						qDebug() << "NO LO Contiene" << p.getBHid();
+						qDebug() << "NO LO Contiene" << p.getBHid() << p.step();
 						Transfer* t = new Transfer();
 						t->setStep		(p.step());
 						t->createMyIdentifier	();
@@ -339,7 +339,7 @@ void ParserSB::parseMsg () {
 					}
 					// si que lo contiene
 					else {
-						qDebug() << "LO Contiene";
+						qDebug() << "LO Contiene" << p.step();
 						if (m_FTList[p.getBHid()]->getStep() == P2P_INVITATION) {
 								if (p.isFinished()){
 									qDebug() << "INVITACION finalizada"  << p.getBHid();
@@ -354,6 +354,7 @@ void ParserSB::parseMsg () {
 								}
 						}
 						else{ 
+							if (p.step()) m_FTList[p.getBHid()]->setStep(p.step());
 							if (m_FTList[p.getBHid()]->getStep() == P2P_NEGOTIATION){
 								if (p.isFinished()){
 									qDebug() << "INICIO NEGOCIACIONES finalizada"  << p.getBHid();

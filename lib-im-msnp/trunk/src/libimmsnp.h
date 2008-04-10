@@ -59,12 +59,12 @@ namespace libimmsnp {
 		MSG_P2P
 	};
 	enum P2pStep {
+		P2P_NULL,
 		P2P_INVITATION,
 		P2P_NEGOTIATION,
 		P2P_TRANSFER,
 		P2P_ACK,
-		P2P_BYE,
-		P2P_NULL
+		P2P_BYE
 	};
 	
 	enum P2pCmd {

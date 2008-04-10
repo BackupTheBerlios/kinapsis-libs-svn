@@ -70,6 +70,7 @@ void ParserP2P::parse(QByteArray data){
 	int dataLen = invitation.size() - 4;
 	m_data = invitation.mid(0,dataLen);
 	if (m_bh_sessionID != QByteArray::fromHex("00000000")){
+		qDebug() << "SET TRANSFER" << m_bh_sessionID.toHex();
 		m_step = P2P_TRANSFER;
 		return;
 	}
@@ -105,14 +106,11 @@ void ParserP2P::parse(QByteArray data){
 		m_ContentLength = QByteArray(fx.cap(1).toUtf8().data());
 
 	qDebug() << "#&&# PARSER P2P:  SLP DTA" << QByteArray(invitation).replace("\n","\\n").replace("\r","\\r");
-	//if (m_data.size() == 0) {
-	//	qDebug() << "\n\n## RECIBO ACK " << m_data.size() <<"\n";
-	//	m_step = P2P_ACK;
-	//}
 	
 	// INVITATION PHASE
 	if (m_ContentType == "application/x-msnmsgr-sessionreqbody"){
 		m_step = P2P_INVITATION;
+		qDebug() << "SET INVITATION" ;
 		fx.setPattern("EUF-GUID: \\{(\\S+)\\}");
 		if (fx.indexIn(invitation) != -1)
 			m_EUF_GUID = QByteArray(fx.cap(1).toUtf8().data());
@@ -130,6 +128,7 @@ void ParserP2P::parse(QByteArray data){
 	
 	if (m_ContentType == "application/x-msnmsgr-transreqbody"){
 		m_step = P2P_NEGOTIATION;
+		qDebug() << "SET NEGOTIATION" ;
 		// REQUEST PHASE
 		fx.setMinimal(TRUE);
 		fx.setPattern("Bridges?: (.*)\r\n");
