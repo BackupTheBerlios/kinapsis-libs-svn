@@ -37,10 +37,15 @@ public:
 	void setBHAckUniqueID 	 (int ackUniqueID 	);
 	void setBHAckDataSize 	 (int ackDataSize 	);
 
+	void setContext	(QByteArray data) {m_context = data;}
+	void addContext	(QByteArray data) {m_context += data;}
+
 	QByteArray getBHIdentifier  () {return m_bh_identifier;}
 	QByteArray getBHTotalDataSize  () {return m_bh_totalDataSize;}
 	QByteArray getBHAckIdentifier  () {return m_bh_ackIdentifier;}
 	QByteArray getBHSessionID  () {return m_bh_sessionID;}
+
+	QByteArray getContext () {return m_context;}
 
 	void setTo	  	(QByteArray to		) {m_to		 = to		;}
 	void setFrom	  	(QByteArray from	) {m_from	 = from		;}
@@ -64,12 +69,14 @@ public:
 	void setStep (P2pStep step) {m_step = step;}
 	void setDestination(QByteArray dest){m_destination = dest;}
 	void addData(QByteArray data){m_data += data;}
+	void setP2pType(P2pType type){m_p2pType = type;}
 	
 	QByteArray getFileName() {return m_filename;}
 	QByteArray getType(){return m_type;}
 	P2pStep getStep(){return m_step;}
 	QByteArray getDestination(){return m_destination;}
 	QByteArray getData(){return m_data;}
+	P2pType getP2pType(){return m_p2pType;}
 
 private:
 	QByteArray m_filename;
@@ -77,6 +84,7 @@ private:
 	P2pStep m_step;
 	QByteArray m_destination;
 	QByteArray m_data;
+	QByteArray m_context;
 
 	int m_myIdentifier;
 	int m_myAckIdentifier; 
@@ -101,6 +109,7 @@ private:
 	// INVITATION
 	QByteArray m_EUF_GUID;
 	QByteArray m_p2pSessionId;
+	P2pType m_p2pType;
 };
 
 }

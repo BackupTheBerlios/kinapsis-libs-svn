@@ -121,8 +121,10 @@ void ParserP2P::parse(QByteArray data){
 		if (fx.indexIn(invitation) != -1)
 			m_appId = QByteArray(fx.cap(1).toUtf8().data());
 		fx.setPattern("Context: (\\S+)");
-		if (fx.indexIn(invitation) != -1)
-			m_context 	=  QByteArray::fromHex(QByteArray::fromBase64(QByteArray(fx.cap(1).toUtf8().data())).mid(20).toHex().replace("00",""));
+		if (fx.indexIn(invitation) != -1){
+			//m_context 	=  QByteArray::fromHex(QByteArray::fromBase64(QByteArray(fx.cap(1).toUtf8().data())).mid(20).toHex().replace("00",""));
+			m_context = QByteArray(fx.cap(1).toUtf8());
+		}
 	}
 	
 	

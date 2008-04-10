@@ -27,6 +27,7 @@ SET(LibImMsnP_SRCS
 	msnobj.cpp
 	transfer.cpp
 	parserp2p.cpp
+	context.cpp
 )
 
 SET(LibImMsnP_HDRS
@@ -52,6 +53,7 @@ SET(LibImMsnP_HDRS
 	msnobj.h
 	transfer.h
 	parserp2p.h
+	context.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

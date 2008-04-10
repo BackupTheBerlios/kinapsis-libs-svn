@@ -13,6 +13,7 @@
 #include <QRegExp>
 #include <QFile>
 #include "parserswichboardserver.h"
+#include "context.h"
 
 namespace libimmsnp {
 ParserSB::ParserSB (QString address, int port, int chatId, QString msnPassport, QString ticket, QString sessid, Client* c){
@@ -274,24 +275,57 @@ void ParserSB::parseMsg () {
 						t->setBHTotalDataSize	(p.getBHTotalDataSize());
 						if (p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){ 
 							qDebug() << "## FILETRANSFER with id " << t->incMyIdentifier(0).toHex();
+							t->setP2pType(P2PT_FILE);
 						}
 						if (p.getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
 							qDebug() << "##  EMOTICONO\n";
+							t->setP2pType(P2PT_EMOTICON);
 						}
 						if (p.getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
 							qDebug() << "##  WEBCAM\n";
+							t->setP2pType(P2PT_WEBCAM);
 						}
 						m_FTList[p.getBHid()] = t;
 						
 						if (p.step() == P2P_INVITATION){
-								m_FTList[p.getBHid()]->setFileName(p.getFileName());
-								m_FTList[p.getBHid()]->setTo	   	(p.getTo	      	()); 
-								m_FTList[p.getBHid()]->setFrom	    	(p.getFrom	      	());
-								m_FTList[p.getBHid()]->setBranch	(p.getBranch      	());    
-								m_FTList[p.getBHid()]->setCallId	(p.getCallId      	());	    
-								m_FTList[p.getBHid()]->setp2pSessionId  (p.getp2pSessionId	());  
+							m_FTList[p.getBHid()]->setFileName(p.getContext());
+							m_FTList[p.getBHid()]->setTo	   	(p.getTo	      	()); 
+							m_FTList[p.getBHid()]->setFrom	    	(p.getFrom	      	());
+							m_FTList[p.getBHid()]->setBranch	(p.getBranch      	());    
+							m_FTList[p.getBHid()]->setCallId	(p.getCallId      	());	    
+							m_FTList[p.getBHid()]->setp2pSessionId  (p.getp2pSessionId	());  
+							
+							m_FTList[p.getBHid()]->setContext  (p.getContext());  
+								
+							qDebug() << "INICIO INVITACION"  << p.getBHid() <<m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+							if (p.isFinished()){
+								qDebug() << "INVITACION finalizada"  << p.getBHid();
+								Context c1 = Context();
+								c1.parse(m_FTList[p.getBHid()]->getContext());
+								exit(1);
+								if (t->getP2pType() == P2PT_EMOTICON) {
+									P2P bid = P2P(nextIdtr());	
+									bid.setCmd(P2PC_INITID);
+									bid.setTo		(t->getFrom());
+									bid.setBHIdentifier	(t->incMyIdentifier(0));
+									bid.setBHTotalDataSize	(t->getBHTotalDataSize());
+									bid.setBHMessageLength	(t->getBHTotalDataSize().mid(0,4));
+									bid.setBHAckIdentifier	(t->incAckIdentifier(1));
+									m_socket->send(bid.make());
 
-								qDebug() << "INICIO INVITACION"  << p.getBHid() <<m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
+									P2P ok200 = P2P(nextIdtr());	
+									ok200.setStep (P2P_INVITATION);
+									ok200.setCmd(P2PC_200OK);
+									ok200.setFrom			(t->getTo());
+									ok200.setTo			(t->getFrom());
+									ok200.setBranch				(t->getBranch());
+									ok200.setCallId				(t->getCallId());
+									ok200.setp2pSessionId		(t->getp2pSessionId());
+									ok200.setBHIdentifier		(t->incMyIdentifier(-3));
+									ok200.setBHAckIdentifier	(t->incAckIdentifier(1));
+									m_socket->send(ok200.make());
+								}
+							}
 						}
 						if (p.step() == P2P_NEGOTIATION){
 							qDebug() << "INICIO NEGOCIACIONES"  << p.getBHid();
@@ -333,16 +367,19 @@ void ParserSB::parseMsg () {
 					else {
 						qDebug() << "LO Contiene" << p.step();
 						if (m_FTList[p.getBHid()]->getStep() == P2P_INVITATION) {
+								m_FTList[p.getBHid()]->addContext  (p.getData());  
 								if (p.isFinished()){
 									qDebug() << "INVITACION finalizada"  << p.getBHid();
-
+									Context c = Context();
+									c.parse(m_FTList[p.getBHid()]->getContext());
+									exit(1);
 									qRegisterMetaType<Transfer*>("Transfer");
 									emit incomingFileTransfer (m_FTList[p.getBHid()], m_chatId);
 									m_FTList[p.getBHid()]->setStep(P2P_NEGOTIATION);
 								}
 								else {
 									qDebug() << "RECIBIENDO Invitacion"  << p.getBHid();
-									m_FTList[p.getBHid()]->addData (p.getData());
+									//m_FTList[p.getBHid()]->addData (p.getData());
 								}
 						}
 						else{ 

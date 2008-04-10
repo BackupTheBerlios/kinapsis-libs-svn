@@ -21,7 +21,7 @@ class ParserP2P {
 public:
 	ParserP2P ();
 	virtual ~ParserP2P();
-	QByteArray getFileName() {return m_context;}
+	QByteArray getContext() {return m_context;}
 
 	bool isFinished(); 
 
