@@ -104,7 +104,8 @@ void ParserSB::parseAns(){
 }
 void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	//m_FTList[msg.getBHid()].setDestination(path);
-	qDebug() << "@############# Transferencia Aceptada en:" << path;
+	msg->setDestination(path);
+	qDebug() << "@############# Transferencia Aceptada en:" << msg->getDestination();
 	P2P bid = P2P(nextIdtr());	
 	bid.setCmd(P2PC_INITID);
 	bid.setTo		(msg->getFrom());
@@ -260,12 +261,6 @@ void ParserSB::parseMsg () {
 						m_FTList.remove(p.getBHid()-1);
 						qDebug() << "\nActualizo y borro - 1" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
 					}
-					//// TODO Mirar porque hay paquetes con id-2
-					//if (m_FTList.contains(p.getBHid()-2)) {
-					//	m_FTList[p.getBHid()] = m_FTList[p.getBHid()-2];
-					//	m_FTList.remove(p.getBHid()-2);
-					//	qDebug() << "\nActualizo y borro con -2" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
-					//}
 					// si no está lo añado, junto con sus datos
 					if (! m_FTList.contains(p.getBHid())) {
 						qDebug() << "NO LO Contiene" << p.getBHid() << p.step();
@@ -332,9 +327,6 @@ void ParserSB::parseMsg () {
 						}
 						if (m_FTList[p.getBHid()]->getStep() ==  P2P_BYE){
 							qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";
-							if (m_FTList.contains(p.getBHid())) {
-								m_FTList.remove(p.getBHid());
-							}
 						}
 					}
 					// si que lo contiene
@@ -391,7 +383,15 @@ void ParserSB::parseMsg () {
 								if (m_FTList[p.getBHid()]->getStep() ==  P2P_TRANSFER){
 									Transfer* tr = m_FTList[p.getBHid()];
 									qDebug() << "Recibido" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize(); 
+                  			emit fileTransferProgress(p.getBHid(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
+									QFile * fd =  new QFile(m_FTList[p.getBHid()]->getDestination());
+                  			if (fd->open(QIODevice::Append)){
+                  			      qDebug() << "ESCRIBIENDO" << p.getBHid();
+                  			      fd->write(p.getData());
+                  			      fd->close();
+                  			}
 									if (p.isFinished()){
+                  			   emit fileTransferFinished(p.getBHid());
 										qDebug() << "Finalizado" << p.getBHid();
 										
 										
@@ -417,15 +417,12 @@ void ParserSB::parseMsg () {
 								else {
 									if (m_FTList[p.getBHid()]->getStep() ==  P2P_BYE){
 										qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";
-										if (m_FTList.contains(p.getBHid())) {
-											m_FTList.remove(p.getBHid());
-										}
 									}
 								}
 							}
 						}
 					}
-					qDebug() << "\n#### IDENTIFICADOR paquete" << p.getBHid() << m_FTList[p.getBHid()]->getFrom(); 
+					qDebug() << "\n#### IDENTIFICADOR paquete" << p.getBHid() << m_FTList[p.getBHid()]->getFrom() << m_FTList[p.getBHid()]->getDestination(); 
 				}
 			}
 		}
