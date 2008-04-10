@@ -33,6 +33,7 @@ class Kopete : public IMProgram {
         private:
             void processLine(QString line);
             void processMetacontacts(QDomElement e);
+            void processLogs(QDomElement e);
             
         public:
             Kopete();
@@ -52,6 +53,6 @@ class Kopete : public IMProgram {
             QList<QString> getLogs();
             void saveLogs();
 
-}; //fin declaracion clase Kopete derivada de IMProgram
+};
 
 #endif

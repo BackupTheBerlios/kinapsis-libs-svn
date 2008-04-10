@@ -27,12 +27,11 @@ using namespace std;
 #define _MANAGER_
 
 #include "improgram.h"
-//Clase manager para interactuar unicamente con la clase abstracta IMProgram
 
 class Manager{
         private:
             int m_numberIMP;
-            QList<IMProgram*> m_programs; //Vector con los ptros a las instancias de Kopete,pidgin...
+            QList<IMProgram*> m_programs;
             bool m_existPrograms;
 
             void searchIMPrograms(); 
@@ -44,6 +43,6 @@ class Manager{
             QList<IMProgram*> getIMPrograms();
             int getNumberIMPrograms();
     
-}; //fin declaracion clase Manager
+}; 
 
 #endif

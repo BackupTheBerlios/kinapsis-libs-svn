@@ -25,25 +25,25 @@ int main(){
                 QListIterator<IMProgram*> i(programs);
                 int j = 0;
                 while (i.hasNext()){
-                    p = programs[j];
-                    qDebug() << "PROGRAM FOUND:";
-                    qDebug() << "\t" << p->getName() << p->getVersion() << endl;
-                    p->parser(); //esta llamada rellena los atrib. accounts, protocols, contacts y logs
-                    accounts = p->getAccounts();
-                    protocols = p->getProtocols();
-                    metacontacts = p->getMetaContacts();
-                    logs = p->getLogs();
-                    qDebug() << "\tAccounts:";
-                    qDebug() << "\t" << accounts << endl;
-                    qDebug() << "\tProtocols:";
-                    qDebug() << "\t" << protocols << endl;
-                    qDebug() << "\tMeta contacts:";
-                    qDebug() << "\t" << metacontacts << endl;
-                    qDebug() << "\tLogs:";
-                    qDebug() << "\t" << logs << endl;
-                    p->saveLogs(); //esta llamada salva el atrib. logs en el fichero log de kinapsis
-                    i.next();
-                    j++;
+                        p = programs[j];
+                        qDebug() << "PROGRAM FOUND:";
+                        qDebug() << "\t" << p->getName() << p->getVersion() << endl;
+                        p->parser(); //esta llamada rellena los atrib. accounts, protocols, contacts y logs
+                        accounts = p->getAccounts();
+                        protocols = p->getProtocols();
+                        metacontacts = p->getMetaContacts();
+                        logs = p->getLogs();
+                        qDebug() << "\tAccounts:";
+                        qDebug() << "\t" << accounts << endl;
+                        qDebug() << "\tProtocols:";
+                        qDebug() << "\t" << protocols << endl;
+                        qDebug() << "\tMeta contacts:";
+                        qDebug() << "\t" << metacontacts << endl;
+                        qDebug() << "\tLogs:";
+                        qDebug() << "\t" << logs << endl;
+                        p->saveLogs(); //esta llamada salva el atrib. logs en el fichero log de kinapsis
+                        i.next();
+                        j++;
                 }
         }
         else{
