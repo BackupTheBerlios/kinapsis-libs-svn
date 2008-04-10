@@ -372,7 +372,6 @@ void ParserSB::parseMsg () {
 									qDebug() << "INVITACION finalizada"  << p.getBHid();
 									Context c = Context();
 									c.parse(m_FTList[p.getBHid()]->getContext());
-									exit(1);
 									qRegisterMetaType<Transfer*>("Transfer");
 									emit incomingFileTransfer (m_FTList[p.getBHid()], m_chatId);
 									m_FTList[p.getBHid()]->setStep(P2P_NEGOTIATION);
@@ -422,7 +421,7 @@ void ParserSB::parseMsg () {
 									qDebug() << "Recibido" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize(); 
                   			emit fileTransferProgress(p.getBHid(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
 									QFile * fd =  new QFile(m_FTList[p.getBHid()]->getDestination());
-                  			if (fd->open(QIODevice::Append)){
+                  			if (fd->open(QIODevice::WriteOnly)){
                   			      qDebug() << "ESCRIBIENDO" << p.getBHid();
                   			      fd->write(p.getData());
                   			      fd->close();
