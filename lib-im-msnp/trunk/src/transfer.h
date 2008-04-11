@@ -77,6 +77,9 @@ public:
 	QByteArray getData(){return m_data;}
 	P2pType getP2pType(){return m_p2pType;}
 
+	void setHasTransfered() {m_hasTransfered = true;}
+	bool hasTransfered() {return m_hasTransfered;}
+
 private:
 	QByteArray m_filename;
 	QByteArray m_type;
@@ -84,6 +87,8 @@ private:
 	QByteArray m_destination;
 	QByteArray m_data;
 	QByteArray m_context;
+
+	bool m_hasTransfered;	
 
 	int m_myIdentifier;
 	int m_myAckIdentifier; 

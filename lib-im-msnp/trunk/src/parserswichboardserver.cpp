@@ -267,10 +267,9 @@ void ParserSB::parseMsg () {
 					// si no está lo añado, junto con sus datos
 					if (! m_FTList.contains(p.getBHid())) {
 						qDebug() << "NO LO Contiene" << p.getBHid() << p.step() << m_FTList.keys();
-						int desp;
+						int desp = 0;
 						if (p.step() == P2P_NEGOTIATION){
-							qDebug() << "ACTUALIZANDO" << m_FTList.keys();
-							for (desp=1;desp<=m_FTList.size();desp++){
+							while (++desp){
 								if (m_FTList.contains(p.getBHid()-desp)){
 									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
 									m_FTList.remove(p.getBHid()-desp);
@@ -281,13 +280,26 @@ void ParserSB::parseMsg () {
 							}
 							qDebug() << "NO ACTUALIZADO" << m_FTList.keys();
 						}
+						desp = 0;
 						if (p.step() == P2P_TRANSFER){
-							qDebug() << "ACTUALIZANDO" << m_FTList.keys();
-							for (desp=1;desp<=100;desp++){
+							while (++desp){
 								if (m_FTList.contains(p.getBHid()-desp)){
 									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
 									m_FTList.remove(p.getBHid()-desp);
 									m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
+									qDebug() << "ACTUALIZADO" << m_FTList.keys();
+									break;
+								}
+							}
+							qDebug() << "NO ACTUALIZADO" << m_FTList.keys();
+						}
+						if (p.step() == P2P_BYE){
+						desp = 0;
+							while (++desp){
+								if (m_FTList.contains(p.getBHid()-desp)){
+									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
+									m_FTList.remove(p.getBHid()-desp);
+									m_FTList[p.getBHid()]->setStep(P2P_BYE);
 									qDebug() << "ACTUALIZADO" << m_FTList.keys();
 									break;
 								}
@@ -366,7 +378,7 @@ void ParserSB::parseMsg () {
 								neg.setCallId				(p.getCallId());
 								neg.setp2pSessionId		(p.getp2pSessionId());
 								neg.setBHIdentifier		(m_FTList[p.getBHid()]->incMyIdentifier(0));
-								neg.setBHAckIdentifier	(m_FTList[p.getBHid()]->incMyIdentifier(1));
+								neg.setBHAckIdentifier	(m_FTList[p.getBHid()]->incAckIdentifier(1));
 								//qDebug() << "ENVIO: 200 OK NEGOTIATION" << neg.make().toHex();
 								m_socket->send				(neg.make());
 								t->setStep(P2P_TRANSFER);
@@ -380,13 +392,13 @@ void ParserSB::parseMsg () {
 							qDebug() << "TRANSFERENCIA RECIBIENDO" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize() << t->getDestination(); 
                   	emit fileTransferProgress(p.getBHid(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
 							QFile * fd =  new QFile(t->getDestination());
-                  	if (fd->open(QIODevice::WriteOnly)){
+                  	if (fd->open(QIODevice::Append)){
                   	      qDebug() << "TRANSFERENCIA ESCRIBIENDO" << p.getBHid();
                   	      fd->write(p.getData());
                   	      fd->close();
                   	}
 							if (p.isFinished()){
-                  	   emit fileTransferFinished(p.getBHid());
+								t->setHasTransfered();
 								qDebug() << "Finalizado" << p.getBHid();
 								
 								t->setBHSessionID			(p.getBHSessionID()); 
@@ -406,11 +418,14 @@ void ParserSB::parseMsg () {
 								ackFin.setTo						(t->getFrom());
 								qDebug() << "ENVIO: ACK a "<< t->getFrom() << ackFin.make().toHex();
 								m_socket->send(ackFin.make());
-								m_FTList.remove(p.getBHid());
-								qDebug() << "ELIMINADO" << m_FTList.keys();
 							}
 						}
 						else if (t->getStep() ==  P2P_BYE){
+								if (t->hasTransfered())
+	                  	   emit fileTransferFinished(p.getBHid());
+								else qDebug() << "\n\n\n\nCANCELADOOOO \n\n\n\n";
+								m_FTList.remove(p.getBHid());
+								qDebug() << "ELIMINADO" << m_FTList.keys();
 								qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";
 						}
 					}

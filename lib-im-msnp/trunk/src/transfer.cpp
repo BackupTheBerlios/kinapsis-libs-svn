@@ -19,6 +19,7 @@ Transfer::Transfer () {
 	m_filename = "newFile.txt";
 	m_type = "";
 	m_step = P2P_NULL;
+	m_hasTransfered = false;
 }
 Transfer::~Transfer() {}
 
