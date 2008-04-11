@@ -39,7 +39,7 @@ void Context::parse(QByteArray data){
 	m_size = decoded.mid(8,8);
 	m_type = decoded.mid(16,4);
 	QTextCodec *codec = QTextCodec::codecForName("UTF-16");
-	m_name = codec->toUnicode(decoded.mid(20,520)).toUtf8();
+	m_name = QByteArray(QString(codec->toUnicode(decoded.mid(20,520)).toUtf8()).toUtf8());
 	qDebug() << m_size.toHex() << getSize() <<m_name.toHex() << m_name;
 	m_preview = decoded.mid(574);	
 

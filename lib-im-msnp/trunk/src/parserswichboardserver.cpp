@@ -249,11 +249,6 @@ void ParserSB::parseMsg () {
 					if (p.getData().size() == 0){
 						// Es un ACK 
 						qDebug() << "RECIBO ACK" << p.getBHid();
-						if (m_FTList.contains(p.getBHid()-1)) {
-							m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
-							m_FTList.remove(p.getBHid()-1);
-							qDebug() << "\nActualizo y borro en ACK- 1" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
-						}
 					return ;
 					}
 					
@@ -300,12 +295,12 @@ void ParserSB::parseMsg () {
 							qDebug() << "INVITACION INICIO"  << p.getBHid() << "\n";
 							if (p.isFinished()){
 								Context c1 = Context();
-								c1.parse(m_FTList[p.getBHid()]->getContext());
+								c1.parse(t->getContext());
 								t->setFileName			(c1.getName());
 								m_FTList.insert (p.getBHid(), t);
 								qDebug() << "INVITACION FIN 1"  << p.getBHid() << t->getFileName();
 								emit incomingFileTransfer (t, m_chatId);
-								m_FTList[p.getBHid()]->setStep(P2P_NEGOTIATION);
+								t->setStep(P2P_NEGOTIATION);
 							}
 							else m_FTList.insert (p.getBHid(), t);
 						}
@@ -319,6 +314,7 @@ void ParserSB::parseMsg () {
 								if (p.isFinished()){
 									Context c = Context();
 									c.parse(t->getContext());
+									t->setFileName			(c.getName());
 									qDebug() << "INVITACION FIN 2"  << p.getBHid() << t->getFileName();
 									emit incomingFileTransfer (t, m_chatId);
 									t->setStep(P2P_NEGOTIATION);
