@@ -321,14 +321,6 @@ void ParserSB::parseMsg () {
 							t->setCallId				(p.getCallId      ());	    
 							t->setp2pSessionId  		(p.getp2pSessionId());  
 							t->setContext  			(p.getContext		());  
-							m_FTList.insert (p.getBHid(), t);
-						}
-					}
-					// Una vez que lo he metido
-					if (m_FTList.contains(p.getBHid())) {
-						qDebug() << "LO Contiene" << p.step() << p.getBHid()  << m_FTList.keys();
-						Transfer* t = m_FTList[p.getBHid()];
-						if (t->getStep() == P2P_INVITATION) {
 							if (p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){ 
 								qDebug() << "## FILETRANSFER with id " << t->incMyIdentifier(0).toHex();
 								t->setP2pType(P2PT_FILE);
@@ -342,14 +334,28 @@ void ParserSB::parseMsg () {
 								t->setP2pType(P2PT_WEBCAM);
 							}
 								
+							m_FTList.insert (p.getBHid(), t);
+						}
+					}
+					// Una vez que lo he metido
+					if (m_FTList.contains(p.getBHid())) {
+						qDebug() << "LO Contiene" << p.step() << p.getBHid()  << m_FTList.keys();
+						Transfer* t = m_FTList[p.getBHid()];
+						if (t->getStep() == P2P_INVITATION) {
 							qDebug() << "INVITACION"  << p.getBHid()  << m_FTList.keys();
 							if (p.isFinished()){
-								Context c1 = Context();
-								c1.parse(t->getContext());
-								t->setFileName			(c1.getName());
-								m_FTList.insert (p.getBHid(), t);
-								qDebug() << "INNVITACION FIN"  << p.getBHid() << t->getFileName();
-								emit incomingFileTransfer (t, m_chatId);
+								if (t->getP2pType() == P2PT_FILE){
+									Context c1 = Context();
+									c1.parse(t->getContext());
+									t->setFileName			(c1.getName());
+									m_FTList.insert (p.getBHid(), t);
+									qDebug() << "INNVITACION FIN"  << p.getBHid() << t->getFileName();
+									emit incomingFileTransfer (t, m_chatId);
+								}
+								if (t->getP2pType() == P2PT_EMOTICON){
+								}
+								if (t->getP2pType() == P2PT_WEBCAM){
+								}
 								t->setStep(P2P_NEGOTIATION);
 							}
 							else {
@@ -398,6 +404,7 @@ void ParserSB::parseMsg () {
                   	      fd->close();
                   	}
 							if (p.isFinished()){
+	                  	emit fileTransferFinished(p.getBHid());
 								t->setHasTransfered();
 								qDebug() << "Finalizado" << p.getBHid();
 								
@@ -421,9 +428,9 @@ void ParserSB::parseMsg () {
 							}
 						}
 						else if (t->getStep() ==  P2P_BYE){
-								if (t->hasTransfered())
-	                  	   emit fileTransferFinished(p.getBHid());
-								else qDebug() << "\n\n\n\nCANCELADOOOO \n\n\n\n";
+								if (!t->hasTransfered()){
+									qDebug() << "\n\n\n\nCANCELADOOOO \n\n\n\n";
+								}
 								m_FTList.remove(p.getBHid());
 								qDebug() << "ELIMINADO" << m_FTList.keys();
 								qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";

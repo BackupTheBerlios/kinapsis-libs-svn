@@ -43,6 +43,8 @@ void Context::parse(QByteArray data){
 	qDebug() << m_size.toHex() << getSize() <<m_name.toHex() << m_name;
 	m_preview = decoded.mid(574);	
 
+	qDebug() << m_preview.toBase64() << m_name << m_size;
+
 	QFile * fd =  new QFile("preview-" + m_name + ".png");
    if (fd->open(QIODevice::WriteOnly)){
          fd->write(decoded.mid(574));
