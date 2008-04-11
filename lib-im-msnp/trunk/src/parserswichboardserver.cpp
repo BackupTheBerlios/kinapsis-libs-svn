@@ -353,8 +353,38 @@ void ParserSB::parseMsg () {
 									emit incomingFileTransfer (t, m_chatId);
 								}
 								if (t->getP2pType() == P2PT_EMOTICON){
+									m_FTList.insert (p.getBHid(), t);
+										P2P bid = P2P(nextIdtr());	
+										bid.setCmd(P2PC_INITID);
+										bid.setTo					(t->getFrom());
+										bid.setBHIdentifier		(t->incMyIdentifier(0));
+										bid.setBHTotalDataSize	(t->getBHTotalDataSize());
+										bid.setBHAckIdentifier	(t->getBHIdentifier());
+										bid.setBHAckUniqueID		(t->getBHAckIdentifier());
+										bid.setBHAckDataSize		(t->getBHTotalDataSize());
+										bid.setBHFlag				(QByteArray::fromHex("02 00 00 00"));
+										//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
+										m_socket->send				(bid.make());
+
+										P2P ok200 = 				P2P(nextIdtr());	
+										ok200.setStep 				(P2P_INVITATION);
+										ok200.setCmd				(P2PC_200OK);
+										ok200.setFrom				(t->getTo());
+										ok200.setCsEq				(1);
+										ok200.setTo					(t->getFrom());
+										ok200.setBranch			(t->getBranch());
+										ok200.setCallId			(t->getCallId());
+										ok200.setp2pSessionId	(t->getp2pSessionId());
+										
+										ok200.setBHIdentifier	(t->incMyIdentifier(0));
+										ok200.setBHAckIdentifier(t->incAckIdentifier(1));
+
+										//qDebug() << "ENVIO: 200 OK" << ok200.make().toHex();
+
+										m_socket->send(ok200.make());
 								}
 								if (t->getP2pType() == P2PT_WEBCAM){
+									m_FTList.insert (p.getBHid(), t);
 								}
 								t->setStep(P2P_NEGOTIATION);
 							}
@@ -460,6 +490,8 @@ void ParserSB::parseMsg () {
 					printf ("MSN::ParserSB::Log #%i: MSG Guiño %s,%s\n",m_chatId, messageID2.toUtf8().data(), dataWink2.toUtf8().data() );
 				}
 			}
+			else
+				m_hasCommand = false;
 		}
 		else
 			m_hasCommand = false;
