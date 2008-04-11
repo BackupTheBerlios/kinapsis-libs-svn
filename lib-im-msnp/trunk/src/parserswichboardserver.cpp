@@ -274,6 +274,7 @@ void ParserSB::parseMsg () {
 								if (m_FTList.contains(p.getBHid()-desp)){
 									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
 									m_FTList.remove(p.getBHid()-desp);
+									m_FTList[p.getBHid()]->setStep(P2P_NEGOTIATION);
 									qDebug() << "ACTUALIZADO" << m_FTList.keys();
 									break;
 								}
@@ -286,6 +287,7 @@ void ParserSB::parseMsg () {
 								if (m_FTList.contains(p.getBHid()-desp)){
 									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
 									m_FTList.remove(p.getBHid()-desp);
+									m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
 									qDebug() << "ACTUALIZADO" << m_FTList.keys();
 									break;
 								}
@@ -375,7 +377,7 @@ void ParserSB::parseMsg () {
 							}
 						}	
 						else if (t->getStep() ==  P2P_TRANSFER){
-							qDebug() << "TRANSFERENCIA RECIBIENDO" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize(); 
+							qDebug() << "TRANSFERENCIA RECIBIENDO" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize() << t->getDestination(); 
                   	emit fileTransferProgress(p.getBHid(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
 							QFile * fd =  new QFile(t->getDestination());
                   	if (fd->open(QIODevice::WriteOnly)){
@@ -404,12 +406,13 @@ void ParserSB::parseMsg () {
 								ackFin.setTo						(t->getFrom());
 								qDebug() << "ENVIO: ACK a "<< t->getFrom() << ackFin.make().toHex();
 								m_socket->send(ackFin.make());
+								m_FTList.remove(p.getBHid());
+								qDebug() << "ELIMINADO" << m_FTList.keys();
 							}
 						}
 						else if (t->getStep() ==  P2P_BYE){
-							qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";
+								qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";
 						}
-					qDebug() << "\n#### IDENTIFICADOR paquete" << p.getBHid() << m_FTList[p.getBHid()]->getFrom() << m_FTList[p.getBHid()]->getDestination(); 
 					}
 				}
 			}
