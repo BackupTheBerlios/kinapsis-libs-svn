@@ -52,7 +52,7 @@ QByteArray MSG::makeCmd(){
 				log = "Y";
 			else
 				log = "N";
-			msg = "MIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: " + m_clientName + " " + m_clientVersion + "\r\nChat-Logging: " + log;
+			msg = "MIME-Version: 1.0\r\nContent-Type: text/x-clientcaps\r\n\r\nClient-Name: " + m_clientName + " " + m_clientVersion + "\r\nChat-Logging: " + log + "\r\n";
 			res.append(beginCmd() + " U " + QString::number(msg.size()) + "\r\n" + msg + endCmd());
 			return res;
 			break;

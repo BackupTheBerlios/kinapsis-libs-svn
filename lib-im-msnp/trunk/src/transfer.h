@@ -15,7 +15,6 @@
 #define _TRANSFER_H_
 
 #include "libimmsnp.h"
-#include <stdlib.h>
 #include <QObject>
 namespace libimmsnp {
 

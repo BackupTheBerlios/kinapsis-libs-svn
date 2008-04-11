@@ -32,6 +32,15 @@ ParserSB::ParserSB (QString address, int port, int chatId, QString msnPassport, 
 	qRegisterMetaType<Transfer*>("Transfer");
 }
 
+int toInt (QByteArray num){
+	bool ok;
+	QByteArray tmp = num.mid(3,1).toHex().data();
+	tmp.append(num.mid(2,1).toHex().data());
+	tmp.append(num.mid(1,1).toHex().data());
+	tmp.append(num.mid(0,1).toHex().data());
+	return tmp.toInt(&ok,16);
+}
+
 void ParserSB::run(){
 	m_socket = new msocket ();
 	m_socket->connect(m_address, m_port);
@@ -113,8 +122,10 @@ void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	bid.setTo		(msg->getFrom());
 	bid.setBHIdentifier	(msg->incMyIdentifier(0));
 	bid.setBHTotalDataSize	(msg->getBHTotalDataSize());
-	bid.setBHMessageLength	(msg->getBHTotalDataSize().mid(0,4));
-	bid.setBHAckIdentifier	(msg->incAckIdentifier(1));
+	bid.setBHAckIdentifier	(msg->getBHIdentifier());
+	bid.setBHAckUniqueID		(msg->getBHAckIdentifier());
+	bid.setBHAckDataSize		(msg->getBHTotalDataSize());
+	bid.setBHFlag				(QByteArray::fromHex("02 00 00 00"));
 	//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
 	m_socket->send(bid.make());
 
@@ -122,12 +133,13 @@ void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	ok200.setStep (P2P_INVITATION);
 	ok200.setCmd(P2PC_200OK);
 	ok200.setFrom			(msg->getTo());
+	ok200.setCsEq					(1);
 	ok200.setTo			(msg->getFrom());
 	ok200.setBranch			(msg->getBranch());
 	ok200.setCallId			(msg->getCallId());
 	ok200.setp2pSessionId		(msg->getp2pSessionId());
 	
-	ok200.setBHIdentifier		(msg->incMyIdentifier(-3));
+	ok200.setBHIdentifier		(msg->incMyIdentifier(1));
 	ok200.setBHAckIdentifier	(msg->incAckIdentifier(1));
 
 	//qDebug() << "ENVIO: 200 OK" << ok200.make().toHex();
@@ -248,16 +260,38 @@ void ParserSB::parseMsg () {
 
 					if (p.getData().size() == 0){
 						// Es un ACK 
-						qDebug() << "RECIBO ACK" << p.getBHid();
-					return ;
+						m_FTList.insert(p.getBHid(), m_FTList[p.getBHid()-1]);
+						m_FTList.remove(p.getBHid()-1);
+						qDebug() << "RECIBO ACK" << p.getBHid() << m_FTList.size() << m_FTList.keys();
+						Transfer* t = m_FTList[p.getBHid()];
+						t->setBHIdentifier(p.getBHid());
+						if (p.getBHFlag() == 4){
+							P2P bid = 						P2P(nextIdtr());	
+							bid.setCmd						(P2PC_INITID);
+							bid.setTo						(t->getFrom());
+							bid.setBHIdentifier			(t->incMyIdentifier(0));
+							bid.setBHTotalDataSize		(t->getBHTotalDataSize());
+							bid.setBHMessageLength		(t->getBHTotalDataSize().mid(0,4));
+							bid.setBHAckIdentifier		(t->getBHIdentifier());
+							//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
+							m_socket->send(bid.make());
+							P2P ok200 = 					P2P (nextIdtr());	
+							ok200.setStep 					(P2P_INVITATION);
+							ok200.setCmd					(P2PC_200OK);
+							ok200.setFrom					(t->getTo());
+							ok200.setCsEq					(1);
+							ok200.setTo						(t->getFrom());
+							ok200.setBranch				(t->getBranch());
+							ok200.setCallId				(t->getCallId());
+							ok200.setp2pSessionId		(t->getp2pSessionId());
+							ok200.setBHIdentifier		(t->incMyIdentifier(1));
+							ok200.setBHAckIdentifier	(t->incAckIdentifier(1));
+							m_FTList.insert(toInt(t->getBHIdentifier()), t);
+							m_socket->send(ok200.make());
+						}
+						return ;
 					}
 					
-					// Si hemos avanzado en el identificador, copiamos los datos anteriores, por si los necesitamos	
-					if (m_FTList.contains(p.getBHid()-1) && p.step() != P2P_INVITATION && p.step() != P2P_NULL) {
-						m_FTList[p.getBHid()] = m_FTList[p.getBHid()-1];
-						m_FTList.remove(p.getBHid()-1);
-						qDebug() << "\nActualizo y borro - 1" << m_FTList[p.getBHid()]->getBranch() << m_FTList[p.getBHid()]->getCallId() << m_FTList[p.getBHid()]->getp2pSessionId() << "\n";
-					}
 					// si no está lo añado, junto con sus datos
 					if (! m_FTList.contains(p.getBHid())) {
 						qDebug() << "NO LO Contiene" << p.getBHid() << p.step();
@@ -307,10 +341,12 @@ void ParserSB::parseMsg () {
 					}
 					// si que lo contiene
 					else {
-						qDebug() << "LO Contiene" << p.step();
+						qDebug() << "LO Contiene" << p.step() << p.getBHid();
 						Transfer* t = m_FTList[p.getBHid()];
 						if (t->getStep() == P2P_INVITATION) {
+						qDebug() << "LO Contiene" << p.step() <<  p.getBHid();
 								t->addContext  (p.getData());  
+						qDebug() << "LO Contiene" << p.step() <<  p.getBHid();
 								if (p.isFinished()){
 									Context c = Context();
 									c.parse(t->getContext());
@@ -325,7 +361,7 @@ void ParserSB::parseMsg () {
 						}
 						else{ 
 
-							if (p.step()) t->setStep(p.step()); // si no envian negociaciones
+							//if (p.step()) t->setStep(p.step()); // si no envian negociaciones
 
 							if (t->getStep() == P2P_NEGOTIATION){
 								if (p.isFinished()){

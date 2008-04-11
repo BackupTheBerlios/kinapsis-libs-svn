@@ -12,6 +12,8 @@
 */
 
 #include "transfer.h"
+#include <stdlib.h>
+#include <time.h>
 namespace libimmsnp {
 Transfer::Transfer () {
 	m_filename = "newFile.txt";
@@ -60,9 +62,11 @@ void Transfer::setBHAckUniqueID 	(int ackUniqueID 	) {m_bh_ackUniqueID 	= int2by
 void Transfer::setBHAckDataSize 	(int ackDataSize 	) {m_bh_ackDataSize 	= int2byte(ackDataSize 	,16);}
 
 void Transfer::createMyIdentifier (){
+	srand(time(0));
 	m_myIdentifier = rand()%0x0FFFFFF0 + 4;
 }
 void Transfer::createAckIdentifier (){
+	srand(time(0));
 	m_myAckIdentifier = rand()%0x8FFFFFF0 + 4;
 }
 

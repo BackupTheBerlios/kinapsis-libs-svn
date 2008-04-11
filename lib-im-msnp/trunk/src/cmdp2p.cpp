@@ -81,7 +81,7 @@ QByteArray P2P::make(){
 		msnslpData.append("To: <msnmsgr:" + m_to + ">\r\n");
 		msnslpData.append("From: <msnmsgr:"+ m_from + ">\r\n");
 		msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={" + m_branch + "}\r\n");
-		msnslpData.append("CSeq: 1 \r\n");
+		msnslpData.append("CSeq: " + QByteArray::number(m_CsEq) + " \r\n");
 		msnslpData.append("Call-ID: {" + m_callId + "}\r\n");		
 		msnslpData.append("Max-Forwards: 0\r\n");
 		if (m_step == P2P_INVITATION) {
@@ -109,7 +109,7 @@ QByteArray P2P::make(){
 	data = "MIME-Version: 1.0\r\nContent-Type: application/x-msnmsgrp2p\r\nP2P-Dest: " + m_to + "\r\n\r\n";
 	data.append(binaryHeader);
 	data.append(msnslpData);
-	if (m_cmd == P2PC_200OK || m_cmd == P2PC_ACK){
+	if (m_cmd == P2PC_200OK || m_cmd == P2PC_ACK || m_cmd == P2PC_INITID){
 		data.append(QByteArray::fromHex("00 00 00 00"));
 	}
 	res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());

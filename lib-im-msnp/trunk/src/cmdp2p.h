@@ -35,6 +35,8 @@ public:
 	void setBHAckUniqueID 	 (QByteArray ackUniqueID 	) {m_bh_ackUniqueID 	= ackUniqueID 	;}
 	void setBHAckDataSize 	 (QByteArray ackDataSize 	) {m_bh_ackDataSize 	= ackDataSize 	;}
 
+	void setCsEq (int cseq) {m_CsEq = cseq;}
+
 	void setStep(P2pStep step) {m_step = step;}
 	void setCmd(P2pCmd cmd) {m_cmd = cmd;}
 	void setFrom (QByteArray from) {m_from = from;}
