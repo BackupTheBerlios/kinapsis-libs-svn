@@ -48,7 +48,6 @@ bool ParserP2P::isFinished() {
 }
 
 void ParserP2P::parse(QByteArray data){
-	qDebug() << "\n\n NEW DATA \n\n";
 	QByteArray binaryHeader = data.mid(data.indexOf("\r\n\r\n")+4, 48);
 	//http://msnpiki.msnfanatic.com/index.php/MSNC:Binary_Headers
 	// SessionID[4]	Identifier[4]	Data offset[8] 		Total data size[8]	Message length[4]	Flag [4]    ACKidentifier[4] ACKunique ID[4]       ACK data size[8]
@@ -63,7 +62,6 @@ void ParserP2P::parse(QByteArray data){
 	m_bh_ackUniqueID	= binaryHeader.mid(36,4);	
 	m_bh_ackDataSize	= binaryHeader.mid(40,8);	
 
-	qDebug () << data.toHex();
 	qDebug () << "#&&# PARSER P2P:  SLP BIN:" << m_bh_sessionID.toHex() << m_bh_identifier.toHex() << m_bh_dataOffset.toHex() << m_bh_totalDataSize.toHex() << m_bh_messageLength.toHex() << m_bh_flag.toHex() << m_bh_ackIdentifier.toHex()  << m_bh_ackUniqueID.toHex()<< m_bh_ackDataSize.toHex();
 
 	QByteArray invitation = data.mid(data.indexOf("\r\n\r\n")+52);

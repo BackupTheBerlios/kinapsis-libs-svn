@@ -139,7 +139,7 @@ void ParserSB::acceptFileTransfer (Transfer* msg, QByteArray path) {
 	ok200.setCallId			(msg->getCallId());
 	ok200.setp2pSessionId		(msg->getp2pSessionId());
 	
-	ok200.setBHIdentifier		(msg->incMyIdentifier(1));
+	ok200.setBHIdentifier		(msg->incMyIdentifier(0));
 	ok200.setBHAckIdentifier	(msg->incAckIdentifier(1));
 
 	//qDebug() << "ENVIO: 200 OK" << ok200.make().toHex();
@@ -260,65 +260,61 @@ void ParserSB::parseMsg () {
 
 					if (p.getData().size() == 0){
 						// Es un ACK 
-						m_FTList.insert(p.getBHid(), m_FTList[p.getBHid()-1]);
-						m_FTList.remove(p.getBHid()-1);
 						qDebug() << "RECIBO ACK" << p.getBHid() << m_FTList.size() << m_FTList.keys();
-						Transfer* t = m_FTList[p.getBHid()];
-						t->setBHIdentifier(p.getBHid());
-						if (p.getBHFlag() == 4){
-							P2P bid = 						P2P(nextIdtr());	
-							bid.setCmd						(P2PC_INITID);
-							bid.setTo						(t->getFrom());
-							bid.setBHIdentifier			(t->incMyIdentifier(0));
-							bid.setBHTotalDataSize		(t->getBHTotalDataSize());
-							bid.setBHMessageLength		(t->getBHTotalDataSize().mid(0,4));
-							bid.setBHAckIdentifier		(t->getBHIdentifier());
-							//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
-							m_socket->send(bid.make());
-							P2P ok200 = 					P2P (nextIdtr());	
-							ok200.setStep 					(P2P_INVITATION);
-							ok200.setCmd					(P2PC_200OK);
-							ok200.setFrom					(t->getTo());
-							ok200.setCsEq					(1);
-							ok200.setTo						(t->getFrom());
-							ok200.setBranch				(t->getBranch());
-							ok200.setCallId				(t->getCallId());
-							ok200.setp2pSessionId		(t->getp2pSessionId());
-							ok200.setBHIdentifier		(t->incMyIdentifier(1));
-							ok200.setBHAckIdentifier	(t->incAckIdentifier(1));
-							m_FTList.insert(toInt(t->getBHIdentifier()), t);
-							m_socket->send(ok200.make());
-						}
 						return ;
 					}
 					
 					// si no está lo añado, junto con sus datos
 					if (! m_FTList.contains(p.getBHid())) {
-						qDebug() << "NO LO Contiene" << p.getBHid() << p.step();
-						Transfer* t = new Transfer();
-
-						t->setStep					(p.step());
-						t->createMyIdentifier	();
-						t->createAckIdentifier	();
-						t->addData					(p.getData());
-						t->setBHIdentifier		(p.getBHid());
-						t->setBHAckIdentifier	(p.getBHAckIdentifier());
-						t->setBHTotalDataSize	(p.getBHTotalDataSize());
-
-						if (p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){ 
-							qDebug() << "## FILETRANSFER with id " << t->incMyIdentifier(0).toHex();
-							t->setP2pType(P2PT_FILE);
+						qDebug() << "NO LO Contiene" << p.getBHid() << p.step() << m_FTList.keys();
+						int desp;
+						if (p.step() == P2P_NEGOTIATION){
+							qDebug() << "ACTUALIZANDO" << m_FTList.keys();
+							for (desp=1;desp<=m_FTList.size();desp++){
+								if (m_FTList.contains(p.getBHid()-desp)){
+									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
+									m_FTList.remove(p.getBHid()-desp);
+									qDebug() << "ACTUALIZADO" << m_FTList.keys();
+									break;
+								}
+							}
+							qDebug() << "NO ACTUALIZADO" << m_FTList.keys();
 						}
-						if (p.getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
-							qDebug() << "##  EMOTICONO\n";
-							t->setP2pType(P2PT_EMOTICON);
+						if (p.step() == P2P_TRANSFER){
+							qDebug() << "ACTUALIZANDO" << m_FTList.keys();
+							for (desp=1;desp<=m_FTList.size()+1;desp++){
+								if (m_FTList.contains(p.getBHid()-desp)){
+									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
+									m_FTList.remove(p.getBHid()-desp);
+									qDebug() << "ACTUALIZADO" << m_FTList.keys();
+									break;
+								}
+							}
+							qDebug() << "NO ACTUALIZADO" << m_FTList.keys();
 						}
-						if (p.getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
-							qDebug() << "##  WEBCAM\n";
-							t->setP2pType(P2PT_WEBCAM);
-						}
-						
 						if (p.step() == P2P_INVITATION){
+							Transfer* t = new Transfer();
+							if (p.getEUF_GUID() == "5D3E02AB-6190-11D3-BBBB-00C04F795683"){ 
+								qDebug() << "## FILETRANSFER with id " << t->incMyIdentifier(0).toHex();
+								t->setP2pType(P2PT_FILE);
+							}
+							if (p.getEUF_GUID() == "A4268EEC-FEC5-49E5-95C3-F126696BDBF6"){
+								qDebug() << "##  EMOTICONO\n";
+								t->setP2pType(P2PT_EMOTICON);
+							}
+							if (p.getEUF_GUID() == "4BD96FC0-AB17-4425-A14A-439185962DC8"){
+								qDebug() << "##  WEBCAM\n";
+								t->setP2pType(P2PT_WEBCAM);
+							}
+
+							t->setStep					(p.step());
+							t->createMyIdentifier	();
+							t->createAckIdentifier	();
+							t->addData					(p.getData());
+							t->setBHIdentifier		(p.getBHid());
+							t->setBHAckIdentifier	(p.getBHAckIdentifier());
+							t->setBHTotalDataSize	(p.getBHTotalDataSize());
+
 							t->setTo	   			(p.getTo	      	()); 
 							t->setFrom	    		(p.getFrom	   	());
 							t->setBranch			(p.getBranch      ());    
@@ -341,7 +337,8 @@ void ParserSB::parseMsg () {
 					}
 					// si que lo contiene
 					else {
-						qDebug() << "LO Contiene" << p.step() << p.getBHid();
+						//if (p.step()) m_FTList[p.getBHid()]->setStep(p.step());
+						qDebug() << "LO Contiene" << p.step() << p.getBHid()  << m_FTList.keys();
 						Transfer* t = m_FTList[p.getBHid()];
 						if (t->getStep() == P2P_INVITATION) {
 						qDebug() << "LO Contiene" << p.step() <<  p.getBHid();
