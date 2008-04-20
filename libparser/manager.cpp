@@ -28,6 +28,7 @@ using namespace std;
 #include "manager.h"
 #include "improgram.h"
 #include "kopete.h"
+#include "pidgin.h"
 
 
 /* Public methods */
@@ -55,7 +56,7 @@ int Manager::getNumberIMPrograms(){
 /* Private methods */
 
 void Manager::searchIMPrograms(){
-        IMProgram * p;
+//        IMProgram * p;
         QFile file;
         QString home = QDir::homePath();
         QString dir;
@@ -68,12 +69,25 @@ void Manager::searchIMPrograms(){
         QDir::setCurrent(dir);
         if (file.exists()){
                 m_existPrograms = true;
-                p = new Kopete();
+                IMProgram* p = new Kopete();
                 p->setName("Kopete");
                 m_programs.append(p);
         }
-        else{
-                qDebug() << "Kopete not found";
+
+        dir.clear();
+        dir.append(home);
+        dir.append("/.purple");
+        file.setFileName("accounts.xml");
+        QDir::setCurrent(dir);
+        if (file.exists()){
+                m_existPrograms = true;
+                IMProgram* p = new Pidgin();
+                p->setName("Pidgin");
+                m_programs.append(p);
+        }
+
+        if (m_existPrograms==false){
+                qDebug() << "Instant Message Programs not found";
         }
         m_numberIMP=m_programs.count();
 }

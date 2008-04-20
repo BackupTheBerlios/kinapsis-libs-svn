@@ -5,12 +5,14 @@ SET(IMPROGRAMS_SRCS
 	manager.cpp
         improgram.cpp
 	kopete.cpp
+	pidgin.cpp
 )
 
 SET(IMPROGRAMS_HDRS
         manager.h
         improgram.h
         kopete.h
+        pidgin.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)
