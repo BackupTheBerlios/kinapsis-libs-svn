@@ -26,32 +26,34 @@ int main(){
                 int j = 0;
                 while (i.hasNext()){
                         p = programs[j];
-                        qDebug() << ("\033[01;33m");
+                        qDebug() << ("\033[01;32m");
                         qDebug() << "PROGRAM FOUND:";
+                        qDebug() << "\t" << p->getName();
+                        if (p->getVersion()!= "Null")
+                            qDebug() << p->getVersion() << endl;
                         qDebug() << ("\033[00m");
-                        qDebug() << "\t" << p->getName() << p->getVersion() << endl;
-                        p->parser(); //esta llamada rellena los atrib. accounts, protocols, contacts y logs
+                        p->parser();
                         accounts = p->getAccounts();
                         protocols = p->getProtocols();
                         metacontacts = p->getMetaContacts();
                         logs = p->getLogs();
-                        qDebug() << ("\033[01;32m");
+                        qDebug() << ("\033[01;33m");
                         qDebug() << "\tAccounts:";
                         qDebug() << ("\033[00m");
                         qDebug() << "\t" << accounts << endl;
-                        qDebug() << ("\033[01;32m");
+                        qDebug() << ("\033[01;33m");
                         qDebug() << "\tProtocols:";
                         qDebug() << ("\033[00m");
                         qDebug() << "\t" << protocols << endl;
-                        qDebug() << ("\033[01;32m");
+                        qDebug() << ("\033[01;33m");
                         qDebug() << "\tMeta contacts:";
                         qDebug() << ("\033[00m");
                         qDebug() << "\t" << metacontacts << endl;
-                        qDebug() << ("\033[01;32m");
+                        qDebug() << ("\033[01;33m");
                         qDebug() << "\tLogs:";
                         qDebug() << ("\033[00m");
                         qDebug() << "\t" << logs << endl;
-                        p->saveLogs(); //esta llamada salva el atrib. logs en el fichero log de kinapsis
+                        p->saveLogs();
                         i.next();
                         j++;
                 }
@@ -59,4 +61,4 @@ int main(){
         else{
                 cout << "No found previous Instant Message Programs installed\n"; 
         }
-}//fin programa para testear clase manager->improgram-> y derivadas(kopete,pidgin,etc)
+}

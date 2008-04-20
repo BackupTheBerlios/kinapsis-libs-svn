@@ -61,8 +61,6 @@ void Manager::searchIMPrograms(){
         QString dir;
 
         //TODO: pidgin,psi,gaim,sim,amsn,mercury
-        //FIXME: path sacarlo con kde, usar exp. regulares
-        //para sacar los ~/.kde*
 
         dir.append(home);
         dir.append("/.kde/share/config");

@@ -33,7 +33,8 @@ class Kopete : public IMProgram {
         private:
             void processLine(QString line);
             void processMetacontacts(QDomElement e);
-            void processLogs(QDomElement e);
+            void processLogs(QDomElement e, QString protocol, QString account, QString date);
+            QList<QString> m_listGroups;
             
         public:
             Kopete();

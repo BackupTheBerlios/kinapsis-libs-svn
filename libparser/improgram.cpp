@@ -24,8 +24,6 @@ using namespace std;
 #include "improgram.h"
 #include "kopete.h"
 
-//Clase abstracta padre para las clases derivadas Kopete, Pidgin, Psi...
-
 IMProgram::IMProgram()
 :   m_name("Null"),m_version("Null"),m_accounts(),m_protocols(),m_metacontacts(),m_logs()
 {}
