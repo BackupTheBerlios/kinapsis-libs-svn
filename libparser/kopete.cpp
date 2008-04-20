@@ -101,7 +101,7 @@ void Kopete::parser(){
         file.close();
 
 
-        //kdeRC format para las cuentas y protocolos
+        //kderc format para las cuentas y protocolos
         dir.clear();
         dir.append(home);
         dir.append("/.kde/share/config");
@@ -216,6 +216,104 @@ void Kopete::parser(){
                         tmp.append("/JabberProtocol/");
                 }
         }
+        //AIM
+        dir.clear();
+        dir.append(home);
+        dir.append("/.kde/share/apps/kopete/logs");
+        directory.setPath(dir);
+        if (directory.exists("AIMProtocol")){
+                //busqueda de cuentas
+                QListIterator<QString> i(m_accounts);
+                tmp.clear();
+                tmp.append(dir);
+                tmp.append("/AIMProtocol/");
+                m_logs << "Protocol: AIM >>>";
+                while (i.hasNext()){
+                        QString acc;
+                        QString aux;
+                        aux.append("Account:");
+                        aux.append(i.peekNext());
+                        acc.append(i.next());
+                        acc.replace(QString("."), QString("-"));
+                        tmp.append(acc);
+                        directory.setPath(tmp);
+                        if (directory.exists(tmp)){
+                                QStringList files;
+                                files = directory.entryList();
+                                m_logs << aux;
+                                for (int j=2; j<files.size(); j++){
+                                        m_logs << files.at(j);
+                                        QDir::setCurrent(tmp);
+                                        file.setFileName(files.at(j));
+                                        file.open(QIODevice::ReadOnly | QIODevice::Text);
+                                        doc.setContent(&file);
+                                        QDomElement logElem = doc.documentElement();
+                                        QDomNode n = logElem.firstChild();
+                                        while(!n.isNull()) {
+                                                QDomElement e = n.toElement();
+                                                if(!e.isNull()) {
+                                                        // // the node really is an element.
+                                                        processLogs(e);
+                                                }
+                                                n = n.nextSibling();
+                                        } 
+                                        file.close();
+                                }
+                        }
+                        tmp.clear();
+                        tmp.append(dir);
+                        tmp.append("/AIMProtocol/");
+                }
+        }
+        //ICQ/AOL
+        dir.clear();
+        dir.append(home);
+        dir.append("/.kde/share/apps/kopete/logs");
+        directory.setPath(dir);
+        if (directory.exists("ICQProtocol")){
+                //busqueda de cuentas
+                QListIterator<QString> i(m_accounts);
+                tmp.clear();
+                tmp.append(dir);
+                tmp.append("/ICQProtocol/");
+                m_logs << "Protocol: ICQ >>>";
+                while (i.hasNext()){
+                        QString acc;
+                        QString aux;
+                        aux.append("Account:");
+                        aux.append(i.peekNext());
+                        acc.append(i.next());
+                        acc.replace(QString("."), QString("-"));
+                        tmp.append(acc);
+                        directory.setPath(tmp);
+                        if (directory.exists(tmp)){
+                                QStringList files;
+                                files = directory.entryList();
+                                m_logs << aux;
+                                for (int j=2; j<files.size(); j++){
+                                        m_logs << files.at(j);
+                                        QDir::setCurrent(tmp);
+                                        file.setFileName(files.at(j));
+                                        file.open(QIODevice::ReadOnly | QIODevice::Text);
+                                        doc.setContent(&file);
+                                        QDomElement logElem = doc.documentElement();
+                                        QDomNode n = logElem.firstChild();
+                                        while(!n.isNull()) {
+                                                QDomElement e = n.toElement();
+                                                if(!e.isNull()) {
+                                                        // // the node really is an element.
+                                                        processLogs(e);
+                                                }
+                                                n = n.nextSibling();
+                                        } 
+                                        file.close();
+                                }
+                        }
+                        tmp.clear();
+                        tmp.append(dir);
+                        tmp.append("/ICQProtocol/");
+                }
+        }
 }
 
 QList<QString> Kopete::getMetaContacts(){
@@ -236,6 +334,7 @@ QList<QString> Kopete::getLogs(){
 
 void Kopete::saveLogs(){
         // salva en fichero log en el estilo de kinapsis el atributo logs
+        return;
 }
 
 /* Private methods */
@@ -243,31 +342,57 @@ void Kopete::saveLogs(){
 void Kopete::processMetacontacts(QDomElement e){
         QDomAttr a;
         QString tmp;
+        QDomNodeList nodeList;
+        QDomElement el;
         a = e.attributeNode("contactId");
-        //                    if (a.specified()){ //This should work
         if (!a.value().isEmpty()){
+//                tmp.append("\033[01;32m");
                 tmp.append(a.value());
-                m_metacontacts << tmp;
+//                tmp.append("\033[00m");
         }
-
+        nodeList = e.elementsByTagName("plugin-data");
+        for(int i=0; i < nodeList.length(); i++){
+            el = nodeList.item(i).toElement();
+            tmp.append("<->");
+            tmp.append(el.attributeNode("plugin-id").value());
+            QDomNodeList pluginDataFields = el.elementsByTagName("plugin-data-field");
+            for(int j=0; j < pluginDataFields.length(); j++){
+                    QDomElement key = pluginDataFields.item(j).toElement();
+                    if (key.attributeNode("key").value().compare("accountId")==0){
+                            tmp.append(key.text());
+                    }
+            }
+            tmp.append(">>");
+            tmp.append(el.attribute("key"));
+        }
+        m_metacontacts << tmp;
 }
 
 void Kopete::processLogs(QDomElement e){
         QDomAttr a;
         QString tmp;
 
-        m_logs << e.text();
+        tmp.append(" FROM: ");
+        tmp.append(e.attribute("nick"));
+        tmp.append("-");
+        tmp.append(e.attribute("from"));
+        tmp.append(" MSG: ");
+        tmp.append(e.text().toUtf8()); //FIXME: mal las enyes y demas
+        tmp.append(" AT: ");
+        tmp.append(e.attribute("time"));
+        m_logs << tmp;
 }
 
 void Kopete::processLine(QString line){
         int pos=-1;
         QRegExp rx;
         QString tmp;
-        //TODO: ICQ, AOL
+        //TODO: identity, defaultEncoding, firstPort-lastPort, requireAuth,
+        //respectRequireAuth, webAware
 
         if (line.size() > 0){
                 //account
-                rx.setPattern("(^AccountId=)([a-z|A-Z|0-9]+@[a-z|A-Z|0-9]+.[a-z|A-Z]+)");
+                rx.setPattern("(^AccountId=)(([a-z|A-Z|0-9]+@[a-z|A-Z|0-9]+.[a-z|A-Z]+)|([a-z|A-Z|0-9]+))");
                 pos = rx.indexIn(line,0);
                 if (pos > -1){
                         m_accounts << rx.cap(2);
@@ -287,7 +412,7 @@ void Kopete::processLine(QString line){
                         m_protocols << tmp;
                         return;
                 }
-                //port (jabber)
+                //port (jabber,aim)
                 rx.setPattern("(^Port=)([0-9]+)");  
                 pos = rx.indexIn(line,0);
                 if (pos > -1){
@@ -307,7 +432,7 @@ void Kopete::processLine(QString line){
                         m_protocols << tmp;
                         return;
                 }
-                //server (jabber)
+                //server (jabber,aim)
                 rx.setPattern("(^Server=)([a-z|A-Z|0-9|.]+)");  
                 pos = rx.indexIn(line,0);
                 if (pos > -1){
