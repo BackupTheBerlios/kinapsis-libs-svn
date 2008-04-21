@@ -31,16 +31,23 @@ using namespace std;
 
 Kopete::Kopete()
 : IMProgram()
-{ }
+{
+    m_listGroups.insert(0,"NullGroup");
+}
+
 
 Kopete::Kopete(QString nombre, QString version)
 : IMProgram(nombre,version)
-{ }
+{ 
+    m_listGroups.insert(0,"NullGroup");
+}
             
 Kopete::Kopete(QString nombre, QString version, QList<QString> accounts, 
                 QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs)
 : IMProgram(nombre,version,accounts,protocols,metacontacts,logs)
-{ }
+{ 
+    m_listGroups.insert(0,"NullGroup");
+}
 
 Kopete::~Kopete(){ }
 
@@ -126,6 +133,7 @@ void Kopete::parser(){
                         QString acc;
                         QString aux;
                         aux.append(i.peekNext());
+                        account.clear();
                         account.append(aux);
                         acc.append(i.next());
                         acc.replace(QString("."), QString("-"));
@@ -340,70 +348,79 @@ void Kopete::processMetacontacts(QDomElement e){
         //Former elements: kopete-group
         a = e.attributeNode("groupId");
         if (!a.value().isEmpty()){
-                m_listGroups.insert(a.value().toInt(&ok, 10), e.text());
+                //Element inside kopete-group
+                QDomNodeList display = e.elementsByTagName("display-name");
+                if (!display.isEmpty()){
+                     QDomElement elem = display.item(0).toElement();
+                     m_listGroups.insert(a.value().toInt(&ok, 10), elem.text());
+                }
                 return;
         }
 
         //Latter elements: meta-contact
         a = e.attributeNode("contactId");
         if (!a.value().isEmpty()){
+                tmp.append("\033[01;35m");
+                tmp.append(" ContactId: ");
+                tmp.append("\033[00m");
                 tmp.append(a.value());
-        }
 
-        //Element inside meta-contact
-        QDomNodeList display = e.elementsByTagName("display-name");
-        if (!display.isEmpty()){
-                QDomElement elem = display.item(0).toElement();
-                tmp.append("\033[01;32m");
-                tmp.append(" GlobalDisplayName: ");
-                tmp.append("\033[00m");
-                tmp.append(elem.text());
-        }
+                //Element inside meta-contact
+                QDomNodeList display = e.elementsByTagName("display-name");
+                if (!display.isEmpty()){
+                        QDomElement elem = display.item(0).toElement();
+                        tmp.append("\033[01;32m");
+                        tmp.append(" GlobalDisplayName: ");
+                        tmp.append("\033[00m");
+                        tmp.append(elem.text());
+                }
 
-        //Element inside meta-contact
-        QDomNodeList group = e.elementsByTagName("groups");
-        if (!group.isEmpty()){
-                QDomElement g = group.item(0).toElement();
-                tmp.append("\033[01;31m");
-                tmp.append(" Group: ");
-                tmp.append("\033[00m");
-                QDomNodeList gro = g.elementsByTagName("group");
-                    if (!gro.isEmpty()){
-                        QDomElement elGr = gro.item(0).toElement();
-                        int id=(elGr.attributeNode("id").value().toInt());
-                        tmp.append(m_listGroups.at(id));
-                    }
-        }
 
-        //Element inside meta-contact
-        QDomNodeList nodeList = e.elementsByTagName("plugin-data");
-        for(int i=0; i < nodeList.length(); i++){
-            QDomElement el = nodeList.item(i).toElement();
-            tmp.append("\033[01;30m");
-            tmp.append(" Meta: ");
-            tmp.append("\033[00m");
-            tmp.append(el.attributeNode("plugin-id").value());
+                //Element inside meta-contact
+                QDomNodeList group = e.elementsByTagName("groups");
+                if (!group.isEmpty()){
+                        QDomElement g = group.item(0).toElement();
+                        tmp.append("\033[01;31m");
+                        tmp.append(" Group: ");
+                        tmp.append("\033[00m");
+                        QDomNodeList gro = g.elementsByTagName("group");
+                        if (!gro.isEmpty()){
+                                QDomElement elGr = gro.item(0).toElement();
+                                int id=(elGr.attributeNode("id").value().toInt());
+                                tmp.append(m_listGroups.at(id));
+                        }
+                }
 
-            //Element inside meta-contact->plugin-data
-            QDomNodeList pluginDataFields = el.elementsByTagName("plugin-data-field");
-            for(int j=0; j < pluginDataFields.length(); j++){
-                    QDomElement key = pluginDataFields.item(j).toElement();
-                    if (key.attributeNode("key").value().compare("accountId")==0){
-                            tmp.append(" ");
-                            tmp.append(key.text());
-                    }
-                    if (key.attributeNode("key").value().compare("contacttId")==0){
-                            tmp.append(" ");
-                            tmp.append(key.text());
-                    }
-                    if (key.attributeNode("key").value().compare("displayName")==0){
-                            tmp.append(" ");
-                            tmp.append(key.text());
-                    }
-            }
-            tmp.append(el.attribute("key"));
+                //Element inside meta-contact
+                QDomNodeList nodeList = e.elementsByTagName("plugin-data");
+                for(int i=0; i < nodeList.length(); i++){
+                        QDomElement el = nodeList.item(i).toElement();
+                        tmp.append("\033[01;30m");
+                        tmp.append(" Meta: ");
+                        tmp.append("\033[00m");
+                        tmp.append(el.attributeNode("plugin-id").value());
+
+                        //Element inside meta-contact->plugin-data
+                        QDomNodeList pluginDataFields = el.elementsByTagName("plugin-data-field");
+                        for(int j=0; j < pluginDataFields.length(); j++){
+                                QDomElement key = pluginDataFields.item(j).toElement();
+                                if (key.attributeNode("key").value().compare("accountId")==0){
+                                        tmp.append(" ");
+                                        tmp.append(key.text());
+                                }
+                                if (key.attributeNode("key").value().compare("contacttId")==0){
+                                        tmp.append(" ");
+                                        tmp.append(key.text());
+                                }
+                                if (key.attributeNode("key").value().compare("displayName")==0){
+                                        tmp.append(" ");
+                                        tmp.append(key.text());
+                                }
+                        }
+                        tmp.append(el.attribute("key"));
+                }
+                m_metacontacts << tmp;
         }
-        m_metacontacts << tmp;
 }
 
 void Kopete::processLogs(QDomElement e, QString protocol, QString account, QString date){

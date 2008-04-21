@@ -61,7 +61,7 @@ void Manager::searchIMPrograms(){
         QString home = QDir::homePath();
         QString dir;
 
-        //TODO: pidgin,psi,gaim,sim,amsn,mercury
+        //TODO: psi,sim,amsn,mercury
 
         dir.append(home);
         dir.append("/.kde/share/config");
