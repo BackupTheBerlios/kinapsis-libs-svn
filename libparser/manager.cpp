@@ -29,6 +29,10 @@ using namespace std;
 #include "improgram.h"
 #include "kopete.h"
 #include "pidgin.h"
+#include "psi.h"
+#include "sim.h"
+#include "mercury.h"
+#include "amsn.h"
 
 
 /* Public methods */
@@ -60,30 +64,102 @@ void Manager::searchIMPrograms(){
         QFile file;
         QString home = QDir::homePath();
         QString dir;
+        QDir directory;
 
-        //TODO: psi,sim,amsn,mercury
-
+        //Kopete
+        dir.clear();
         dir.append(home);
         dir.append("/.kde/share/config");
-        file.setFileName("kopeterc");
-        QDir::setCurrent(dir);
-        if (file.exists()){
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+            QDir::setCurrent(dir);
+            file.setFileName("kopeterc");
+            if (file.exists()){
                 m_existPrograms = true;
                 IMProgram* p = new Kopete();
                 p->setName("Kopete");
                 m_programs.append(p);
+            }
         }
 
+        //Pidgin
         dir.clear();
         dir.append(home);
         dir.append("/.purple");
-        file.setFileName("accounts.xml");
-        QDir::setCurrent(dir);
-        if (file.exists()){
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+            QDir::setCurrent(dir);
+            file.setFileName("accounts.xml");
+            if (file.exists()){
                 m_existPrograms = true;
                 IMProgram* p = new Pidgin();
                 p->setName("Pidgin");
                 m_programs.append(p);
+            }
+        }
+
+        //Amsn
+        dir.clear();
+        dir.append(home);
+        dir.append("/.amsn");
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+            QDir::setCurrent(dir);
+            file.setFileName("accounts.xml");
+            if (file.exists()){
+                m_existPrograms = true;
+                IMProgram* p = new Amsn();
+                p->setName("Amsn");
+                m_programs.append(p);
+            }
+        }
+
+        //Mercury
+        dir.clear();
+        dir.append(home);
+        dir.append("/.Mercury");
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+            QDir::setCurrent(dir);
+            file.setFileName("accounts.xml");
+            if (file.exists()){
+                m_existPrograms = true;
+                IMProgram* p = new Mercury();
+                p->setName("Mercury");
+                m_programs.append(p);
+            }
+        }
+
+        //Psi
+        dir.clear();
+        dir.append(home);
+        dir.append("/.psi");
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+            QDir::setCurrent(dir);
+            file.setFileName("accounts.xml");
+            if (file.exists()){
+                m_existPrograms = true;
+                IMProgram* p = new Psi();
+                p->setName("Psi");
+                m_programs.append(p);
+            }
+        }
+
+        //Sim
+        dir.clear();
+        dir.append(home);
+        dir.append("/.sim");
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+            QDir::setCurrent(dir);
+            file.setFileName("accounts.xml");
+            if (file.exists()){
+                m_existPrograms = true;
+                IMProgram* p = new Sim();
+                p->setName("Sim");
+                m_programs.append(p);
+            }
         }
 
         if (m_existPrograms==false){

@@ -6,6 +6,10 @@ SET(IMPROGRAMS_SRCS
         improgram.cpp
 	kopete.cpp
 	pidgin.cpp
+	psi.cpp
+	sim.cpp
+	amsn.cpp
+	mercury.cpp
 )
 
 SET(IMPROGRAMS_HDRS
@@ -13,6 +17,10 @@ SET(IMPROGRAMS_HDRS
         improgram.h
         kopete.h
         pidgin.h
+        amsn.h
+        psi.h
+        sim.h
+        mercury.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)
