@@ -67,6 +67,27 @@ void Kopete::setVersion(QString version){
         m_version=version;
 }
 
+QList<QString> Kopete::getMetaContacts(){
+        return m_metacontacts;
+}
+
+QList<QString> Kopete::getAccounts(){
+        return m_accounts;
+}
+
+QList<QString> Kopete::getProtocols(){
+        return m_protocols;
+}
+
+QList<QString> Kopete::getLogs(){
+        return m_logs;
+}
+
+void Kopete::saveLogs(){
+        // save logs in kinapsis format
+        return;
+}
+
 void Kopete::parser(){
         // fill attributes: metacontacts, accounts, protocols & logs
         QFile file;
@@ -317,26 +338,6 @@ void Kopete::parser(){
         }
 }
 
-QList<QString> Kopete::getMetaContacts(){
-        return m_metacontacts;
-}
-
-QList<QString> Kopete::getAccounts(){
-        return m_accounts;
-}
-
-QList<QString> Kopete::getProtocols(){
-        return m_protocols;
-}
-
-QList<QString> Kopete::getLogs(){
-        return m_logs;
-}
-
-void Kopete::saveLogs(){
-        // save logs in kinapsis format
-        return;
-}
 
 /* Private methods */
 
