@@ -32,6 +32,7 @@ using namespace std;
 class Pidgin : public IMProgram {
         private:
             void processLine(QString line);
+            void processAccountsProtocols(QDomElement e);
             void processMetacontacts(QDomElement e);
             void processLogs(QDomElement e, QString protocol, QString account, QString date);
             QList<QString> m_listGroups;

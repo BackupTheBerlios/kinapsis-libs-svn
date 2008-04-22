@@ -67,20 +67,20 @@ void Manager::searchIMPrograms(){
         QDir directory;
 
         //Kopete
-        dir.clear();
-        dir.append(home);
-        dir.append("/.kde/share/config");
-        directory.setPath(dir);
-        if (directory.exists(dir)){
-            QDir::setCurrent(dir);
-            file.setFileName("kopeterc");
-            if (file.exists()){
-                m_existPrograms = true;
-                IMProgram* p = new Kopete();
-                p->setName("Kopete");
-                m_programs.append(p);
-            }
-        }
+//        dir.clear();
+//        dir.append(home);
+//        dir.append("/.kde/share/config");
+//        directory.setPath(dir);
+//        if (directory.exists(dir)){
+//            QDir::setCurrent(dir);
+//            file.setFileName("kopeterc");
+//            if (file.exists()){
+//                m_existPrograms = true;
+//                IMProgram* p = new Kopete();
+//                p->setName("Kopete");
+//                m_programs.append(p);
+//            }
+//        }
 
         //Pidgin
         dir.clear();
