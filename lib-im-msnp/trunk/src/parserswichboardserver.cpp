@@ -18,6 +18,7 @@
 namespace libimmsnp {
 ParserSB::ParserSB (QString address, int port, int chatId, QString msnPassport, QString ticket, QString sessid, Client* c){
 	m_idtr = 1;
+	m_ftid = 1;
 	m_address = address;
 	m_port = port;
 	m_socket = 0;
@@ -317,7 +318,7 @@ void ParserSB::parseMsg () {
 									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
 									m_FTList.remove(p.getBHid()-desp);
 									m_FTList[p.getBHid()]->setStep(P2P_NEGOTIATION);
-									qDebug() << "ACTUALIZADO" << m_FTList.keys();
+									qDebug() << "ACTUALIZADO" << m_FTList.keys() << m_FTList[p.getBHid()]->getFtId();
 									break;
 								}
 							}
@@ -330,7 +331,7 @@ void ParserSB::parseMsg () {
 									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
 									m_FTList.remove(p.getBHid()-desp);
 									m_FTList[p.getBHid()]->setStep(P2P_TRANSFER);
-									qDebug() << "ACTUALIZADO" << m_FTList.keys();
+									qDebug() << "ACTUALIZADO" << m_FTList.keys() << m_FTList[p.getBHid()]->getFtId();
 									break;
 								}
 							}
@@ -343,7 +344,7 @@ void ParserSB::parseMsg () {
 									m_FTList.insert((p.getBHid()), m_FTList[p.getBHid()-desp]);
 									m_FTList.remove(p.getBHid()-desp);
 									m_FTList[p.getBHid()]->setStep(P2P_BYE);
-									qDebug() << "ACTUALIZADO" << m_FTList.keys();
+									qDebug() << "ACTUALIZADO" << m_FTList.keys() << m_FTList[p.getBHid()]->getFtId();
 									break;
 								}
 							}
@@ -391,6 +392,7 @@ void ParserSB::parseMsg () {
 									Context c1 = Context();
 									c1.parse(t->getContext());
 									t->setFileName			(c1.getName());
+									t->setFtId(nextFtId());
 									m_FTList.insert (p.getBHid(), t);
 									qDebug() << "INNVITACION FIN"  << p.getBHid() << t->getFileName();
 									emit incomingFileTransfer (m_chatId, t);
@@ -469,15 +471,15 @@ void ParserSB::parseMsg () {
 						}	
 						else if (t->getStep() ==  P2P_TRANSFER){
 							qDebug() << "TRANSFERENCIA RECIBIENDO" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize() << t->getDestination(); 
-                  	emit fileTransferProgress(m_chatId, p.getBHid(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
+                  					emit fileTransferProgress(m_chatId, t->getFtId(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
 							QFile * fd =  new QFile(t->getDestination());
-                  	if (fd->open(QIODevice::Append)){
-                  	      qDebug() << "TRANSFERENCIA ESCRIBIENDO" << p.getBHid();
-                  	      fd->write(p.getData());
-                  	      fd->close();
-                  	}
+                  						if (fd->open(QIODevice::Append)){
+                  						      qDebug() << "TRANSFERENCIA ESCRIBIENDO" << p.getBHid();
+                  						      fd->write(p.getData());
+                  						      fd->close();
+                  						}
 							if (p.isFinished()){
-	                  	emit fileTransferFinished(m_chatId, p.getBHid());
+					                  	emit fileTransferFinished(m_chatId, t->getFtId());
 								t->setHasTransfered();
 								qDebug() << "Finalizado" << p.getBHid();
 								
@@ -503,11 +505,11 @@ void ParserSB::parseMsg () {
 						else if (t->getStep() ==  P2P_BYE){
 								if (!t->hasTransfered()){
 									qDebug() << "\n\n\n\nCANCELADOOOO \n\n\n\n";
-									emit fileTransferCanceled(m_chatId, p.getBHid());
+									emit fileTransferCanceled(m_chatId, t->getFtId());
 								}
 								m_FTList.remove(p.getBHid());
-								qDebug() << "ELIMINADO" << m_FTList.keys();
-								qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";
+								//qDebug() << "ELIMINADO" << m_FTList.keys();
+								//qDebug() << "ENVIADO Y RECIBIDO CORRECTAMENTE";
 						}
 					}
 				}

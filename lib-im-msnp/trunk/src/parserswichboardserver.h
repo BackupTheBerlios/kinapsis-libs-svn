@@ -64,6 +64,7 @@ public:
 	void parseError();
 
 	int nextIdtr (){return m_idtr++;};
+	int nextFtId (){return m_ftid++;};
 	
 	~ParserSB(){printf ("MSN::ParserSB::log ## Parser deleted\n");}
 
@@ -83,6 +84,7 @@ private:
 	QString m_address;
 	int m_port;
 	int m_idtr;
+	int m_ftid;
 	Client* m_client;
 	msocket* m_socket;
 	int m_chatId;

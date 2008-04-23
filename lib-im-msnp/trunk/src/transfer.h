@@ -80,7 +80,12 @@ public:
 	void setHasTransfered() {m_hasTransfered = true;}
 	bool hasTransfered() {return m_hasTransfered;}
 
+	int getFtId() {return m_ftId;}
+	void setFtId(int id) {m_ftId = id;}
 private:
+	// FILETRANSFER ID
+	int m_ftId;
+
 	QByteArray m_filename;
 	QByteArray m_type;
 	P2pStep m_step;

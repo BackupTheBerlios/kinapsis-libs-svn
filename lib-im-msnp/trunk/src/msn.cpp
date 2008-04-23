@@ -163,7 +163,7 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMs
 }
 void MsnTest::incomingFileTransfer (int chatId, Transfer* c) {
 	qDebug () << "# CLIENT ## INCOMING FILE TRANSFER :" << c->getFileName() << " FROM chat " << chatId;
-	m_client->acceptFileTransfer(chatId, c, "/tmp/fichero");
+	m_client->acceptFileTransfer(chatId, c, QString("/tmp/" + c->getFileName()) );
 }
 void MsnTest::fileTransferProgress(int chatId, int ftId, int received, int total){
 	qDebug () << "# CLIENT ## RECEIVED :" << received << " OF " << total << " FOR FILE" << ftId << " FROM chat " << chatId;
