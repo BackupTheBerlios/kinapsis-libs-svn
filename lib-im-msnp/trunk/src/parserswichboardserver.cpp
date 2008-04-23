@@ -40,6 +40,18 @@ int toInt (QByteArray num){
 	tmp.append(num.mid(0,1).toHex().data());
 	return tmp.toInt(&ok,16);
 }
+QByteArray toByte (int num){
+	QByteArray tmp2 = QByteArray::number(num,16);
+	while (tmp2.size() < 8) tmp2.insert(0,"0");
+	QByteArray tmp3;
+	QByteArray a;
+	a = QByteArray::fromHex(tmp2);
+	tmp3 = a.mid(3,1).toHex().data();
+	tmp3.append(a.mid(2,1).toHex().data());
+	tmp3.append(a.mid(1,1).toHex().data());
+	tmp3.append(a.mid(0,1).toHex().data());
+	return tmp3;
+}
 
 void ParserSB::run(){
 	m_socket = new msocket ();
@@ -74,6 +86,13 @@ void ParserSB::run(){
 
 void ParserSB::send (Command& c){
 	m_socket->send(c.makeCmd());
+}
+void ParserSB::sendFile(QString file, QString dest){
+	P2P initFT = 		P2P(nextIdtr());	
+	initFT.setCmd		(P2PC_INITFT);
+	initFT.setTo		(dest.toUtf8());
+	//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
+	m_socket->send(initFT.make());
 }
 
 void ParserSB::feed (QByteArray b){
@@ -261,6 +280,30 @@ void ParserSB::parseMsg () {
 					if (p.getData().size() == 0){
 						// Es un ACK 
 						qDebug() << "RECIBO ACK" << p.getBHid() << m_FTList.size() << m_FTList.keys();
+						int desp = 0;
+						while (++desp){
+							if (m_FTList.contains(p.getBHid()-desp)){
+								if (m_FTList[p.getBHid()-desp]->getP2pType() == P2PT_EMOTICON){
+										Transfer* t = m_FTList[p.getBHid()-desp];
+										P2P bid = 					P2P(nextIdtr());	
+										bid.setCmd					(P2PC_ACK);
+										bid.setBHSessionID		(toByte(t->getp2pSessionId().toInt()));
+										bid.setTo					(t->getFrom());
+										bid.setBHIdentifier		(t->incMyIdentifier(0));
+										bid.setBHTotalDataSize	(t->getBHTotalDataSize());
+										bid.setBHAckIdentifier	(t->getBHIdentifier());
+										bid.setBHAckUniqueID		(t->getBHAckIdentifier());
+										bid.setBHAckDataSize		(t->getBHTotalDataSize());
+										bid.setBHFlag				(QByteArray::fromHex("02 00 00 00"));
+										bid.setBinaryFooter		(QByteArray::fromHex("00 00 00 01"));
+			
+										//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
+										m_socket->send				(bid.make());
+										m_FTList[p.getBHid()-desp]->setP2pType(P2PT_NULL);
+								}
+								break;
+							}
+						}
 						return ;
 					}
 					

@@ -22,6 +22,7 @@
 #include "rosterlistener.h"
 #include "presencelistener.h"
 #include "chatlistener.h"
+#include "filetransferlistener.h"
 
 #include "command.h"
 #include "cmdswichboardserver.h"
@@ -56,7 +57,8 @@ public:
 	int nextChatCount();
 	QString nextChatPassport();
 	void send(Command& c, int chat = -1);
-	void sendChat(int chatId, Command& msg);
+	void sendChat (int chatId, Command& msg);
+	void sendFile (int chatId, QString file);
 	void addContact(Contact& contact, Group& group = *(new Group()));
 	void delContact(Contact& contact);
 	void blockContact(Contact& contact);
@@ -72,6 +74,8 @@ public:
 	QString getClientPort () {return m_port;}
 	int getClientIsLogging () {return 1;}
 
+	void acceptFileTransfer(int chatId, Transfer* ft, QString path);
+
         // Listener's connections
         void addConnectionListener (ConnectionListener* cl);
         void delConnectionListener (ConnectionListener* cl);
@@ -84,6 +88,9 @@ public:
 	
 	void addChatListener(ChatListener *chl);
 	void delChatListener(ChatListener *chl);
+
+	void addFileTransferListener(FileTransferListener *ftl);
+	void delFileTransferListener(FileTransferListener *ftl);
 
 	virtual ~Client();
 
@@ -128,6 +135,8 @@ signals:
 	void notifyChatIsTyping(int, QString);
 	void notifyChatInfo (int, QString, QString);
 	void notifyChatArrivedMessage (int, QString, MSG);
+
+	void notifyIncomingFileTransfer(int, Transfer*);
 	
 private:
 	ParserNS* m_parser;

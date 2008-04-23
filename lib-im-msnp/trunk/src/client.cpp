@@ -97,6 +97,18 @@ namespace libimmsnp {
 		}
 	}
 
+	void Client::sendFile (int chatId, QString file){
+		if (m_chatList[chatId]){
+			m_chatList[chatId]->sendFile(file, QString("vaticano666@hotmail.com"));
+		}
+	}
+
+	void Client::acceptFileTransfer(int chatId, Transfer* msg, QString path){
+		if (m_chatList[chatId]){
+			m_chatList[chatId]->acceptFileTransfer(msg, path.toUtf8());
+		}
+	}
+
 	void Client::addContact(Contact& contact, Group& group){
 		// >>ADC 80 FL N=probando_msnpy2@hotmail.com F=+34123456789^M
 		// <<ADC 80 FL N=probando_msnpy2@hotmail.com F=+34123456789 C=26a1f2a9-2560-4941-be6a-c4dc7adead55
@@ -298,10 +310,7 @@ namespace libimmsnp {
 	}
 
 	void Client::incomingFileTransfer (Transfer* msg, int chatId) {
-		
-		QByteArray path = QByteArray("./" + msg->getFileName());
-		qDebug () << "MSN::Client::SIGNAL ## INCOMING FILE TRANSFER form chat" << chatId << path; 
-		if (msg->getFileName() != QByteArray("1.TXT")) m_chatList[chatId]->acceptFileTransfer(msg, path);
+		emit notifyIncomingFileTransfer (chatId, msg);
 	}
        	void Client::fileTransferProgress(int ftId,int received, int total) {
 		qDebug ("MSN::Client::SIGNAL ## RECEIVED for %i : %i of %i", ftId, received, total); 
@@ -309,7 +318,6 @@ namespace libimmsnp {
        	void Client::fileTransferFinished(int ftId){
 		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER FINISHED : %i", ftId); 
 	}
-
 
 	/******************************
 	 * ******* LISTENERS **********
@@ -352,6 +360,14 @@ namespace libimmsnp {
 
 	void Client::delChatListener (ChatListener *chl){
 		QObject::disconnect (this, 0, chl, 0);
+	}
+
+	void Client::addFileTransferListener(FileTransferListener *ftl){
+		QObject::connect (this, SIGNAL(notifyIncomingFileTransfer (int, Transfer*)), ftl, SLOT(incomingFileTransferSlot (int, Transfer*)));
+	}
+
+	void Client::delFileTransferListener(FileTransferListener *ftl){
+		 QObject::disconnect (this, 0, ftl, 0);
 	}
 
 }

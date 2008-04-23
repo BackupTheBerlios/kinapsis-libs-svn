@@ -111,6 +111,7 @@ QByteArray P2P::make(){
 	data.append(msnslpData);
 	if (m_cmd == P2PC_200OK || m_cmd == P2PC_ACK || m_cmd == P2PC_INITID){
 		data.append(QByteArray::fromHex("00 00 00 00"));
+		data.append(m_binaryFooter);
 	}
 	res = QByteArray(QString(beginCmd() + " D " + QString::number(data.size()) + "\r\n").toUtf8().data());
 	qDebug() << "\nENVIO " << QByteArray(res).replace("\n","\\n").replace("\r","\\r") << "MIME-Version: 1.0\\r\\nContent-Type: application/x-msnmsgrp2p\\r\\nP2P-Dest: " + m_to + "\\r\\n\\r\\n" << binaryHeader.toHex() << QByteArray(msnslpData).replace("\n","\\n").replace("\r","\\r");

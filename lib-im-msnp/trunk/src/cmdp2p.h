@@ -45,11 +45,16 @@ public:
 	void setBranch(QByteArray branch) {m_branch = branch;}
 	void setCallId(QByteArray callId) {m_callId = callId;}
 	void setp2pSessionId(QByteArray p2pSessionId) {m_p2pSessionId = p2pSessionId;}
+	QByteArray getp2pSessionId() {return m_p2pSessionId;}
+
+	void setBinaryFooter (QByteArray binFoot) { m_binaryFooter = binFoot;}
 
 	QByteArray make();
 
 	QByteArray makeCmd(){return QByteArray("");}
 private:
+
+	QByteArray m_binaryFooter;
 	// BINARY HEADER
 	QByteArray m_bh_sessionID;	
 	QByteArray m_bh_identifier;	
@@ -89,6 +94,7 @@ private:
 	QByteArray m_dc_sChannelState;
 	QByteArray m_dc_capabilities;
 	QByteArray m_dc_sessionID;
+
 
 	// MORE STUFF
 	QString m_clientIp;

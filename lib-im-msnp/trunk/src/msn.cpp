@@ -13,6 +13,7 @@
 
 #include "msn.h"
 #include "contact.h"
+#include <QDebug>
 
 namespace libimmsnp {
 
@@ -28,6 +29,7 @@ MsnTest::MsnTest () {
 	m_client->addRosterListener(this);
 	m_client->addPresenceListener(this);
 	m_client->addChatListener(this);
+	m_client->addFileTransferListener(this);
 
 }
 
@@ -158,6 +160,10 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMs
 		m_client->delGroup(g);
 	}
 	
+}
+void MsnTest::incomingFileTransfer (int chatId, Transfer* c) {
+	qDebug () << "# CLIENT ## INCOMING FILE TRANSFER :" << c->getFileName() << " FROM chat " << chatId;
+	m_client->acceptFileTransfer(chatId, c, "/tmp/fichero");
 }
 
 void MsnTest::run (){

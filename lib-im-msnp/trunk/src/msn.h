@@ -2,6 +2,7 @@
 #include "msocket.h"
 #include "client.h"
 #include "cmdswichboardserver.h"
+#include "transfer.h"
 
 #include <qthread.h>
 #include <QCoreApplication> 
@@ -10,7 +11,7 @@ namespace libimmsnp {
 
 class Client;
 
-class MsnTest  : public QThread, ConnectionListener, RosterListener, PresenceListener, ChatListener {
+class MsnTest  : public QThread, ConnectionListener, RosterListener, PresenceListener, ChatListener, FileTransferListener {
 
 public:
         MsnTest ();
@@ -31,6 +32,8 @@ public:
 	void chatIsTyping(int chatId, QString chatMsnPassport);
 	void chatInfo(int chatId, QString chatMsnClient, QString chatIsLogging);
 	void chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMsg);
+
+	void incomingFileTransfer (int chatId, Transfer* c);
 
 	~MsnTest();
 private:

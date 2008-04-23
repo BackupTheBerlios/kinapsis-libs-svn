@@ -74,8 +74,10 @@ namespace libimmsnp {
 		P2PC_200OK,
 		P2PC_ACK,
 		P2PC_INITID,
+		P2PC_INITFT
 	};
 	enum P2pType {
+		P2PT_NULL,
 		P2PT_FILE,
 		P2PT_EMOTICON,
 		P2PT_WEBCAM

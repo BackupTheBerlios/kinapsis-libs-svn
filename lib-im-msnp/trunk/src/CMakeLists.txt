@@ -28,6 +28,7 @@ SET(LibImMsnP_SRCS
 	transfer.cpp
 	parserp2p.cpp
 	context.cpp
+	filetransferlistener.cpp
 )
 
 SET(LibImMsnP_HDRS
@@ -54,6 +55,7 @@ SET(LibImMsnP_HDRS
 	transfer.h
 	parserp2p.h
 	context.h
+	filetransferlistener.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

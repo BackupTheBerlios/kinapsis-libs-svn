@@ -41,6 +41,8 @@ public:
 	int hasData() {return m_buf.size();}
 
 	void send (Command& c);
+	void sendFile(QString file, QString dest);
+
 	QByteArray sendAck(Transfer* msg);
 	QByteArray sendOk200(Transfer* msg);
 
