@@ -283,9 +283,10 @@ namespace libimmsnp {
 		QObject::connect(chatParser, SIGNAL(chatInfo(int, QString, QString)), this, SLOT(chatInfo(int, QString, QString)));
 		QObject::connect(chatParser, SIGNAL(chatIsTyping(int, QString)), this, SLOT(chatIsTyping(int, QString)));
 		QObject::connect(chatParser, SIGNAL(chatLeavedTheRoom(int, QString)), this, SLOT(chatLeavedTheRoom(int, QString)));
-		QObject::connect(chatParser, SIGNAL(incomingFileTransfer(Transfer*, int)), this, SLOT(incomingFileTransfer(Transfer*,int)));
-       		QObject::connect(chatParser, SIGNAL(fileTransferProgress(int ,int, int)), this, SLOT(fileTransferProgress(int ,int, int)));	
-       		QObject::connect(chatParser, SIGNAL(fileTransferFinished(int)), this, SLOT(fileTransferFinished(int)));
+		QObject::connect(chatParser, SIGNAL(incomingFileTransfer(int, Transfer*)), this, SLOT(incomingFileTransfer(int, Transfer*)));
+       		QObject::connect(chatParser, SIGNAL(fileTransferProgress(int, int ,int, int)), this, SLOT(fileTransferProgress(int, int ,int, int)));	
+       		QObject::connect(chatParser, SIGNAL(fileTransferFinished(int, int)), this, SLOT(fileTransferFinished(int, int)));
+       		QObject::connect(chatParser, SIGNAL(fileTransferCanceled(int, int)), this, SLOT(fileTransferCanceled(int, int)));
 		chatParser->start();
 	}
 
@@ -309,14 +310,20 @@ namespace libimmsnp {
 		emit notifyChatLeavedTheRoom (chatId, passport);
 	}
 
-	void Client::incomingFileTransfer (Transfer* msg, int chatId) {
+	void Client::incomingFileTransfer (int chatId, Transfer* msg) {
 		emit notifyIncomingFileTransfer (chatId, msg);
 	}
-       	void Client::fileTransferProgress(int ftId,int received, int total) {
-		qDebug ("MSN::Client::SIGNAL ## RECEIVED for %i : %i of %i", ftId, received, total); 
+       	void Client::fileTransferProgress(int chatId, int ftId,int received, int total) {
+		emit notifyFileTransferProgress (chatId, ftId, received, total);
+		//qDebug ("MSN::Client::SIGNAL ## RECEIVED for %i : %i of %i", ftId, received, total); 
 	}
-       	void Client::fileTransferFinished(int ftId){
-		qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER FINISHED : %i", ftId); 
+       	void Client::fileTransferFinished(int chatId, int ftId){
+		emit notifyFileTransferFinished (chatId, ftId);
+		//qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER FINISHED : %i", ftId); 
+	}
+       	void Client::fileTransferCanceled(int chatId, int ftId){
+		emit notifyFileTransferCanceled (chatId, ftId);
+		//qDebug ("MSN::Client::SIGNAL ## INCOMING FILE TRANSFER FINISHED : %i", ftId); 
 	}
 
 	/******************************
@@ -364,6 +371,9 @@ namespace libimmsnp {
 
 	void Client::addFileTransferListener(FileTransferListener *ftl){
 		QObject::connect (this, SIGNAL(notifyIncomingFileTransfer (int, Transfer*)), ftl, SLOT(incomingFileTransferSlot (int, Transfer*)));
+		QObject::connect (this, SIGNAL(notifyFileTransferProgress(int, int, int, int)), ftl, SLOT(fileTransferProgressSlot(int, int, int, int)));
+		QObject::connect (this, SIGNAL(notifyFileTransferFinished(int, int)), ftl, SLOT(fileTransferFinishedSlot(int, int)));
+		QObject::connect (this, SIGNAL(notifyFileTransferCanceled(int, int)), ftl, SLOT(fileTransferCanceledSlot(int, int)));
 	}
 
 	void Client::delFileTransferListener(FileTransferListener *ftl){

@@ -393,7 +393,7 @@ void ParserSB::parseMsg () {
 									t->setFileName			(c1.getName());
 									m_FTList.insert (p.getBHid(), t);
 									qDebug() << "INNVITACION FIN"  << p.getBHid() << t->getFileName();
-									emit incomingFileTransfer (t, m_chatId);
+									emit incomingFileTransfer (m_chatId, t);
 								}
 								if (t->getP2pType() == P2PT_EMOTICON){
 									m_FTList.insert (p.getBHid(), t);
@@ -469,7 +469,7 @@ void ParserSB::parseMsg () {
 						}	
 						else if (t->getStep() ==  P2P_TRANSFER){
 							qDebug() << "TRANSFERENCIA RECIBIENDO" << p.getBHDataOffset() << p.getBHMessageLength() << p.getBHTotalDataSize() << t->getDestination(); 
-                  	emit fileTransferProgress(p.getBHid(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
+                  	emit fileTransferProgress(m_chatId, p.getBHid(), (p.getBHDataOffset() + p.getBHMessageLength()), p.getBHTotalDataSize());
 							QFile * fd =  new QFile(t->getDestination());
                   	if (fd->open(QIODevice::Append)){
                   	      qDebug() << "TRANSFERENCIA ESCRIBIENDO" << p.getBHid();
@@ -477,7 +477,7 @@ void ParserSB::parseMsg () {
                   	      fd->close();
                   	}
 							if (p.isFinished()){
-	                  	emit fileTransferFinished(p.getBHid());
+	                  	emit fileTransferFinished(m_chatId, p.getBHid());
 								t->setHasTransfered();
 								qDebug() << "Finalizado" << p.getBHid();
 								
@@ -503,6 +503,7 @@ void ParserSB::parseMsg () {
 						else if (t->getStep() ==  P2P_BYE){
 								if (!t->hasTransfered()){
 									qDebug() << "\n\n\n\nCANCELADOOOO \n\n\n\n";
+									emit fileTransferCanceled(m_chatId, p.getBHid());
 								}
 								m_FTList.remove(p.getBHid());
 								qDebug() << "ELIMINADO" << m_FTList.keys();

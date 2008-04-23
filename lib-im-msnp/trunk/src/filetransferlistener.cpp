@@ -22,7 +22,16 @@ FileTransferListener::~FileTransferListener() { }
 void FileTransferListener::incomingFileTransferSlot (int chatId, Transfer* c){
        	this->incomingFileTransfer(chatId, c);
 }
+void FileTransferListener::fileTransferProgressSlot(int chatId, int ftId, int received, int total){
+	this->fileTransferProgress(chatId, ftId, received, total);
+}
+void FileTransferListener::fileTransferFinishedSlot (int chatId, int ftId){
+	this->fileTransferFinished(chatId, ftId);
+}
 
+void FileTransferListener::fileTransferCanceledSlot (int chatId, int ftId){
+	this->fileTransferCanceled(chatId, ftId);
+}
 }
 
 #include "filetransferlistener.moc"

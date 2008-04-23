@@ -112,9 +112,10 @@ public slots:
 	void chatIsTyping(int chatId, QString chatMsnPassport);
 	void chatLeavedTheRoom (int chatId, QString chatMsnPassport);
 
-        void incomingFileTransfer (Transfer* msg, int chatId);
-       	void fileTransferProgress(int ftId,int received, int total);
-       	void fileTransferFinished(int ftId);
+        void incomingFileTransfer (int chatId, Transfer* msg);
+       	void fileTransferProgress(int chatId, int ftId,int received, int total);
+       	void fileTransferFinished(int chatId, int ftId);
+       	void fileTransferCanceled(int chatId, int ftId);
 	
 //	void contactDisconnected (QString msnPassport);
 //	void chatCreated (QString hostPort, QString ticket);
@@ -137,6 +138,9 @@ signals:
 	void notifyChatArrivedMessage (int, QString, MSG);
 
 	void notifyIncomingFileTransfer(int, Transfer*);
+	void notifyFileTransferProgress (int, int, int, int);
+	void notifyFileTransferFinished (int, int);
+	void notifyFileTransferCanceled (int, int);
 	
 private:
 	ParserNS* m_parser;

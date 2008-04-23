@@ -165,6 +165,16 @@ void MsnTest::incomingFileTransfer (int chatId, Transfer* c) {
 	qDebug () << "# CLIENT ## INCOMING FILE TRANSFER :" << c->getFileName() << " FROM chat " << chatId;
 	m_client->acceptFileTransfer(chatId, c, "/tmp/fichero");
 }
+void MsnTest::fileTransferProgress(int chatId, int ftId, int received, int total){
+	qDebug () << "# CLIENT ## RECEIVED :" << received << " OF " << total << " FOR FILE" << ftId << " FROM chat " << chatId;
+}
+void MsnTest::fileTransferFinished (int chatId, int ftId){
+	qDebug () << "# CLIENT ## FINISHED FILE TRANSFER :" << ftId << " FROM chat " << chatId;
+}
+
+void MsnTest::fileTransferCanceled (int chatId, int ftId){
+	qDebug () << "# CLIENT ## CANCELED FILE TRANSFER :" << ftId << " FROM chat " << chatId;
+}
 
 void MsnTest::run (){
 	m_client->connect();

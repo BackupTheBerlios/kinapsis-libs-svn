@@ -74,9 +74,10 @@ signals:
        void chatLeavedTheRoom(int, QString);
        void newChat (int, QString);
 
-       void incomingFileTransfer (Transfer* , int);
-       void fileTransferProgress(int ,int, int);
-       void fileTransferFinished(int);
+       void incomingFileTransfer (int, Transfer*);
+       void fileTransferProgress(int, int ,int, int);
+       void fileTransferFinished(int, int);
+       void fileTransferCanceled(int, int);
 
 private:
 	QString m_address;

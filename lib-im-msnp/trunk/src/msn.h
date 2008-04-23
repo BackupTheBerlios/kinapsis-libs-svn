@@ -34,6 +34,10 @@ public:
 	void chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMsg);
 
 	void incomingFileTransfer (int chatId, Transfer* c);
+	void fileTransferProgress(int chatId, int ftId, int received, int total);
+	void fileTransferFinished (int chatId, int ftId);
+	void fileTransferCanceled (int chatId, int ftId);
+
 
 	~MsnTest();
 private:

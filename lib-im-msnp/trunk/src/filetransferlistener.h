@@ -26,9 +26,15 @@ public:
 	FileTransferListener();
 	virtual ~FileTransferListener();
 	virtual void incomingFileTransfer (int chatId, Transfer* c) = 0;
+	virtual void fileTransferProgress(int chatId, int ftId, int received, int total) = 0;
+	virtual void fileTransferFinished (int chatId, int ftId) = 0;
+	virtual void fileTransferCanceled (int chatId, int ftId) = 0;
 
 public slots:
 	void incomingFileTransferSlot (int chatId, Transfer* c);
+	void fileTransferProgressSlot(int chatId, int ftId, int received, int total);
+	void fileTransferFinishedSlot (int chatId, int ftId);
+	void fileTransferCanceledSlot (int chatId, int ftId);
 };
 
 
