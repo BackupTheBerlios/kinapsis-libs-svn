@@ -124,6 +124,9 @@ void MsnTest::chatArrivedMessage(int chatId, QString chatMsnPassport, MSG chatMs
 	if (chatMsg.getMsg() == "type") {
 		m_client->sendIsTyping(chatId);
 	}
+	if (chatMsg.getMsg() == "send") {
+		m_client->sendFile(chatId, QString("./foo.txt"));
+	}
 	if (chatMsg.getMsg() == "exit") m_client->disconnect();
 	if (chatMsg.getMsg() == "state") m_client->changeStatus(libimmsnp::STATUS_BSY);
 

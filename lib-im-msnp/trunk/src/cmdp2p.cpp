@@ -76,6 +76,35 @@ QByteArray increase(QByteArray num){
 
 QByteArray P2P::make(){
 	QByteArray binaryHeader, res = "", data = "", msnslpData= "";
+	if (m_cmd == P2PC_INVITATION){
+	 	msnslpData.append("INVITE MSNMSGR:" + m_to + " MSNSLP/1.0\r\n");
+	 	msnslpData.append("To: <msnmsgr:" + m_to + ">\r\n");
+	 	msnslpData.append("From: <msnmsgr:" + m_from + ">\r\n");
+	 	msnslpData.append("Via: MSNSLP/1.0/TLP ;branch={33517CE4-02FC-4428-B6F4-39927229B722}\r\n");
+	 	msnslpData.append("CSeq: 0 \r\n");
+	 	msnslpData.append("Call-ID: {9D79AE57-1BD5-444B-B14E-3FC9BB2B5D58}\r\n");
+	 	msnslpData.append("Max-Forwards: 0\r\n");
+	 	msnslpData.append("Content-Type: application/x-msnmsgr-sessionreqbody\r\n");
+	 	msnslpData.append("Content-Length: 326\r\n");
+	 	msnslpData.append("\r\n");
+		if (m_type == P2PT_FILE){
+	 		msnslpData.append("EUF-GUID: {5D3E02AB-6190-11D3-BBBB-00C04F795683}\r\n");
+		}
+		if (m_type == P2PT_EMOTICON){
+	 		msnslpData.append("EUF-GUID: {A4268EEC-FEC5-49E5-95C3-F126696BDBF6}\r\n");
+		}
+	 	msnslpData.append("SessionID: 1980589\r\n");
+		if (m_type == P2PT_FILE){
+	 		msnslpData.append("AppID: 2\r\n");
+		}
+		if (m_type == P2PT_EMOTICON){
+	 		msnslpData.append("AppID: 1\r\n");
+		}
+	 	msnslpData.append("Context: " + m_context + "\r\n");
+	 	msnslpData.append("\r\n");
+	 	msnslpData.append(QByteArray::fromHex("00"));
+	 	msnslpData.append(QByteArray::fromHex("00 00 00 00"));
+	}
 	if (m_cmd == P2PC_200OK){
 		msnslpData.append("MSNSLP/1.0 200 OK\r\n");
 		msnslpData.append("To: <msnmsgr:" + m_to + ">\r\n");

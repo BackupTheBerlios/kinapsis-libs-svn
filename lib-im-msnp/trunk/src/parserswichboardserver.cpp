@@ -88,12 +88,16 @@ void ParserSB::run(){
 void ParserSB::send (Command& c){
 	m_socket->send(c.makeCmd());
 }
-void ParserSB::sendFile(QString file, QString dest){
-	P2P initFT = 		P2P(nextIdtr());	
-	initFT.setCmd		(P2PC_INITFT);
-	initFT.setTo		(dest.toUtf8());
-	//qDebug() << "ENVIO: INITBID" << bid.make().toHex();
-	m_socket->send(initFT.make());
+void ParserSB::sendFile(QString file){
+	qDebug() << "ENVIO FICHERO " << file;
+	P2P inv = 		P2P(nextIdtr());	
+	inv.setCmd		(P2PC_INVITATION);
+	inv.setTo		(m_buddy.toUtf8());
+	inv.setFrom		(m_msnPassport.toUtf8());
+	Context c;
+	inv.setContext		(c.getContextString(file));
+	qDebug() << "ENVIO: INITBID" << inv.make().toHex();
+	m_socket->send(inv.make());
 }
 
 void ParserSB::feed (QByteArray b){

@@ -99,7 +99,7 @@ namespace libimmsnp {
 
 	void Client::sendFile (int chatId, QString file){
 		if (m_chatList[chatId]){
-			m_chatList[chatId]->sendFile(file, QString("vaticano666@hotmail.com"));
+			m_chatList[chatId]->sendFile(file);
 		}
 	}
 

@@ -47,6 +47,9 @@ public:
 	void setp2pSessionId(QByteArray p2pSessionId) {m_p2pSessionId = p2pSessionId;}
 	QByteArray getp2pSessionId() {return m_p2pSessionId;}
 
+	void setContext(QByteArray context) {m_context = context;}
+	void setType (P2pType type) {m_type = type;}
+
 	void setBinaryFooter (QByteArray binFoot) { m_binaryFooter = binFoot;}
 
 	QByteArray make();
@@ -101,6 +104,7 @@ private:
 	QString m_clientPort;
 	P2pStep m_step;	
 	P2pCmd m_cmd;
+	P2pType m_type;
 	// BYE
 	bool m_closeSession;
 };

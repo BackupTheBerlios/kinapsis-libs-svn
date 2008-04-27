@@ -22,8 +22,9 @@ public:
 	virtual ~Context();
 	void parse(QByteArray);	
 	QByteArray getName() {return m_name;}
-	int getSize()	;
+	int getSize();
 	QByteArray getPreview() {return m_preview;}
+	QByteArray getContextString(QString file);
 	
 private:
 	QByteArray m_cLength;
@@ -31,6 +32,9 @@ private:
 	QByteArray m_size;
 	QByteArray m_type;
 	QByteArray m_name; 	
+	QByteArray m_dataUnknown; 	
+	QByteArray m_ffffUnknown; 	
+	QByteArray m_msn7unknown; 	
 	QByteArray m_preview;
 };
 
