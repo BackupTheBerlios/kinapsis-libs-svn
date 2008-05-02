@@ -17,43 +17,35 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <iostream>
-#include <QString>
-#include <QList>
+#include <QStringList>
 #include <QDomNode>
 
-using namespace std;
-
-#ifndef _Kopete_
-#define _Kopete_
+#ifndef _KOPETE_H_
+#define _KOPETE_H_
 
 #include "improgram.h"
 
 class Kopete : public IMProgram {
-        private:
-            void processLine(QString line);
-            void processMetacontacts(QDomElement e);
-            void processLogs(QDomElement e, QString protocol, QString account, QString date);
-            QList<QString> m_listGroups;
-            
         public:
             Kopete();
             Kopete(QString nombre, QString version);
-            Kopete(QString nombre, QString version, QList<QString> accounts, 
-                   QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs);
             ~Kopete();
-
-            QString getName();
-            QString getVersion();
-            void setName(QString name);
-            void setVersion(QString version);
+            void setName(QString name){m_name = name;};
+            void setVersion(QString version){m_version = version;};
             void parser();
-            QList<QString> getMetaContacts();
-            QList<QString> getAccounts();
-            QList<QString> getProtocols();
-            QList<QString> getLogs();
             void saveLogs();
+            inline QString name(){return m_name;};
+            inline QString version(){return m_version;};
+            QStringList metacontacts(){return m_metacontacts;};
+            QStringList accounts(){return m_accounts;};
+            QStringList protocols(){return m_protocols;};
+            QStringList logs(){return m_logs;};
 
+        private:
+            QStringList m_listGroups;
+
+            void processProtocolsAccounts(const QString& line);
+            void processMetacontacts(const QDomElement& e);
+            void processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date);
 };
-
-#endif
+#endif // _KOPETE_H_

@@ -17,32 +17,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <iostream>
-#include <QString>
-#include <QList>
+#include <QStringList>
 
-using namespace std;
-
-#ifndef _MANAGER_
-#define _MANAGER_
+#ifndef _MANAGER_H_
+#define _MANAGER_H_
 
 #include "improgram.h"
 
 class Manager{
-        private:
-            int m_numberIMP;
-            QList<IMProgram*> m_programs;
-            bool m_existPrograms;
-
-            void searchIMPrograms(); 
-            
         public:
             Manager();
             ~Manager();
             bool existIMPrograms(); 
-            QList<IMProgram*> getIMPrograms();
-            int getNumberIMPrograms();
-    
-}; 
+            QList<IMProgram*> imPrograms(){return m_programs;};
+            int numberPrograms(){return m_numberPrograms;};
 
-#endif
+        private:
+            int m_numberPrograms;
+            QList<IMProgram*> m_programs;
+            bool m_existPrograms;
+
+            void searchIMPrograms(); 
+}; 
+#endif //_MANAGER_H_

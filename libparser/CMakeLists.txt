@@ -3,24 +3,24 @@ PROJECT(IMPROGRAMS)
 SET(IMPROGRAMS_SRCS
 	test.cpp
 	manager.cpp
-        improgram.cpp
+	#improgram.cpp
 	kopete.cpp
-	pidgin.cpp
-	psi.cpp
-	sim.cpp
-	amsn.cpp
-	mercury.cpp
+	#	pidgin.cpp
+	#	psi.cpp
+	#	sim.cpp
+	#	amsn.cpp
+	#	mercury.cpp
 )
 
 SET(IMPROGRAMS_HDRS
         manager.h
         improgram.h
         kopete.h
-        pidgin.h
-        amsn.h
-        psi.h
-        sim.h
-        mercury.h
+	#  pidgin.h
+      	#  amsn.h
+      	#  psi.h
+      	#  sim.h
+      	#  mercury.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

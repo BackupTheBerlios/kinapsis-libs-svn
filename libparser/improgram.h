@@ -17,44 +17,33 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <iostream>
-#include <QString>
-#include <QList>
+#include <QStringList>
 
-using namespace std;
-
-#ifndef _IMProgram_
-#define _IMProgram_
+#ifndef _IMPROGRAM_H_
+#define _IMPROGRAM_H_
 
 class IMProgram{
-        private:
-
-        protected: //inherited
-            QString m_name;
-            QString m_version;
-            QList<QString> m_metacontacts;
-            QList<QString> m_accounts;
-            QList<QString> m_protocols;
-            QList<QString> m_logs;
-            
         public:
-            IMProgram();
-            IMProgram(QString nom, QString ver);
-            IMProgram(QString nom, QString ver, QList<QString> acc, QList<QString> pro, 
-                                                QList<QString> con, QList<QString> lg);
-            ~IMProgram();
-
-            virtual QString getName()=0;
-            virtual QString getVersion()=0;
+            IMProgram(){};
+            IMProgram(QString nam, QString ver):m_name(nam), m_version(ver){};
+            ~IMProgram(){};
+            virtual QString name()=0;
+            virtual QString version()=0;
             virtual void setName(QString name)=0;
             virtual void setVersion(QString version)=0;
             virtual void parser()=0;
-            virtual QList<QString> getMetaContacts()=0;
-            virtual QList<QString> getAccounts()=0;
-            virtual QList<QString> getProtocols()=0;
-            virtual QList<QString> getLogs()=0;
+            virtual QStringList metacontacts()=0;
+            virtual QStringList accounts()=0;
+            virtual QStringList protocols()=0;
+            virtual QStringList logs()=0;
             virtual void saveLogs()=0;
 
+        protected:
+            QString m_name;
+            QString m_version;
+            QStringList m_metacontacts;
+            QStringList m_accounts;
+            QStringList m_protocols;
+            QStringList m_logs;
 };
-
-#endif
+#endif //_IMPROGRAM_H_

@@ -1,8 +1,5 @@
-#include <iostream>
 #include <QString>
 #include <QtDebug>
-
-using namespace std;
 
 #include "manager.h"
 
@@ -10,17 +7,17 @@ int main(){
         bool existImp;
         bool hay;
         QList<IMProgram*> programs;
-        QList<QString> accounts;
-        QList<QString> protocols;
-        QList<QString> metacontacts;
-        QList<QString> logs;
+        QStringList accounts;
+        QStringList protocols;
+        QStringList metacontacts;
+        QStringList logs;
         IMProgram* p;
         Manager manager;
 
         existImp = manager.existIMPrograms(); 
 
         if (existImp){
-                programs = manager.getIMPrograms();
+                programs = manager.imPrograms();
 
                 QListIterator<IMProgram*> i(programs);
                 int j = 0;
@@ -28,15 +25,15 @@ int main(){
                         p = programs[j];
                         qDebug() << ("\033[01;32m");
                         qDebug() << "PROGRAM FOUND:";
-                        qDebug() << "\t" << p->getName();
-                        if (p->getVersion()!= "Null")
-                            qDebug() << p->getVersion() << endl;
+                        qDebug() << "\t" << p->name();
+                        if (p->version()!= "Null")
+                            qDebug() << p->version() << endl;
                         qDebug() << ("\033[00m");
                         p->parser();
-                        accounts = p->getAccounts();
-                        protocols = p->getProtocols();
-                        metacontacts = p->getMetaContacts();
-                        logs = p->getLogs();
+                        accounts = p->accounts();
+                        protocols = p->protocols();
+                        metacontacts = p->metacontacts();
+                        logs = p->logs();
                         qDebug() << ("\033[01;33m");
                         qDebug() << "\tAccounts:";
                         qDebug() << ("\033[00m");
@@ -46,7 +43,7 @@ int main(){
                         qDebug() << ("\033[00m");
                         qDebug() << "\t" << protocols << endl;
                         qDebug() << ("\033[01;33m");
-                        qDebug() << "\tMeta contacts:";
+                        qDebug() << "\tMetacontacts:";
                         qDebug() << ("\033[00m");
                         qDebug() << "\t" << metacontacts << endl;
                         qDebug() << ("\033[01;33m");
@@ -59,6 +56,6 @@ int main(){
                 }
         }
         else{
-                cout << "No found previous Instant Message Programs installed\n"; 
+                qDebug() << "No found previous Instant Message Programs installed\n"; 
         }
 }

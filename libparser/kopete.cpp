@@ -17,71 +17,23 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
-#include <iostream>
 #include <QtDebug>
 #include <QFile>
 #include <QDir>
-
-using namespace std;
 
 #include "kopete.h"
 
 /* Public methods */
 
-Kopete::Kopete()
-: IMProgram()
-{
+Kopete::Kopete() : IMProgram() {
     m_listGroups.insert(0,"NullGroup");
 }
 
-
-Kopete::Kopete(QString nombre, QString version)
-: IMProgram(nombre,version)
-{ 
+Kopete::Kopete(QString nombre, QString version) : IMProgram(nombre,version) { 
     m_listGroups.insert(0,"NullGroup");
 }
             
-Kopete::Kopete(QString nombre, QString version, QList<QString> accounts, 
-                QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs)
-: IMProgram(nombre,version,accounts,protocols,metacontacts,logs)
-{ 
-    m_listGroups.insert(0,"NullGroup");
-}
-
 Kopete::~Kopete(){ }
-
-QString Kopete::getName(){
-        return m_name;
-}
-
-QString Kopete::getVersion(){
-        return m_version;
-}
-
-void Kopete::setName(QString name){
-        m_name=name;
-}
-
-void Kopete::setVersion(QString version){
-        m_version=version;
-}
-
-QList<QString> Kopete::getMetaContacts(){
-        return m_metacontacts;
-}
-
-QList<QString> Kopete::getAccounts(){
-        return m_accounts;
-}
-
-QList<QString> Kopete::getProtocols(){
-        return m_protocols;
-}
-
-QList<QString> Kopete::getLogs(){
-        return m_logs;
-}
 
 void Kopete::saveLogs(){
         // save logs in kinapsis format
@@ -105,11 +57,11 @@ void Kopete::parser(){
         QDir::setCurrent(dir);
         file.setFileName("contactlist.xml");
         if (!file.open(QIODevice::ReadOnly)){
-                return; //FIXME
+                return;
         }
         if (!doc.setContent(&file)) {
                 file.close();
-                return;//FIXME
+                return;
         }
 
         QDomElement docElem = doc.documentElement();
@@ -135,7 +87,7 @@ void Kopete::parser(){
                 QTextStream in(&file);
                 while (!in.atEnd()) {
                         QString line = in.readLine();
-                        processLine(line);
+                        processProtocolsAccounts(line);
                 }
                 file.close();
         }
@@ -341,16 +293,17 @@ void Kopete::parser(){
 
 /* Private methods */
 
-void Kopete::processMetacontacts(QDomElement e){
+void Kopete::processMetacontacts(const QDomElement& e){
         QDomAttr a;
         QString tmp;
         bool ok;
+        QDomElement element = e;
 
         //Former elements: kopete-group
-        a = e.attributeNode("groupId");
+        a = element.attributeNode("groupId");
         if (!a.value().isEmpty()){
                 //Element inside kopete-group
-                QDomNodeList display = e.elementsByTagName("display-name");
+                QDomNodeList display = element.elementsByTagName("display-name");
                 if (!display.isEmpty()){
                      QDomElement elem = display.item(0).toElement();
                      m_listGroups.insert(a.value().toInt(&ok, 10), elem.text());
@@ -359,15 +312,15 @@ void Kopete::processMetacontacts(QDomElement e){
         }
 
         //Latter elements: meta-contact
-        a = e.attributeNode("contactId");
+        a = element.attributeNode("contactId");
         if (!a.value().isEmpty()){
-                tmp.append("\033[01;35m");
-                tmp.append(" ContactId: ");
+                tmp.append("\033[01;31m");
+                tmp.append("\nContactId: ");
                 tmp.append("\033[00m");
                 tmp.append(a.value());
 
                 //Element inside meta-contact
-                QDomNodeList display = e.elementsByTagName("display-name");
+                QDomNodeList display = element.elementsByTagName("display-name");
                 if (!display.isEmpty()){
                         QDomElement elem = display.item(0).toElement();
                         tmp.append("\033[01;32m");
@@ -378,10 +331,10 @@ void Kopete::processMetacontacts(QDomElement e){
 
 
                 //Element inside meta-contact
-                QDomNodeList group = e.elementsByTagName("groups");
+                QDomNodeList group = element.elementsByTagName("groups");
                 if (!group.isEmpty()){
                         QDomElement g = group.item(0).toElement();
-                        tmp.append("\033[01;31m");
+                        tmp.append("\033[01;30m");
                         tmp.append(" Group: ");
                         tmp.append("\033[00m");
                         QDomNodeList gro = g.elementsByTagName("group");
@@ -393,10 +346,10 @@ void Kopete::processMetacontacts(QDomElement e){
                 }
 
                 //Element inside meta-contact
-                QDomNodeList nodeList = e.elementsByTagName("plugin-data");
+                QDomNodeList nodeList = element.elementsByTagName("plugin-data");
                 for(int i=0; i < nodeList.length(); i++){
                         QDomElement el = nodeList.item(i).toElement();
-                        tmp.append("\033[01;30m");
+                        tmp.append("\033[01;35m");
                         tmp.append(" Meta: ");
                         tmp.append("\033[00m");
                         tmp.append(el.attributeNode("plugin-id").value());
@@ -424,7 +377,7 @@ void Kopete::processMetacontacts(QDomElement e){
         }
 }
 
-void Kopete::processLogs(QDomElement e, QString protocol, QString account, QString date){
+void Kopete::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
         QDomAttr a;
         QString tmp;
         QString from;
@@ -446,8 +399,8 @@ void Kopete::processLogs(QDomElement e, QString protocol, QString account, QStri
         msg.append(e.text().toUtf8()); //FIXME: check weird characters
         time.append(e.attribute("time"));
 
-        tmp.append("\033[01;33m");
-        tmp.append(" PROTOCOL: ");
+        tmp.append("\033[01;31m");
+        tmp.append("\nPROTOCOL: ");
         tmp.append("\033[00m");
         tmp.append(protocol);
         tmp.append("\033[01;34m");
@@ -462,7 +415,7 @@ void Kopete::processLogs(QDomElement e, QString protocol, QString account, QStri
         tmp.append(" DATE: ");
         tmp.append("\033[00m");
         tmp.append(d);
-        tmp.append("\033[01;31m");
+        tmp.append("\033[01;33m");
         tmp.append(" TIME: ");
         tmp.append("\033[00m");
         tmp.append(time);
@@ -473,7 +426,7 @@ void Kopete::processLogs(QDomElement e, QString protocol, QString account, QStri
         m_logs << tmp;
 }
 
-void Kopete::processLine(QString line){
+void Kopete::processProtocolsAccounts(const QString& line){
         int pos=-1;
         QRegExp rx;
         QString tmp;
@@ -486,7 +439,7 @@ void Kopete::processLine(QString line){
                         m_accounts << rx.cap(2);
                         tmp.clear();
                         tmp.append("\033[01;31m");
-                        tmp.append("Account: ");
+                        tmp.append("\nAccount: ");
                         tmp.append("\033[00m");
                         tmp.append(rx.cap(2));
                         m_protocols << tmp;
