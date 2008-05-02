@@ -17,111 +17,35 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
-#include <iostream>
 #include <QtDebug>
 #include <QFile>
 #include <QDir>
 
-using namespace std;
-
-#include "mercury.h"
+#include "parsermercury.h"
 
 /* Public methods */
 
-Mercury::Mercury()
-: IMProgram()
-{ }
-
-Mercury::Mercury(QString nombre, QString version)
-: IMProgram(nombre,version)
-{ }
-            
-Mercury::Mercury(QString nombre, QString version, QList<QString> accounts, 
-                QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs)
-: IMProgram(nombre,version,accounts,protocols,metacontacts,logs)
-{ }
-
-Mercury::~Mercury(){ }
-
-QString Mercury::getName(){
-        return m_name;
-}
-
-QString Mercury::getVersion(){
-        return m_version;
-}
-
-void Mercury::setName(QString name){
-        m_name=name;
-}
-
-void Mercury::setVersion(QString version){
-        m_version=version;
-}
-
-void Mercury::parser(){
-        // fill attributes: metacontacts, accounts, protocols & logs
-        QFile file;
-        QDomDocument doc;
-        QString home = QDir::homePath();
-        QString dir;
-        QString tmp;
-        QDir directory;
-        QString protocol;
-        QString account;
-        
+void ParserMercury::saveLogs(){
+        // save logs in kinapsis format
         return;
 }
 
-QList<QString> Mercury::getMetaContacts(){
-        return m_metacontacts;
-}
-
-QList<QString> Mercury::getAccounts(){
-        return m_accounts;
-}
-
-QList<QString> Mercury::getProtocols(){
-        return m_protocols;
-}
-
-QList<QString> Mercury::getLogs(){
-        return m_logs;
-}
-
-void Mercury::saveLogs(){
-        // save logs in kinapsis format
+void ParserMercury::parser(){
+        // fill attributes: metacontacts, accounts, protocols & logs
         return;
 }
 
 /* Private methods */
 
-void Mercury::processMetacontacts(QDomElement e){
-        QDomAttr a;
-        QString tmp;
-        bool ok;
-
+const void ParserMercury::processAccountsProtocols(const QDomElement& e){
         return;
 }
 
-void Mercury::processLogs(QDomElement e, QString protocol, QString account, QString date){
-        QDomAttr a;
-        QString tmp;
-        QString from;
-        QString msg;
-        QString time;
-        QString prot;
-        QString acco;
-        QString d;
-
+const void ParserMercury::processMetacontacts(const QDomElement& e){
         return;
 }
 
-void Mercury::processLine(QString line){
-        int pos=-1;
-        QRegExp rx;
-        QString tmp;
-
+const void ParserMercury::processLogs(const QDomElement& e, const QString& protocol, 
+                                      const QString& account, const QString& date){
         return;
 }

@@ -20,22 +20,23 @@
 #include <QStringList>
 #include <QDomNode>
 
-#ifndef _KOPETE_H_
-#define _KOPETE_H_
+#ifndef _PARSERKOPETE_H_
+#define _PARSERKOPETE_H_
 
 #include "improgram.h"
 
-class Kopete : public IMProgram {
+class ParserKopete : public IMProgram {
         public:
-            Kopete();
-            Kopete(QString name, QString version);
-            ~Kopete() { };
+            ParserKopete();
+            ParserKopete(QString name, QString version);
+            ~ParserKopete() { };
             void parser();
             void saveLogs();
 
         private:
             const void processMetacontacts(const QDomElement& e);
-            const void processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date);
+            const void processLogs(const QDomElement& e, const QString& protocol, 
+                                   const QString& account, const QString& date);
             const void processProtocolsAccounts(const QString& line);
 };
-#endif // _KOPETE_H_
+#endif // _PARSERKOPETE_H_

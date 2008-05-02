@@ -17,111 +17,35 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
-#include <iostream>
 #include <QtDebug>
 #include <QFile>
 #include <QDir>
 
-using namespace std;
-
-#include "amsn.h"
+#include "parseramsn.h"
 
 /* Public methods */
 
-Amsn::Amsn()
-: IMProgram()
-{ }
-
-Amsn::Amsn(QString nombre, QString version)
-: IMProgram(nombre,version)
-{ }
-            
-Amsn::Amsn(QString nombre, QString version, QList<QString> accounts, 
-                QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs)
-: IMProgram(nombre,version,accounts,protocols,metacontacts,logs)
-{ }
-
-Amsn::~Amsn(){ }
-
-QString Amsn::getName(){
-        return m_name;
-}
-
-QString Amsn::getVersion(){
-        return m_version;
-}
-
-void Amsn::setName(QString name){
-        m_name=name;
-}
-
-void Amsn::setVersion(QString version){
-        m_version=version;
-}
-
-void Amsn::parser(){
-        // fill attributes: metacontacts, accounts, protocols & logs
-        QFile file;
-        QDomDocument doc;
-        QString home = QDir::homePath();
-        QString dir;
-        QString tmp;
-        QDir directory;
-        QString protocol;
-        QString account;
-        
+void ParserAmsn::saveLogs(){
+        // save logs in kinapsis format
         return;
 }
 
-QList<QString> Amsn::getMetaContacts(){
-        return m_metacontacts;
-}
-
-QList<QString> Amsn::getAccounts(){
-        return m_accounts;
-}
-
-QList<QString> Amsn::getProtocols(){
-        return m_protocols;
-}
-
-QList<QString> Amsn::getLogs(){
-        return m_logs;
-}
-
-void Amsn::saveLogs(){
-        // save logs in kinapsis format
+void ParserAmsn::parser(){
+        // fill attributes: metacontacts, accounts, protocols & logs
         return;
 }
 
 /* Private methods */
 
-void Amsn::processMetacontacts(QDomElement e){
-        QDomAttr a;
-        QString tmp;
-        bool ok;
-
+const void ParserAmsn::processAccountsProtocols(const QDomElement& e){
         return;
 }
 
-void Amsn::processLogs(QDomElement e, QString protocol, QString account, QString date){
-        QDomAttr a;
-        QString tmp;
-        QString from;
-        QString msg;
-        QString time;
-        QString prot;
-        QString acco;
-        QString d;
-
+const void ParserAmsn::processMetacontacts(const QDomElement& e){
         return;
 }
 
-void Amsn::processLine(QString line){
-        int pos=-1;
-        QRegExp rx;
-        QString tmp;
-
+const void ParserAmsn::processLogs(const QDomElement& e, const QString& protocol, 
+                                   const QString& account, const QString& date){
         return;
 }

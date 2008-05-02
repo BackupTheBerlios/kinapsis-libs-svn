@@ -17,43 +17,27 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <iostream>
-#include <QString>
-#include <QList>
+#include <QStringList>
 #include <QDomNode>
 
-using namespace std;
-
-#ifndef _Mercury_
-#define _Mercury_
+#ifndef _PARSERMERCURY_H_
+#define _PARSERMERCURY_H_
 
 #include "improgram.h"
 
-class Mercury : public IMProgram {
-        private:
-            void processLine(QString line);
-            void processMetacontacts(QDomElement e);
-            void processLogs(QDomElement e, QString protocol, QString account, QString date);
-            QList<QString> m_listGroups;
-            
+class ParserMercury : public IMProgram {
         public:
-            Mercury();
-            Mercury(QString nombre, QString version);
-            Mercury(QString nombre, QString version, QList<QString> accounts, 
-                   QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs);
-            ~Mercury();
-
-            QString getName();
-            QString getVersion();
-            void setName(QString name);
-            void setVersion(QString version);
+            ParserMercury() { };
+            ParserMercury(QString name, QString version) : IMProgram(name, version) { };
+            ~ParserMercury() { };
             void parser();
-            QList<QString> getMetaContacts();
-            QList<QString> getAccounts();
-            QList<QString> getProtocols();
-            QList<QString> getLogs();
             void saveLogs();
 
+        private:
+            const void processAccountsProtocols(const QDomElement& e);
+            const void processMetacontacts(const QDomElement& e);
+            const void processLogs(const QDomElement& e, const QString& protocol, 
+                                   const QString& account, const QString& date);
+            
 };
-
-#endif
+#endif // _PARSERMERCURY_H_

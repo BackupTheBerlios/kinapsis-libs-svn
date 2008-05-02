@@ -21,16 +21,16 @@
 #include <QFile>
 #include <QDir>
 
-#include "pidgin.h"
+#include "parserpidgin.h"
 
 /* Public methods */
 
-void Pidgin::saveLogs(){
+void ParserPidgin::saveLogs(){
         // save logs in kinapsis format
         return;
 }
 
-void Pidgin::parser(){
+void ParserPidgin::parser(){
         // fill attributes: metacontacts, accounts, protocols & logs
         QFile file;
         QDomDocument doc;
@@ -290,7 +290,7 @@ void Pidgin::parser(){
 
 /* Private methods */
 
-const void Pidgin::processAccountsProtocols(const QDomElement& e){
+const void ParserPidgin::processAccountsProtocols(const QDomElement& e){
         QString tmp;
         QString aux;
 
@@ -306,7 +306,7 @@ const void Pidgin::processAccountsProtocols(const QDomElement& e){
         }
 }
 
-const void Pidgin::processMetacontacts(const QDomElement& e){
+const void ParserPidgin::processMetacontacts(const QDomElement& e){
         QString tmp;
 
         QDomNodeList groups = e.elementsByTagName("group");
@@ -325,6 +325,7 @@ const void Pidgin::processMetacontacts(const QDomElement& e){
         m_metacontacts << tmp;
 }
 
-const void Pidgin::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
+const void ParserPidgin::processLogs(const QDomElement& e, const QString& protocol, 
+                                     const QString& account, const QString& date){
         return;
 }

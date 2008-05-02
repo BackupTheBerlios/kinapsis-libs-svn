@@ -21,24 +21,24 @@
 #include <QFile>
 #include <QDir>
 
-#include "kopete.h"
+#include "parserkopete.h"
 
 /* Public methods */
 
-Kopete::Kopete() : IMProgram() {
+ParserKopete::ParserKopete() : IMProgram() {
     m_listGroups.insert(0,"NullGroup");
 }
 
-Kopete::Kopete(QString name, QString version) : IMProgram(name, version) { 
+ParserKopete::ParserKopete(QString name, QString version) : IMProgram(name, version) { 
     m_listGroups.insert(0,"NullGroup");
 }
             
-void Kopete::saveLogs(){
+void ParserKopete::saveLogs(){
         // save logs in kinapsis format
         return;
 }
 
-void Kopete::parser(){
+void ParserKopete::parser(){
         // fill attributes: metacontacts, accounts, protocols & logs
         QFile file;
         QDomDocument doc;
@@ -291,7 +291,7 @@ void Kopete::parser(){
 
 /* Private methods */
 
-const void Kopete::processMetacontacts(const QDomElement& e){
+const void ParserKopete::processMetacontacts(const QDomElement& e){
         QDomAttr a;
         QString tmp;
         bool ok;
@@ -375,7 +375,7 @@ const void Kopete::processMetacontacts(const QDomElement& e){
         }
 }
 
-const void Kopete::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
+const void ParserKopete::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
         QDomAttr a;
         QString tmp;
         QString from;
@@ -424,7 +424,7 @@ const void Kopete::processLogs(const QDomElement& e, const QString& protocol, co
         m_logs << tmp;
 }
 
-const void Kopete::processProtocolsAccounts(const QString& line){
+const void ParserKopete::processProtocolsAccounts(const QString& line){
         int pos=-1;
         QRegExp rx;
         QString tmp;

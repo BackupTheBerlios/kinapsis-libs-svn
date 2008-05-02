@@ -17,43 +17,27 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <iostream>
-#include <QString>
-#include <QList>
+#include <QStringList>
 #include <QDomNode>
 
-using namespace std;
-
-#ifndef _Amsn_
-#define _Amsn_
+#ifndef _PARSERAMSN_H_
+#define _PARSERAMSN_H_
 
 #include "improgram.h"
 
-class Amsn : public IMProgram {
-        private:
-            void processLine(QString line);
-            void processMetacontacts(QDomElement e);
-            void processLogs(QDomElement e, QString protocol, QString account, QString date);
-            QList<QString> m_listGroups;
-            
+class ParserAmsn : public IMProgram {
         public:
-            Amsn();
-            Amsn(QString nombre, QString version);
-            Amsn(QString nombre, QString version, QList<QString> accounts, 
-                   QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs);
-            ~Amsn();
-
-            QString getName();
-            QString getVersion();
-            void setName(QString name);
-            void setVersion(QString version);
+            ParserAmsn() { };
+            ParserAmsn(QString name, QString version) : IMProgram(name, version) { };
+            ~ParserAmsn() { };
             void parser();
-            QList<QString> getMetaContacts();
-            QList<QString> getAccounts();
-            QList<QString> getProtocols();
-            QList<QString> getLogs();
             void saveLogs();
 
+        private:
+            const void processAccountsProtocols(const QDomElement& e);
+            const void processMetacontacts(const QDomElement& e);
+            const void processLogs(const QDomElement& e, const QString& protocol, 
+                                   const QString& account, const QString& date);
+            
 };
-
-#endif
+#endif // _PARSERAMSN_H_

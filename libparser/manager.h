@@ -17,7 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <QStringList>
+#include <QString>
 
 #ifndef _MANAGER_H_
 #define _MANAGER_H_
@@ -37,6 +37,7 @@ class Manager{
             QList<IMProgram*> m_programs;
             bool m_existPrograms;
 
-            void searchIMPrograms(); 
+            const void searchIMPrograms(); 
+            const int searchAux(QString program); 
 }; 
-#endif //_MANAGER_H_
+#endif // _MANAGER_H_

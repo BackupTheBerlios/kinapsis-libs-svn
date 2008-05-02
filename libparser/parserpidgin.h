@@ -20,23 +20,24 @@
 #include <QStringList>
 #include <QDomNode>
 
-#ifndef _PIDGIN_H_
-#define _PIDGIN_H_
+#ifndef _PARSERPIDGIN_H_
+#define _PARSERPIDGIN_H_
 
 #include "improgram.h"
 
-class Pidgin : public IMProgram {
+class ParserPidgin : public IMProgram {
         public:
-            Pidgin() { };
-            Pidgin(QString name, QString version) : IMProgram(name,version) { };
-            ~Pidgin() { };
+            ParserPidgin() { };
+            ParserPidgin(QString name, QString version) : IMProgram(name, version) { };
+            ~ParserPidgin() { };
             void parser();
             void saveLogs();
 
         private:
             const void processAccountsProtocols(const QDomElement& e);
             const void processMetacontacts(const QDomElement& e);
-            const void processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date);
+            const void processLogs(const QDomElement& e, const QString& protocol, 
+                                   const QString& account, const QString& date);
             
 };
-#endif //_PIDGIN_H_
+#endif // _PARSERPIDGIN_H_

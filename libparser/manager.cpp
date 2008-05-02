@@ -24,12 +24,11 @@
 
 #include "manager.h"
 #include "improgram.h"
-#include "kopete.h"
-#include "pidgin.h"
-//#include "psi.h"
-//#include "sim.h"
-//#include "mercury.h"
-//#include "amsn.h"
+#include "parserkopete.h"
+#include "parserpidgin.h"
+#include "parserpsi.h"
+#include "parsermercury.h"
+#include "parseramsn.h"
 
 /* Public methods */
 
@@ -40,107 +39,70 @@ const bool Manager::existIMPrograms(){
 
 /* Private methods */
 
-void Manager::searchIMPrograms(){
+const int Manager::searchAux(QString program){
         QFile file;
         QString home = QDir::homePath();
         QString dir;
         QDir directory;
+        IMProgram* p;
+
+        dir.clear();
+        dir.append(home);
+        if (program == "kopete")
+                dir.append("/.kde/share/config");
+        else if (program == "pidgin")
+                dir.append("/.purple");
+        else
+                return -1;
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+                QDir::setCurrent(dir);
+                if (program == "kopete")
+                        file.setFileName("kopeterc");
+                else if (program == "pidgin")
+                        file.setFileName("accounts.xml");
+                else
+                        return -2;
+                if (file.exists()){
+                        m_existPrograms = true;
+                        if (program == "kopete"){
+                                p = new ParserKopete();
+                                p->setName("Kopete");
+                        }else if (program == "pidgin"){
+                                p = new ParserPidgin();
+                                p->setName("Pidgin");
+                        }
+                        else
+                                return -3;
+                        m_programs.append(p);
+                }
+        }
+        return 0;
+}
+
+const void Manager::searchIMPrograms(){
+        int result;
 
         //Kopete
-        dir.clear();
-        dir.append(home);
-        dir.append("/.kde/share/config");
-        directory.setPath(dir);
-        if (directory.exists(dir)){
-            QDir::setCurrent(dir);
-            file.setFileName("kopeterc");
-            if (file.exists()){
-                m_existPrograms = true;
-                IMProgram* p = new Kopete();
-                p->setName("Kopete");
-                m_programs.append(p);
-            }
-        }
-
+        result=searchAux("kopete");
+        if (result !=0)
+            return;   //FIXME
         //Pidgin
-        dir.clear();
-        dir.append(home);
-        dir.append("/.purple");
-        directory.setPath(dir);
-        if (directory.exists(dir)){
-            QDir::setCurrent(dir);
-            file.setFileName("accounts.xml");
-            if (file.exists()){
-                m_existPrograms = true;
-                IMProgram* p = new Pidgin();
-                p->setName("Pidgin");
-                m_programs.append(p);
-            }
-        }
-
+        result=searchAux("pidgin");
+        if (result !=0)
+            return;   //FIXME
         //Amsn
-//        dir.clear();
-//        dir.append(home);
-//        dir.append("/.amsn");
-//        directory.setPath(dir);
-//        if (directory.exists(dir)){
-//            QDir::setCurrent(dir);
-//            file.setFileName("accounts.xml");
-//            if (file.exists()){
-//                m_existPrograms = true;
-//                IMProgram* p = new Amsn();
-//                p->setName("Amsn");
-//                m_programs.append(p);
-//            }
-//        }
-
+        result=searchAux("amsn");
+        if (result !=0)
+            return;   //FIXME
         //Mercury
-//        dir.clear();
-//        dir.append(home);
-//        dir.append("/.Mercury");
-//        directory.setPath(dir);
-//        if (directory.exists(dir)){
-//            QDir::setCurrent(dir);
-//            file.setFileName("accounts.xml");
-//            if (file.exists()){
-//                m_existPrograms = true;
-//                IMProgram* p = new Mercury();
-//                p->setName("Mercury");
-//                m_programs.append(p);
-//            }
-//        }
-
+        result=searchAux("mercury");
+        if (result !=0)
+            return;   //FIXME
         //Psi
-//        dir.clear();
-//        dir.append(home);
-//        dir.append("/.psi");
-//        directory.setPath(dir);
-//        if (directory.exists(dir)){
-//            QDir::setCurrent(dir);
-//            file.setFileName("accounts.xml");
-//            if (file.exists()){
-//                m_existPrograms = true;
-//                IMProgram* p = new Psi();
-//                p->setName("Psi");
-//                m_programs.append(p);
-//            }
-//        }
-
-        //Sim
-//        dir.clear();
-//        dir.append(home);
-//        dir.append("/.sim");
-//        directory.setPath(dir);
-//        if (directory.exists(dir)){
-//            QDir::setCurrent(dir);
-//            file.setFileName("accounts.xml");
-//            if (file.exists()){
-//                m_existPrograms = true;
-//                IMProgram* p = new Sim();
-//                p->setName("Sim");
-//                m_programs.append(p);
-//            }
-//        }
+        result=searchAux("psi");
+        if (result !=0)
+            return;   //FIXME
 
         if (m_existPrograms==false){
                 qDebug() << "Instant Message Programs not found";
