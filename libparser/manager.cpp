@@ -25,7 +25,7 @@
 #include "manager.h"
 #include "improgram.h"
 #include "kopete.h"
-//#include "pidgin.h"
+#include "pidgin.h"
 //#include "psi.h"
 //#include "sim.h"
 //#include "mercury.h"
@@ -33,13 +33,7 @@
 
 /* Public methods */
 
-Manager::Manager() : m_numberPrograms(0), m_existPrograms(false)
-{ }
-
-Manager::~Manager()
-{ }
-
-bool Manager::existIMPrograms(){
+const bool Manager::existIMPrograms(){
         searchIMPrograms();
         return m_existPrograms;
 }
@@ -69,20 +63,20 @@ void Manager::searchIMPrograms(){
         }
 
         //Pidgin
-//        dir.clear();
-//        dir.append(home);
-//        dir.append("/.purple");
-//        directory.setPath(dir);
-//        if (directory.exists(dir)){
-//            QDir::setCurrent(dir);
-//            file.setFileName("accounts.xml");
-//            if (file.exists()){
-//                m_existPrograms = true;
-//                IMProgram* p = new Pidgin();
-//                p->setName("Pidgin");
-//                m_programs.append(p);
-//            }
-//        }
+        dir.clear();
+        dir.append(home);
+        dir.append("/.purple");
+        directory.setPath(dir);
+        if (directory.exists(dir)){
+            QDir::setCurrent(dir);
+            file.setFileName("accounts.xml");
+            if (file.exists()){
+                m_existPrograms = true;
+                IMProgram* p = new Pidgin();
+                p->setName("Pidgin");
+                m_programs.append(p);
+            }
+        }
 
         //Amsn
 //        dir.clear();

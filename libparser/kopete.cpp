@@ -29,12 +29,10 @@ Kopete::Kopete() : IMProgram() {
     m_listGroups.insert(0,"NullGroup");
 }
 
-Kopete::Kopete(QString nombre, QString version) : IMProgram(nombre,version) { 
+Kopete::Kopete(QString name, QString version) : IMProgram(name, version) { 
     m_listGroups.insert(0,"NullGroup");
 }
             
-Kopete::~Kopete(){ }
-
 void Kopete::saveLogs(){
         // save logs in kinapsis format
         return;
@@ -293,7 +291,7 @@ void Kopete::parser(){
 
 /* Private methods */
 
-void Kopete::processMetacontacts(const QDomElement& e){
+const void Kopete::processMetacontacts(const QDomElement& e){
         QDomAttr a;
         QString tmp;
         bool ok;
@@ -323,7 +321,7 @@ void Kopete::processMetacontacts(const QDomElement& e){
                 QDomNodeList display = element.elementsByTagName("display-name");
                 if (!display.isEmpty()){
                         QDomElement elem = display.item(0).toElement();
-                        tmp.append("\033[01;32m");
+                        tmp.append("\033[01;34m");
                         tmp.append(" GlobalDisplayName: ");
                         tmp.append("\033[00m");
                         tmp.append(elem.text());
@@ -377,7 +375,7 @@ void Kopete::processMetacontacts(const QDomElement& e){
         }
 }
 
-void Kopete::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
+const void Kopete::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
         QDomAttr a;
         QString tmp;
         QString from;
@@ -426,7 +424,7 @@ void Kopete::processLogs(const QDomElement& e, const QString& protocol, const QS
         m_logs << tmp;
 }
 
-void Kopete::processProtocolsAccounts(const QString& line){
+const void Kopete::processProtocolsAccounts(const QString& line){
         int pos=-1;
         QRegExp rx;
         QString tmp;

@@ -17,44 +17,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <iostream>
-#include <QString>
-#include <QList>
+#include <QStringList>
 #include <QDomNode>
 
-using namespace std;
-
-#ifndef _Pidgin_
-#define _Pidgin_
+#ifndef _PIDGIN_H_
+#define _PIDGIN_H_
 
 #include "improgram.h"
 
 class Pidgin : public IMProgram {
-        private:
-            void processLine(QString line);
-            void processAccountsProtocols(QDomElement e);
-            void processMetacontacts(QDomElement e);
-            void processLogs(QDomElement e, QString protocol, QString account, QString date);
-            QList<QString> m_listGroups;
-            
         public:
-            Pidgin();
-            Pidgin(QString nombre, QString version);
-            Pidgin(QString nombre, QString version, QList<QString> accounts, 
-                   QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs);
-            ~Pidgin();
-
-            QString getName();
-            QString getVersion();
-            void setName(QString name);
-            void setVersion(QString version);
+            Pidgin() { };
+            Pidgin(QString name, QString version) : IMProgram(name,version) { };
+            ~Pidgin() { };
             void parser();
-            QList<QString> getMetaContacts();
-            QList<QString> getAccounts();
-            QList<QString> getProtocols();
-            QList<QString> getLogs();
             void saveLogs();
 
+        private:
+            const void processAccountsProtocols(const QDomElement& e);
+            const void processMetacontacts(const QDomElement& e);
+            const void processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date);
+            
 };
-
-#endif
+#endif //_PIDGIN_H_

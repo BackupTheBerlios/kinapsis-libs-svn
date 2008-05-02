@@ -24,18 +24,18 @@
 
 class IMProgram{
         public:
-            IMProgram(){};
-            IMProgram(QString nam, QString ver):m_name(nam), m_version(ver){};
-            ~IMProgram(){};
-            virtual QString name()=0;
-            virtual QString version()=0;
-            virtual void setName(QString name)=0;
-            virtual void setVersion(QString version)=0;
+            IMProgram() { };
+            IMProgram(QString nam, QString ver) : m_name(nam), m_version(ver) { };
+            ~IMProgram() { };
+            inline const void setName(QString name)       {m_name = name;};
+            inline const void setVersion(QString version) {m_version = version;};
+            inline const QString name()                   {return m_name;};
+            inline const QString version()                {return m_version;};
+            inline const QStringList metacontacts()       {return m_metacontacts;};
+            inline const QStringList accounts()           {return m_accounts;};
+            inline const QStringList protocols()          {return m_protocols;};
+            inline const QStringList logs()               {return m_logs;};
             virtual void parser()=0;
-            virtual QStringList metacontacts()=0;
-            virtual QStringList accounts()=0;
-            virtual QStringList protocols()=0;
-            virtual QStringList logs()=0;
             virtual void saveLogs()=0;
 
         protected:
@@ -45,5 +45,6 @@ class IMProgram{
             QStringList m_accounts;
             QStringList m_protocols;
             QStringList m_logs;
+            QStringList m_listGroups;
 };
 #endif //_IMPROGRAM_H_

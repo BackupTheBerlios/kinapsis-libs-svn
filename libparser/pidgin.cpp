@@ -17,64 +17,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
-#include <iostream>
 #include <QtDebug>
 #include <QFile>
 #include <QDir>
 
-using namespace std;
-
 #include "pidgin.h"
 
 /* Public methods */
-
-Pidgin::Pidgin()
-: IMProgram()
-{ }
-
-Pidgin::Pidgin(QString nombre, QString version)
-: IMProgram(nombre,version)
-{ }
-            
-Pidgin::Pidgin(QString nombre, QString version, QList<QString> accounts, 
-                QList<QString> protocols, QList<QString> metacontacts, QList<QString> logs)
-: IMProgram(nombre,version,accounts,protocols,metacontacts,logs)
-{ }
-
-Pidgin::~Pidgin(){ }
-
-QString Pidgin::getName(){
-        return m_name;
-}
-
-QString Pidgin::getVersion(){
-        return m_version;
-}
-
-void Pidgin::setName(QString name){
-        m_name=name;
-}
-
-void Pidgin::setVersion(QString version){
-        m_version=version;
-}
-
-QList<QString> Pidgin::getMetaContacts(){
-        return m_metacontacts;
-}
-
-QList<QString> Pidgin::getAccounts(){
-        return m_accounts;
-}
-
-QList<QString> Pidgin::getProtocols(){
-        return m_protocols;
-}
-
-QList<QString> Pidgin::getLogs(){
-        return m_logs;
-}
 
 void Pidgin::saveLogs(){
         // save logs in kinapsis format
@@ -122,11 +71,11 @@ void Pidgin::parser(){
         QDir::setCurrent(dir);
         file.setFileName("blist.xml");
         if (!file.open(QIODevice::ReadOnly)){
-                return; //FIXME
+                return;
         }
         if (!doc.setContent(&file)) {
                 file.close();
-                return;//FIXME
+                return;
         }
 
         docElem = doc.documentElement();
@@ -339,14 +288,11 @@ void Pidgin::parser(){
 
 }
 
-
 /* Private methods */
 
-void Pidgin::processAccountsProtocols(QDomElement e){
-        QDomAttr a;
+const void Pidgin::processAccountsProtocols(const QDomElement& e){
         QString tmp;
         QString aux;
-        bool ok;
 
         QDomNodeList accounts = e.elementsByTagName("name");
         if (!accounts.isEmpty()){
@@ -360,10 +306,8 @@ void Pidgin::processAccountsProtocols(QDomElement e){
         }
 }
 
-void Pidgin::processMetacontacts(QDomElement e){
-        QDomAttr a;
+const void Pidgin::processMetacontacts(const QDomElement& e){
         QString tmp;
-        bool ok;
 
         QDomNodeList groups = e.elementsByTagName("group");
         if (!groups.isEmpty()){
@@ -381,23 +325,6 @@ void Pidgin::processMetacontacts(QDomElement e){
         m_metacontacts << tmp;
 }
 
-void Pidgin::processLogs(QDomElement e, QString protocol, QString account, QString date){
-        QDomAttr a;
-        QString tmp;
-        QString from;
-        QString msg;
-        QString time;
-        QString prot;
-        QString acco;
-        QString d;
-
-        return;
-}
-
-void Pidgin::processLine(QString line){
-        int pos=-1;
-        QRegExp rx;
-        QString tmp;
-
+const void Pidgin::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
         return;
 }

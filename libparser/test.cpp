@@ -1,4 +1,4 @@
-#include <QString>
+#include <QStringList>
 #include <QtDebug>
 
 #include "manager.h"
@@ -26,7 +26,7 @@ int main(){
                         qDebug() << ("\033[01;32m");
                         qDebug() << "PROGRAM FOUND:";
                         qDebug() << "\t" << p->name();
-                        if (p->version()!= "Null")
+                        if (p->version()!= "")
                             qDebug() << p->version() << endl;
                         qDebug() << ("\033[00m");
                         p->parser();

@@ -26,11 +26,11 @@
 
 class Manager{
         public:
-            Manager();
-            ~Manager();
-            bool existIMPrograms(); 
-            QList<IMProgram*> imPrograms(){return m_programs;};
-            int numberPrograms(){return m_numberPrograms;};
+            Manager() : m_numberPrograms(0), m_existPrograms(false) { };
+            ~Manager() { };
+            const bool existIMPrograms(); 
+            inline const QList<IMProgram*> imPrograms(){return m_programs;};
+            inline const int numberPrograms(){return m_numberPrograms;};
 
         private:
             int m_numberPrograms;

@@ -4,7 +4,7 @@ SET(IMPROGRAMS_SRCS
 	test.cpp
 	manager.cpp
 	kopete.cpp
-	#	pidgin.cpp
+	pidgin.cpp
 	#	psi.cpp
 	#	sim.cpp
 	#	amsn.cpp
@@ -15,7 +15,7 @@ SET(IMPROGRAMS_HDRS
         manager.h
         improgram.h
         kopete.h
-	#  pidgin.h
+	pidgin.h
       	#  amsn.h
       	#  psi.h
       	#  sim.h
