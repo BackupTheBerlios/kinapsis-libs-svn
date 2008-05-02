@@ -3,7 +3,6 @@ PROJECT(IMPROGRAMS)
 SET(IMPROGRAMS_SRCS
 	test.cpp
 	manager.cpp
-	#improgram.cpp
 	kopete.cpp
 	#	pidgin.cpp
 	#	psi.cpp
