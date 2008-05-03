@@ -29,12 +29,12 @@ class IMProgram{
             ~IMProgram() { };
             inline const void setName(QString name)       {m_name = name;};
             inline const void setVersion(QString version) {m_version = version;};
-            inline const QString name()                   {return m_name;};
-            inline const QString version()                {return m_version;};
-            inline const QStringList metacontacts()       {return m_metacontacts;};
-            inline const QStringList accounts()           {return m_accounts;};
-            inline const QStringList protocols()          {return m_protocols;};
-            inline const QStringList logs()               {return m_logs;};
+            inline const QString& name() const                  {return m_name;};
+            inline const QString& version() const               {return m_version;};
+            inline const QStringList& metacontacts() const      {return m_metacontacts;};
+            inline const QStringList& accounts() const          {return m_accounts;};
+            inline const QStringList& protocols() const         {return m_protocols;};
+            inline const QStringList& logs() const              {return m_logs;};
             virtual void parser()=0;
             virtual void saveLogs()=0;
 

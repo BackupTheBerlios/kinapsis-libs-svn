@@ -38,16 +38,101 @@ void ParserKopete::saveLogs(){
         return;
 }
 
+int ParserKopete::parserAux(QString prot){
+        QString dir;
+        QString tmp;
+        QDir directory;
+        QString account;
+        QString protocol;
+        QString home = QDir::homePath();
+        QFile file;
+        QDomDocument doc;
+
+        dir.append(home);
+        dir.append("/.kde/share/apps/kopete/logs");
+        directory.setCurrent(dir);
+        tmp.append(dir);
+        if (prot == "msn"){
+                if (directory.exists("MSNProtocol")){
+                        tmp.append("/MSNProtocol/");
+                        protocol.append("MSN");
+                }
+        } else if (prot == "jabber"){
+                if (directory.exists("JabberProtocol")){
+                        tmp.append("/JabberProtocol/");
+                        protocol.append("Jabber");
+                }
+        } else if (prot == "icq"){
+                if (directory.exists("ICQProtocol")){
+                        tmp.append("/ICQProtocol/");
+                        protocol.append("ICQ");
+                }
+        } else if (prot == "aim"){
+                if (directory.exists("AIMProtocol")){
+                        tmp.append("/AIMProtocol/");
+                        protocol.append("AIM");
+                }
+        } else {
+                return -1;
+        }
+        QListIterator<QString> i(m_accounts);
+        while (i.hasNext()){
+                QString acc;
+                QString aux;
+                aux.append(i.peekNext());
+                account.clear();
+                account.append(aux);
+                acc.append(i.next());
+                acc.replace(QString("."), QString("-"));
+                tmp.append(acc);
+                directory.setPath(tmp);
+                if (directory.exists(tmp)){
+                        QStringList files;
+                        files = directory.entryList();
+                        //neither . nor .. FIXME
+                        for (int j=2; j<files.size(); j++){
+                                QString f = files.at(j);
+                                QString date = f.section('.',-2,-2);
+                                QDir::setCurrent(tmp);
+                                file.setFileName(files.at(j));
+                                file.open(QIODevice::ReadOnly | QIODevice::Text);
+                                doc.setContent(&file);
+                                QDomElement logElem = doc.documentElement();
+                                QDomNode n = logElem.firstChild();
+                                while(!n.isNull()) {
+                                        QDomElement e = n.toElement();
+                                        if(!e.isNull()) {
+                                                processLogs(e,protocol,account,date);
+                                        }
+                                        n = n.nextSibling();
+                                } 
+                                file.close();
+                        }
+                }
+                tmp.clear();
+                tmp.append(dir);
+                if (prot == "msn"){
+                        tmp.append("/MSNrotocol/");
+                } else if (prot == "jabber"){
+                        tmp.append("/JabberProtocol/");
+                } else if (prot == "icq"){
+                        tmp.append("/ICQProtocol/");
+                } else if (prot == "aim"){
+                        tmp.append("/AIMProtocol/");
+                } else {
+                        return -2;
+                }
+        }
+        return 0;
+}
+
 void ParserKopete::parser(){
         // fill attributes: metacontacts, accounts, protocols & logs
         QFile file;
         QDomDocument doc;
         QString home = QDir::homePath();
         QString dir;
-        QString tmp;
-        QDir directory;
-        QString protocol;
-        QString account;
+        int result;
 
         //XML for metacontacts
         dir.append(home);
@@ -61,7 +146,6 @@ void ParserKopete::parser(){
                 file.close();
                 return;
         }
-
         QDomElement docElem = doc.documentElement();
         QDomNode n = docElem.firstChild();
         while(!n.isNull()) {
@@ -72,7 +156,6 @@ void ParserKopete::parser(){
                 n = n.nextSibling();
         } 
         file.close();
-
 
         //kderc format for accounts and protocols
         dir.clear();
@@ -90,208 +173,20 @@ void ParserKopete::parser(){
                 file.close();
         }
 
-        //MSN logs
-        dir.clear();
-        dir.append(home);
-        dir.append("/.kde/share/apps/kopete/logs");
-        directory.setCurrent(dir);
-        if (directory.exists("MSNProtocol")){
-                //accounts search
-                QListIterator<QString> i(m_accounts);
-                tmp.append("MSNProtocol/");
-                protocol.append("MSN");
-                while (i.hasNext()){
-                        QString acc;
-                        QString aux;
-                        aux.append(i.peekNext());
-                        account.clear();
-                        account.append(aux);
-                        acc.append(i.next());
-                        acc.replace(QString("."), QString("-"));
-                        tmp.append(acc);
-                        directory.setPath(tmp);
-                        if (directory.exists(tmp)){
-                                QStringList files;
-                                files = directory.entryList();
-                                //dont return neither . nor ..
-                                for (int j=2; j<files.size(); j++){
-                                        QString f = files.at(j);
-                                        QString date = f.section('.',-2,-2);
-                                        QDir::setCurrent(tmp);
-                                        file.setFileName(files.at(j));
-                                        file.open(QIODevice::ReadOnly | QIODevice::Text);
-                                        doc.setContent(&file);
-                                        QDomElement logElem = doc.documentElement();
-                                        QDomNode n = logElem.firstChild();
-                                        while(!n.isNull()) {
-                                                QDomElement e = n.toElement();
-                                                if(!e.isNull()) {
-                                                        processLogs(e,protocol,account,date);
-                                                }
-                                                n = n.nextSibling();
-                                        } 
-                                        file.close();
-                                }
-                        }
-                        tmp.clear();
-                        tmp.append(dir);
-                        tmp.append("/MSNProtocol/");
-                }
-        }
-        //Jabber logs
-        dir.clear();
-        dir.append(home);
-        dir.append("/.kde/share/apps/kopete/logs");
-        directory.setPath(dir);
-        if (directory.exists("JabberProtocol")){
-                QListIterator<QString> i(m_accounts);
-                tmp.clear();
-                tmp.append(dir);
-                tmp.append("/JabberProtocol/");
-                protocol.clear();
-                protocol.append("Jabber");
-                while (i.hasNext()){
-                        QString acc;
-                        QString aux;
-                        aux.append(i.peekNext());
-                        account.clear();
-                        account.append(aux);
-                        acc.append(i.next());
-                        acc.replace(QString("."), QString("-"));
-                        tmp.append(acc);
-                        directory.setPath(tmp);
-                        if (directory.exists(tmp)){
-                                QStringList files;
-                                files = directory.entryList();
-                                for (int j=2; j<files.size(); j++){
-                                        QString f = files.at(j);
-                                        QString date = f.section('.',-2,-2);
-                                        QDir::setCurrent(tmp);
-                                        file.setFileName(files.at(j));
-                                        file.open(QIODevice::ReadOnly | QIODevice::Text);
-                                        doc.setContent(&file);
-                                        QDomElement logElem = doc.documentElement();
-                                        QDomNode n = logElem.firstChild();
-                                        while(!n.isNull()) {
-                                                QDomElement e = n.toElement();
-                                                if(!e.isNull()) {
-                                                        processLogs(e,protocol,account,date);
-                                                }
-                                                n = n.nextSibling();
-                                        } 
-                                        file.close();
-                                }
-                        }
-                        tmp.clear();
-                        tmp.append(dir);
-                        tmp.append("/JabberProtocol/");
-                }
-        }
-        //AIM logs
-        dir.clear();
-        dir.append(home);
-        dir.append("/.kde/share/apps/kopete/logs");
-        directory.setPath(dir);
-        if (directory.exists("AIMProtocol")){
-                QListIterator<QString> i(m_accounts);
-                tmp.clear();
-                tmp.append(dir);
-                tmp.append("/AIMProtocol/");
-                protocol.clear();
-                protocol.append("AIM");
-                while (i.hasNext()){
-                        QString acc;
-                        QString aux;
-                        aux.append(i.peekNext());
-                        account.clear();
-                        account.append(aux);
-                        acc.append(i.next());
-                        acc.replace(QString("."), QString("-"));
-                        tmp.append(acc);
-                        directory.setPath(tmp);
-                        if (directory.exists(tmp)){
-                                QStringList files;
-                                files = directory.entryList();
-                                for (int j=2; j<files.size(); j++){
-                                        QString f = files.at(j);
-                                        QString date = f.section('.',-2,-2);
-                                        QDir::setCurrent(tmp);
-                                        file.setFileName(files.at(j));
-                                        file.open(QIODevice::ReadOnly | QIODevice::Text);
-                                        doc.setContent(&file);
-                                        QDomElement logElem = doc.documentElement();
-                                        QDomNode n = logElem.firstChild();
-                                        while(!n.isNull()) {
-                                                QDomElement e = n.toElement();
-                                                if(!e.isNull()) {
-                                                        processLogs(e,protocol,account,date);
-                                                }
-                                                n = n.nextSibling();
-                                        } 
-                                        file.close();
-                                }
-                        }
-                        tmp.clear();
-                        tmp.append(dir);
-                        tmp.append("/AIMProtocol/");
-                }
-        }
-        //ICQ/AOL logs
-        dir.clear();
-        dir.append(home);
-        dir.append("/.kde/share/apps/kopete/logs");
-        directory.setPath(dir);
-        if (directory.exists("ICQProtocol")){
-                QListIterator<QString> i(m_accounts);
-                tmp.clear();
-                tmp.append(dir);
-                tmp.append("/ICQProtocol/");
-                protocol.clear();
-                protocol.append("ICQ");
-                while (i.hasNext()){
-                        QString acc;
-                        QString aux;
-                        aux.append(i.peekNext());
-                        account.clear();
-                        account.append(aux);
-                        acc.append(i.next());
-                        acc.replace(QString("."), QString("-"));
-                        tmp.append(acc);
-                        directory.setPath(tmp);
-                        if (directory.exists(tmp)){
-                                QStringList files;
-                                files = directory.entryList();
-                                m_logs << aux;
-                                for (int j=2; j<files.size(); j++){
-                                        QString f = files.at(j);
-                                        QString date = f.section('.',-2,-2);
-                                        QDir::setCurrent(tmp);
-                                        file.setFileName(files.at(j));
-                                        file.open(QIODevice::ReadOnly | QIODevice::Text);
-                                        doc.setContent(&file);
-                                        QDomElement logElem = doc.documentElement();
-                                        QDomNode n = logElem.firstChild();
-                                        while(!n.isNull()) {
-                                                QDomElement e = n.toElement();
-                                                if(!e.isNull()) {
-                                                        processLogs(e,protocol,account,date);
-                                                }
-                                                n = n.nextSibling();
-                                        } 
-                                        file.close();
-                                }
-                        }
-                        tmp.clear();
-                        tmp.append(dir);
-                        tmp.append("/ICQProtocol/");
-                }
-        }
+        //MSN
+        result = parserAux("msn");
+        //Jabber
+        result = parserAux("jabber");
+        //AIM
+        result = parserAux("aim");
+        //ICQ
+        result = parserAux("icq");
 }
 
 
 /* Private methods */
 
-const void ParserKopete::processMetacontacts(const QDomElement& e){
+void ParserKopete::processMetacontacts(const QDomElement& e){
         QDomAttr a;
         QString tmp;
         bool ok;
@@ -303,8 +198,8 @@ const void ParserKopete::processMetacontacts(const QDomElement& e){
                 //Element inside kopete-group
                 QDomNodeList display = element.elementsByTagName("display-name");
                 if (!display.isEmpty()){
-                     QDomElement elem = display.item(0).toElement();
-                     m_listGroups.insert(a.value().toInt(&ok, 10), elem.text());
+                        QDomElement elem = display.item(0).toElement();
+                        m_listGroups.insert(a.value().toInt(&ok, 10), elem.text());
                 }
                 return;
         }
@@ -375,56 +270,7 @@ const void ParserKopete::processMetacontacts(const QDomElement& e){
         }
 }
 
-const void ParserKopete::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
-        QDomAttr a;
-        QString tmp;
-        QString from;
-        QString msg;
-        QString time;
-        QString prot;
-        QString acco;
-        QString d;
-
-        if(e.tagName().compare("head")==0)
-                return;//omit element head
-
-        prot.append(protocol);
-        acco.append(account);
-        d.append(date);
-        from.append(e.attribute("nick"));
-        from.append(" - ");
-        from.append(e.attribute("from"));
-        msg.append(e.text().toUtf8()); //FIXME: check weird characters
-        time.append(e.attribute("time"));
-
-        tmp.append("\033[01;31m");
-        tmp.append("\nPROTOCOL: ");
-        tmp.append("\033[00m");
-        tmp.append(protocol);
-        tmp.append("\033[01;34m");
-        tmp.append(" ACCOUNT: ");
-        tmp.append("\033[00m");
-        tmp.append(account);
-        tmp.append("\033[01;29m");
-        tmp.append(" FROM: ");
-        tmp.append("\033[00m");
-        tmp.append(from);
-        tmp.append("\033[01;35m");
-        tmp.append(" DATE: ");
-        tmp.append("\033[00m");
-        tmp.append(d);
-        tmp.append("\033[01;33m");
-        tmp.append(" TIME: ");
-        tmp.append("\033[00m");
-        tmp.append(time);
-        tmp.append("\033[01;30m");
-        tmp.append(" MSG: ");
-        tmp.append("\033[00m");
-        tmp.append(msg);
-        m_logs << tmp;
-}
-
-const void ParserKopete::processProtocolsAccounts(const QString& line){
+void ParserKopete::processProtocolsAccounts(const QString& line){
         int pos=-1;
         QRegExp rx;
         QString tmp;
@@ -525,4 +371,52 @@ const void ParserKopete::processProtocolsAccounts(const QString& line){
                 }
 
         }
+}
+
+void ParserKopete::processLogs(const QDomElement& e, const QString& protocol, const QString& account, const QString& date){
+        QString tmp;
+        QString from;
+        QString msg;
+        QString time;
+        QString prot;
+        QString acco;
+        QString d;
+
+        if(e.tagName().compare("head")==0)
+                return;//omit element head
+
+        prot.append(protocol);
+        acco.append(account);
+        d.append(date);
+        from.append(e.attribute("nick"));
+        from.append(" - ");
+        from.append(e.attribute("from"));
+        msg.append(e.text().toUtf8()); //FIXME: check weird characters
+        time.append(e.attribute("time"));
+
+        tmp.append("\033[01;31m");
+        tmp.append("\nPROTOCOL: ");
+        tmp.append("\033[00m");
+        tmp.append(protocol);
+        tmp.append("\033[01;34m");
+        tmp.append(" ACCOUNT: ");
+        tmp.append("\033[00m");
+        tmp.append(account);
+        tmp.append("\033[01;29m");
+        tmp.append(" FROM: ");
+        tmp.append("\033[00m");
+        tmp.append(from);
+        tmp.append("\033[01;35m");
+        tmp.append(" DATE: ");
+        tmp.append("\033[00m");
+        tmp.append(d);
+        tmp.append("\033[01;33m");
+        tmp.append(" TIME: ");
+        tmp.append("\033[00m");
+        tmp.append(time);
+        tmp.append("\033[01;30m");
+        tmp.append(" MSG: ");
+        tmp.append("\033[00m");
+        tmp.append(msg);
+        m_logs << tmp;
 }

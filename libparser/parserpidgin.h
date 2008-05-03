@@ -34,10 +34,10 @@ class ParserPidgin : public IMProgram {
             void saveLogs();
 
         private:
-            const void processAccountsProtocols(const QDomElement& e);
-            const void processMetacontacts(const QDomElement& e);
-            const void processLogs(const QDomElement& e, const QString& protocol, 
-                                   const QString& account, const QString& date);
+            void processAccountsProtocols(const QDomElement& e);
+            void processMetacontacts(const QDomElement& e);
+            void processLogs(const QDomElement& e, const QString& protocol, 
+                             const QString& account, const QString& date);
             
 };
 #endif // _PARSERPIDGIN_H_

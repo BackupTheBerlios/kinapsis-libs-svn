@@ -30,13 +30,14 @@ class ParserKopete : public IMProgram {
             ParserKopete();
             ParserKopete(QString name, QString version);
             ~ParserKopete() { };
+            int  parserAux(QString prot);
             void parser();
             void saveLogs();
 
         private:
-            const void processMetacontacts(const QDomElement& e);
-            const void processLogs(const QDomElement& e, const QString& protocol, 
-                                   const QString& account, const QString& date);
-            const void processProtocolsAccounts(const QString& line);
+            void processMetacontacts(const QDomElement& e);
+            void processProtocolsAccounts(const QString& line);
+            void processLogs(const QDomElement& e, const QString& protocol, 
+                             const QString& account, const QString& date);
 };
 #endif // _PARSERKOPETE_H_

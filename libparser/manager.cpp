@@ -80,7 +80,7 @@ const int Manager::searchAux(QString program){
         return 0;
 }
 
-const void Manager::searchIMPrograms(){
+void Manager::searchIMPrograms(){
         int result;
 
         //Kopete

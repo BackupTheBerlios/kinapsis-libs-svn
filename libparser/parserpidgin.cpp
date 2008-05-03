@@ -290,7 +290,7 @@ void ParserPidgin::parser(){
 
 /* Private methods */
 
-const void ParserPidgin::processAccountsProtocols(const QDomElement& e){
+void ParserPidgin::processAccountsProtocols(const QDomElement& e){
         QString tmp;
         QString aux;
 
@@ -306,7 +306,7 @@ const void ParserPidgin::processAccountsProtocols(const QDomElement& e){
         }
 }
 
-const void ParserPidgin::processMetacontacts(const QDomElement& e){
+void ParserPidgin::processMetacontacts(const QDomElement& e){
         QString tmp;
 
         QDomNodeList groups = e.elementsByTagName("group");
@@ -325,7 +325,7 @@ const void ParserPidgin::processMetacontacts(const QDomElement& e){
         m_metacontacts << tmp;
 }
 
-const void ParserPidgin::processLogs(const QDomElement& e, const QString& protocol, 
+void ParserPidgin::processLogs(const QDomElement& e, const QString& protocol, 
                                      const QString& account, const QString& date){
         return;
 }

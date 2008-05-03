@@ -29,15 +29,15 @@ class Manager{
             Manager() : m_numberPrograms(0), m_existPrograms(false) { };
             ~Manager() { };
             const bool existIMPrograms(); 
-            inline const QList<IMProgram*> imPrograms(){return m_programs;};
-            inline const int numberPrograms(){return m_numberPrograms;};
+            inline const QList<IMProgram*>& imPrograms() const  {return m_programs;};
+            inline const int& numberPrograms() const            {return m_numberPrograms;};
 
         private:
             int m_numberPrograms;
             QList<IMProgram*> m_programs;
             bool m_existPrograms;
 
-            const void searchIMPrograms(); 
+            void searchIMPrograms(); 
             const int searchAux(QString program); 
 }; 
 #endif // _MANAGER_H_
