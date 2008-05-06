@@ -31,12 +31,13 @@ class ParserPidgin : public IMProgram {
             ParserPidgin(QString name, QString version) : IMProgram(name, version) { };
             ~ParserPidgin() { };
             void parser();
+            int  parserLogsAux(QString prot);
             void saveLogs();
 
         private:
             void processAccountsProtocols(const QDomElement& e);
             void processMetacontacts(const QDomElement& e);
-            void processLogs(const QDomElement& e, const QString& protocol, 
+            void processLogs(const QString& line, const QString& protocol, 
                              const QString& account, const QString& date);
             
 };

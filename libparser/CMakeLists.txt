@@ -5,9 +5,9 @@ SET(IMPROGRAMS_SRCS
 	manager.cpp
 	parserkopete.cpp
 	parserpidgin.cpp
-	#parserpsi.cpp
-	#parseramsn.cpp
-	#parsermercury.cpp
+	parserpsi.cpp
+	parseramsn.cpp
+	parsermercury.cpp
 )
 
 SET(IMPROGRAMS_HDRS
@@ -15,9 +15,9 @@ SET(IMPROGRAMS_HDRS
         improgram.h
         parserkopete.h
 	parserpidgin.h
-      	#parseramsn.h
-      	#parserpsi.h
-      	#parsermercury.h
+      	parserpsi.h
+      	parseramsn.h
+      	parsermercury.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

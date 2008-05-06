@@ -83,26 +83,26 @@ const int Manager::searchAux(QString program){
 void Manager::searchIMPrograms(){
         int result;
 
-        //Kopete
-        result=searchAux("kopete");
-        if (result !=0)
-            return;   //FIXME
-        //Pidgin
+        /*Kopete*/
+//        result=searchAux("kopete");
+//        if (result !=0)
+//            return;   //FIXME
+        /*Pidgin*/
         result=searchAux("pidgin");
         if (result !=0)
             return;   //FIXME
-        //Amsn
-        result=searchAux("amsn");
-        if (result !=0)
-            return;   //FIXME
-        //Mercury
-        result=searchAux("mercury");
-        if (result !=0)
-            return;   //FIXME
-        //Psi
-        result=searchAux("psi");
-        if (result !=0)
-            return;   //FIXME
+        /*Amsn*/
+//        result=searchAux("amsn");
+//        if (result !=0)
+//            return;   //FIXME
+        /*Mercury*/
+//        result=searchAux("mercury");
+//        if (result !=0)
+//            return;   //FIXME
+        /*Psi*/
+//        result=searchAux("psi");
+//        if (result !=0)
+//            return;   //FIXME
 
         if (m_existPrograms==false){
                 qDebug() << "Instant Message Programs not found";

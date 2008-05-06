@@ -30,7 +30,7 @@ class ParserKopete : public IMProgram {
             ParserKopete();
             ParserKopete(QString name, QString version);
             ~ParserKopete() { };
-            int  parserAux(QString prot);
+            int  parserLogsAux(QString prot);
             void parser();
             void saveLogs();
 

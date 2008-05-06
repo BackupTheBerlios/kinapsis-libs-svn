@@ -38,7 +38,7 @@ void ParserKopete::saveLogs(){
         return;
 }
 
-int ParserKopete::parserAux(QString prot){
+int ParserKopete::parserLogsAux(QString prot){
         QString dir;
         QString tmp;
         QDir directory;
@@ -174,13 +174,13 @@ void ParserKopete::parser(){
         }
 
         //MSN
-        result = parserAux("msn");
+        result = parserLogsAux("msn");
         //Jabber
-        result = parserAux("jabber");
+        result = parserLogsAux("jabber");
         //AIM
-        result = parserAux("aim");
+        result = parserLogsAux("aim");
         //ICQ
-        result = parserAux("icq");
+        result = parserLogsAux("icq");
 }
 
 
