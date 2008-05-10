@@ -388,8 +388,8 @@ void ParserKopete::processLogs(const QDomElement& e, const QString& protocol, co
         prot.append(protocol);
         acco.append(account);
         d.append(date);
-        from.append(e.attribute("nick"));
-        from.append(" - ");
+//        from.append(e.attribute("nick"));
+//        from.append(" - ");
         from.append(e.attribute("from"));
         msg.append(e.text().toUtf8()); //FIXME: check weird characters
         time.append(e.attribute("time"));

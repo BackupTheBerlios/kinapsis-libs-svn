@@ -40,6 +40,7 @@ int ParserPidgin::parserLogsAux(QString prot){
         QFile file;
         QDomDocument doc;
 
+//TODO: chats
         dir.append(home);
         dir.append("/.purple/logs");
         directory.setCurrent(dir);
@@ -157,10 +158,6 @@ void ParserPidgin::parser(){
         file.close();
 
         //XML format for accounts and protocols
-//        dir.clear();
-//        dir.append(home);
-//        dir.append("/.purple");
-//        QDir::setCurrent(dir);
         file.setFileName("accounts.xml");
         if (!file.open(QIODevice::ReadOnly)){
                 return;
@@ -196,24 +193,96 @@ void ParserPidgin::parser(){
 void ParserPidgin::processAccountsProtocols(const QDomElement& e){
         QString tmp;
         QString aux;
+        QString pro;
+        QString acc;
+        QString passwd;
+
+        QDomNodeList protocol = e.elementsByTagName("protocol");
+        if (!protocol.isEmpty()){
+                QDomElement elem = protocol.item(0).toElement();
+                pro.append(elem.text());
+                pro = pro.section('-', -1, -1);
+        }
+
+        QDomNodeList password = e.elementsByTagName("password");
+        if (!password.isEmpty()){
+                QDomElement elem = password.item(0).toElement();
+                passwd.append(elem.text());
+        }
 
         QDomNodeList accounts = e.elementsByTagName("name");
         if (!accounts.isEmpty()){
                 QDomElement elem = accounts.item(0).toElement();
                 tmp.append(elem.text());
                 aux = tmp.section('/', -2, -2);
-                if (aux.size() == 0)
+                if (aux.size() == 0){
                     m_accounts << tmp;
-                else
+                    acc = tmp;
+                }
+                else{
                     m_accounts << aux;
+                    acc = aux;
+                }
         }
 
         QDomNodeList protocols = e.elementsByTagName("settings");
         if (!protocols.isEmpty()){
                 QDomElement elem = protocols.item(0).toElement();
-                tmp.append(elem.text());
-                    m_protocols << tmp;
+                tmp.clear();
+                tmp.append("\033[01;31m");
+                tmp.append("\nAccount: ");
+                tmp.append("\033[00m");
+                tmp.append(acc);
+                m_protocols << tmp;
+                tmp.clear();
+                tmp.append("Protocol: ");
+                tmp.append(pro);
+                m_protocols << tmp;
+                tmp.clear();
+                tmp.append("Password: ");
+                tmp.append(passwd);
+                m_protocols << tmp;
+                QDomNodeList settings = elem.elementsByTagName("setting");
+                for(int j=0; j < settings.length(); j++){
+                    QDomElement setting = settings.item(j).toElement();
+                    if (setting.attributeNode("name").value().compare("server")==0){
+                        tmp.clear();
+                        tmp.append("Server: ");
+                        tmp.append(" ");
+                        tmp.append(setting.text());
+                         m_protocols << tmp;
+                    }
+                    if (setting.attributeNode("name").value().compare("port")==0){
+                        tmp.clear();
+                        tmp.append("Port: ");
+                        tmp.append(" ");
+                        tmp.append(setting.text());
+                        m_protocols << tmp;
+                    }
+                    if (setting.attributeNode("name").value().compare("require_tls")==0){
+                        tmp.clear();
+                        tmp.append("Tls: ");
+                        tmp.append(" ");
+                        tmp.append(setting.text());
+                        m_protocols << tmp;
+                    }
+                    if (setting.attributeNode("name").value().compare("old_ssl")==0){
+                        tmp.clear();
+                        tmp.append("Ssl: ");
+                        tmp.append(" ");
+                        tmp.append(setting.text());
+                        m_protocols << tmp;
+                    }
+                    if (setting.attributeNode("name").value().compare("auth_plain_in_clear")==0){
+                        tmp.clear();
+                        tmp.append("Plain Text: ");
+                        tmp.append(" ");
+                        tmp.append(setting.text());
+                        m_protocols << tmp;
+                    }
+                }
         }
+
 }
 
 void ParserPidgin::processMetacontacts(const QDomElement& e){
@@ -237,5 +306,53 @@ void ParserPidgin::processMetacontacts(const QDomElement& e){
 
 void ParserPidgin::processLogs(const QString& line, const QString& protocol, 
                                      const QString& account, const QString& date){
-        m_logs << line;
+        QString aux = line;
+        QString tmp;
+        QString rest;
+        QString from;
+        QString msg;
+        QString time;
+        QString prot;
+        QString acco;
+        QString d;
+
+
+        if (aux.section(' ', 0, 0) == "Conversation")
+                return;
+        prot.append(protocol);
+        acco.append(account);
+        d.append(date);
+
+        //FIXME: messages with returns from a copy-paste,
+        // the line starts with the message
+        time = line.section(' ', 0, 0);
+        rest = line.section(' ', 1);   
+        from = rest.section(':', 0, 0);
+        msg = rest.section(':', 1);
+
+        tmp.append("\033[01;31m");
+        tmp.append("\nPROTOCOL: ");
+        tmp.append("\033[00m");
+        tmp.append(protocol);
+        tmp.append("\033[01;34m");
+        tmp.append(" ACCOUNT: ");
+        tmp.append("\033[00m");
+        tmp.append(account);
+        tmp.append("\033[01;29m");
+        tmp.append(" FROM: ");
+        tmp.append("\033[00m");
+        tmp.append(from);
+        tmp.append("\033[01;35m");
+        tmp.append(" DATE: ");
+        tmp.append("\033[00m");
+        tmp.append(d);
+        tmp.append("\033[01;33m");
+        tmp.append(" TIME: ");
+        tmp.append("\033[00m");
+        tmp.append(time);
+        tmp.append("\033[01;30m");
+        tmp.append(" MSG: ");
+        tmp.append("\033[00m");
+        tmp.append(msg);
+        m_logs << tmp;
 }

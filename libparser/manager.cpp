@@ -84,9 +84,9 @@ void Manager::searchIMPrograms(){
         int result;
 
         /*Kopete*/
-//        result=searchAux("kopete");
-//        if (result !=0)
-//            return;   //FIXME
+        result=searchAux("kopete");
+        if (result !=0)
+            return;   //FIXME
         /*Pidgin*/
         result=searchAux("pidgin");
         if (result !=0)
