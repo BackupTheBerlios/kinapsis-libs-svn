@@ -287,18 +287,51 @@ void ParserPidgin::processAccountsProtocols(const QDomElement& e){
 
 void ParserPidgin::processMetacontacts(const QDomElement& e){
         QString tmp;
+        QString group;
 
         QDomNodeList groups = e.elementsByTagName("group");
         if (!groups.isEmpty()){
                 for (int j=0; j<groups.length(); j++){
                     QDomElement elem = groups.item(j).toElement();
-                    tmp.append(elem.text());
-                    QDomNodeList cont = elem.elementsByTagName("contact");
-                    if (!cont.isEmpty()){
-                        for (int i=0; i<cont.length(); i++){
-                            QDomElement ct = cont.item(i).toElement();
+                    group = elem.attributeNode("name").value();
+                    QDomNodeList conts = elem.elementsByTagName("contact");
+                    if (!conts.isEmpty()){
+                        for (int i=0; i<conts.length(); i++){
+                            QDomElement ct = conts.item(i).toElement();
+                            QDomNodeList buddies = ct.elementsByTagName("buddy");
+                            if (!buddies.isEmpty()){
+                                    for (int k=0; k<buddies.length(); k++){
+                                        QDomElement buddy = buddies.item(k).toElement();
+                                        QDomNodeList names = buddy.elementsByTagName("name");
+                                        QDomNodeList alias = buddy.elementsByTagName("alias");
+                                        if (!names.isEmpty()){
+                                            QDomElement name = names.item(0).toElement();
+                                            tmp.append("\033[01;31m");
+                                            tmp.append("\nContactId: ");
+                                            tmp.append("\033[00m");
+                                            tmp.append(name.text());
+                                        }
+                                        if (!alias.isEmpty()){
+                                            QDomElement alia = alias.item(0).toElement();
+                                            tmp.append("\033[01;34m");
+                                            tmp.append(" GlobalDisplayName: ");
+                                            tmp.append("\033[00m");
+                                            tmp.append(alia.text());
+                                        }
+                                    }
+                                    tmp.append("\033[01;30m");
+                                    tmp.append(" Group: ");
+                                    tmp.append("\033[00m");
+                                    tmp.append(group);
+                                    tmp.append("\033[01;35m");
+                                    tmp.append(" Meta: ");
+                                    tmp.append("\033[00m");
+                            }
                         }
                     }
+//                    else{
+//                            return;
+//                    }
                 }
         }
         m_metacontacts << tmp;
