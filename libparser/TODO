@@ -4,3 +4,5 @@
 [4] finish metacontacts in pidgin
 [5] exact info for metacontacts in pidgin and kopete
 [6] signals with percentage (logs)
+[7] Most robust (. & ..) and that kinda things
+[8] Split functions in more little ones, specially nextNode()
